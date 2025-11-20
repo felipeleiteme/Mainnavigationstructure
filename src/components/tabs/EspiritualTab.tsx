@@ -1,6 +1,5 @@
 import { Heart, Book, Calendar, Target, Lightbulb, Dice6, Pencil, Flame, X, Mic } from 'lucide-react';
 import { Card } from '../ui/card';
-import { Checkbox } from '../ui/checkbox';
 import { Progress } from '../ui/progress';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -31,8 +30,6 @@ export default function EspiritualTab() {
   // Buscar ofensiva de leitura do DataService (dados reais)
   const [ofensivaLeitura, setOfensivaLeitura] = useState(DataService.getOfensivaLeitura());
   
-  const [showNovaAnotacao, setShowNovaAnotacao] = useState(false);
-  const [novaAnotacao, setNovaAnotacao] = useState('');
   const [showNovoAlvo, setShowNovoAlvo] = useState(false);
   const [novoAlvo, setNovoAlvo] = useState({ titulo: '', meta: '', prazo: '' });
   const [showHistorico, setShowHistorico] = useState(false);
@@ -306,7 +303,6 @@ export default function EspiritualTab() {
               <Pencil className="w-5 h-5 text-green-600" />
               Diário Espiritual
             </h3>
-            <Button variant="outline" size="sm" onClick={() => setShowNovaAnotacao(true)}>+ Nova Anotação</Button>
           </div>
           
           {diarioEntries.length === 0 ? (
@@ -429,72 +425,6 @@ export default function EspiritualTab() {
           </Button>
         </Card>
       </div>
-
-      {/* Modal: Nova Anotação */}
-      {showNovaAnotacao && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
-          <div className="bg-white w-full sm:max-w-lg sm:rounded-lg rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
-            <div className="sticky top-0 bg-gradient-to-br from-green-600 to-green-700 text-white px-6 pt-6 pb-4 z-10">
-              <div className="flex items-start justify-between">
-                <h2 className="text-xl">Nova Anotação</h2>
-                <button 
-                  onClick={() => {
-                    setShowNovaAnotacao(false);
-                    setNovaAnotacao('');
-                  }}
-                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            <div className="px-6 py-6">
-              <label className="block text-sm mb-2">Sua anotação:</label>
-              <Textarea
-                placeholder="Escreva sua reflexão, pensamento ou aprendizado..."
-                value={novaAnotacao}
-                onChange={(e) => setNovaAnotacao(e.target.value)}
-                rows={6}
-                className="resize-none"
-              />
-            </div>
-            <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowNovaAnotacao(false);
-                  setNovaAnotacao('');
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                className="flex-1 bg-green-600 hover:bg-green-700"
-                onClick={() => {
-                  if (novaAnotacao.trim()) {
-                    const novaEntry: ReflexaoEntry = {
-                      data: new Date().toLocaleDateString('pt-BR'),
-                      capitulo: 'Anotação Livre',
-                      aprendizado: novaAnotacao,
-                      aplicacao: '',
-                      palavra: '',
-                    };
-                    const updated = [novaEntry, ...diarioEntries];
-                    setDiarioEntries(updated);
-                    localStorage.setItem('diarioEspiritual', JSON.stringify(updated));
-                    toast.success('Anotação salva! 📝');
-                    setShowNovaAnotacao(false);
-                    setNovaAnotacao('');
-                  }
-                }}
-                disabled={!novaAnotacao.trim()}
-              >
-                Salvar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modal: Novo Alvo */}
       {showNovoAlvo && (
