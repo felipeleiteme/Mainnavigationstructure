@@ -1,11 +1,10 @@
-import { Calendar, TrendingUp, BookOpen, Users, Sprout, Video, FileText, Target, Flame, User } from 'lucide-react';
+import { Calendar, TrendingUp, BookOpen, Sprout, Video, FileText, User } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { useState, useEffect } from 'react';
 import DashboardEmptyState from '../inicio/DashboardEmptyState';
-import ProximasAcoes from '../inicio/ProximasAcoes';
 import EstudosDetalhes from '../estatisticas/EstudosDetalhes';
 import RevisitasDetalhes from '../estatisticas/RevisitasDetalhes';
 import PublicacoesDetalhes from '../estatisticas/PublicacoesDetalhes';
@@ -374,8 +373,45 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
           </div>
         </Card>
 
-        {/* Card: Próximas Ações */}
-        <ProximasAcoes onNavigate={handleNavigateFromAcoes} />
+        {/* Card: Cronograma da Semana */}
+        <Card className="p-6">
+          <h3 className="flex items-center gap-2 mb-4">
+            <Calendar className="w-5 h-5 text-indigo-600" />
+            Cronograma da Semana
+          </h3>
+          
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2">
+            {[
+              { dia: 'Seg', data: '18', status: 'Manhã planejada', estudos: 2 },
+              { dia: 'Ter', data: '19', status: 'Livre', estudos: 0 },
+              { dia: 'Qua', data: '20', status: 'Tarde planejada', estudos: 1 },
+              { dia: 'Qui', data: '21', status: 'Manhã planejada', estudos: 3 },
+              { dia: 'Sex', data: '22', status: 'Livre', estudos: 0 },
+              { dia: 'Sáb', data: '23', status: 'Manhã planejada', estudos: 2 },
+              { dia: 'Dom', data: '24', status: 'Livre', estudos: 0 },
+            ].map((dia, idx) => (
+              <button
+                key={idx}
+                className={`flex-shrink-0 w-24 p-3 rounded-lg border transition-all ${
+                  dia.status !== 'Livre' 
+                    ? 'bg-green-50 border-green-200 hover:bg-green-100' 
+                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                }`}
+                onClick={() => {
+                  setDiaSelecionado(dia);
+                  setShowDiaDetalhes(true);
+                }}
+              >
+                <p className="text-xs text-gray-600">{dia.dia}</p>
+                <p className="text-lg">{dia.data}</p>
+                <p className="text-xs text-gray-700 mt-1">{dia.status}</p>
+                {dia.estudos > 0 && (
+                  <p className="text-xs text-green-700 mt-1">{dia.estudos} estudos</p>
+                )}
+              </button>
+            ))}
+          </div>
+        </Card>
 
         {/* Card: Estatísticas do Mês */}
         <Card className="p-6">
@@ -415,74 +451,6 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
               <p className="text-2xl text-orange-900">{totalVideos}</p>
               <p className="text-sm text-gray-600">Vídeos</p>
             </button>
-          </div>
-        </Card>
-
-        {/* Card: Jornada Espiritual */}
-        <Card 
-          className="p-6 bg-gradient-to-br from-orange-50 to-red-50 border-orange-200 cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => onNavigateToTab?.('espiritual')}
-        >
-          <h3 className="flex items-center gap-2 mb-4">
-            <Flame className="w-5 h-5 text-orange-600" />
-            Jornada Espiritual
-          </h3>
-          
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">🔥 Ofensiva de Leitura</span>
-              <span className="text-sm">{ofensivaLeitura} dias seguidos</span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm">🎯 Alvos em andamento</span>
-              <span className="text-sm">{alvosAtivos} ativos</span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm">📈 Progresso do plano de leitura</span>
-              <span className="text-sm">23% do ano</span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Card: Cronograma da Semana */}
-        <Card className="p-6">
-          <h3 className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-indigo-600" />
-            Cronograma da Semana
-          </h3>
-          
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2">
-            {[
-              { dia: 'Seg', data: '18', status: 'Manhã planejada', estudos: 2 },
-              { dia: 'Ter', data: '19', status: 'Livre', estudos: 0 },
-              { dia: 'Qua', data: '20', status: 'Tarde planejada', estudos: 1 },
-              { dia: 'Qui', data: '21', status: 'Manhã planejada', estudos: 3 },
-              { dia: 'Sex', data: '22', status: 'Livre', estudos: 0 },
-              { dia: 'Sáb', data: '23', status: 'Manhã planejada', estudos: 2 },
-              { dia: 'Dom', data: '24', status: 'Livre', estudos: 0 },
-            ].map((dia, idx) => (
-              <button
-                key={idx}
-                className={`flex-shrink-0 w-24 p-3 rounded-lg border transition-all ${
-                  dia.status !== 'Livre' 
-                    ? 'bg-green-50 border-green-200 hover:bg-green-100' 
-                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                }`}
-                onClick={() => {
-                  setDiaSelecionado(dia);
-                  setShowDiaDetalhes(true);
-                }}
-              >
-                <p className="text-xs text-gray-600">{dia.dia}</p>
-                <p className="text-lg">{dia.data}</p>
-                <p className="text-xs text-gray-700 mt-1">{dia.status}</p>
-                {dia.estudos > 0 && (
-                  <p className="text-xs text-green-700 mt-1">{dia.estudos} estudos</p>
-                )}
-              </button>
-            ))}
           </div>
         </Card>
 

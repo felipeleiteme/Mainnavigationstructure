@@ -148,21 +148,29 @@ export default function EspiritualTab() {
           </div>
         </Card>
 
-        {/* Card: Ofensiva de Leitura */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2">
-              <Flame className="w-5 h-5 text-orange-600" />
-              Ofensiva de Leitura
-            </h3>
-            <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-              🔥 {ofensivaLeitura} dias
-            </Badge>
-          </div>
+        {/* Card: Jornada Espiritual */}
+        <Card className="p-6 bg-gradient-to-br from-orange-50 to-red-50 border-orange-200">
+          <h3 className="flex items-center gap-2 mb-4">
+            <Flame className="w-5 h-5 text-orange-600" />
+            Jornada Espiritual
+          </h3>
           
-          <p className="text-sm text-gray-600 mb-4">
-            Continue firme! Mantenha sua sequência de leitura diária.
-          </p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">🔥 Ofensiva de Leitura</span>
+              <span className="text-sm">{ofensivaLeitura} dias seguidos</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm">🎯 Alvos em andamento</span>
+              <span className="text-sm">{alvosAtivos.length} ativos</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm">📈 Progresso do plano de leitura</span>
+              <span className="text-sm">23% do ano</span>
+            </div>
+          </div>
         </Card>
 
         {/* Card: Leitura da Bíblia (com ref para scroll) */}
