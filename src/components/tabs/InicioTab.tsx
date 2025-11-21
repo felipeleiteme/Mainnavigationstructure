@@ -5,6 +5,9 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { useState, useEffect } from 'react';
 import DashboardEmptyState from '../inicio/DashboardEmptyState';
+import EstatisticasPage from '../pages/EstatisticasPage';
+import CronogramaPage from '../pages/CronogramaPage';
+import ProgressoPage from '../pages/ProgressoPage';
 import EstudosDetalhes from '../estatisticas/EstudosDetalhes';
 import RevisitasDetalhes from '../estatisticas/RevisitasDetalhes';
 import PublicacoesDetalhes from '../estatisticas/PublicacoesDetalhes';
@@ -24,13 +27,14 @@ interface InicioTabProps {
 
 export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
   const [hasData, setHasData] = useState(true); // Check if user has any data
+  const [paginaAtual, setPaginaAtual] = useState<'home' | 'estatisticas' | 'cronograma' | 'progresso'>('home');
+  const [diaSelecionado, setDiaSelecionado] = useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0); // Para forçar atualização das estatísticas
   const [showEstudosDetalhes, setShowEstudosDetalhes] = useState(false);
   const [showRevisitasDetalhes, setShowRevisitasDetalhes] = useState(false);
   const [showPublicacoesDetalhes, setShowPublicacoesDetalhes] = useState(false);
   const [showVideosDetalhes, setShowVideosDetalhes] = useState(false);
   const [showDiaDetalhes, setShowDiaDetalhes] = useState(false);
-  const [diaSelecionado, setDiaSelecionado] = useState<any>(null);
-  const [refreshKey, setRefreshKey] = useState(0); // Para forçar atualização das estatísticas
 
   // Estados da sessão de ministério
   const [showIniciarSessao, setShowIniciarSessao] = useState(false);
@@ -297,6 +301,19 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
     );
   }
 
+  // Navegação: Se não estiver na home, mostrar a página correspondente
+  if (paginaAtual === 'estatisticas') {
+    return <EstatisticasPage onVoltar={() => setPaginaAtual('home')} />;
+  }
+
+  if (paginaAtual === 'cronograma') {
+    return <CronogramaPage onVoltar={() => setPaginaAtual('home')} diaSelecionado={diaSelecionado} />;
+  }
+
+  if (paginaAtual === 'progresso') {
+    return <ProgressoPage onVoltar={() => setPaginaAtual('home')} />;
+  }
+
   return (
     <div className="min-h-full bg-gradient-to-b from-green-50 to-gray-50">
       {/* Cabeçalho Caloroso */}
@@ -307,16 +324,17 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
           </div>
           <div>
             <p className="text-lg opacity-90">{greetingIcon} {greeting},</p>
-            <h1 className="text-2xl">Felipe!</h1>
+            <h1 className="text-2xl">{DataService.getPerfil().nome}!</h1>
           </div>
         </div>
         
         {/* Versículo do Ano */}
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mt-4">
+          <p className="text-xs font-medium opacity-75 mb-1">Texto do Ano</p>
           <p className="text-sm opacity-90 italic">
-            "Continue firmes, inabaláveis."
+            "Dêem a Jeová a glória que o seu nome merece."
           </p>
-          <p className="text-xs opacity-75 mt-1">— 1 Coríntios 15:58</p>
+          <p className="text-xs opacity-75 mt-1">— Sal. 96:8</p>
         </div>
       </div>
 

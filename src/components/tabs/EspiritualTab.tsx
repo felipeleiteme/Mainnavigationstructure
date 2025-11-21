@@ -1,14 +1,14 @@
-import { Heart, Book, Calendar, Target, Lightbulb, Dice6, Pencil, Flame, X, Mic } from 'lucide-react';
+import { Heart, Book, Calendar, Target, Dice6, Pencil, Flame, X, Mic, Plus } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Textarea } from '../ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import { Input } from '../ui/input';
 import { toast } from 'sonner';
 import { useState, useEffect, useRef } from 'react';
 import { DataService } from '../../services/dataService';
-import TemaDoMes from '../tema-mes/TemaDoMes';
-import { getQualidadeMes } from '../../data/qualidades';
 
 interface ReflexaoEntry {
   data: string;
@@ -16,6 +16,12 @@ interface ReflexaoEntry {
   aprendizado: string;
   aplicacao: string;
   palavra: string;
+}
+
+interface GratidaoEntry {
+  id: string;
+  data: string;
+  texto: string;
 }
 
 export default function EspiritualTab() {
@@ -33,19 +39,26 @@ export default function EspiritualTab() {
   const [showNovoAlvo, setShowNovoAlvo] = useState(false);
   const [novoAlvo, setNovoAlvo] = useState({ titulo: '', meta: '', prazo: '' });
   const [showHistorico, setShowHistorico] = useState(false);
-  const [showTemaDoMes, setShowTemaDoMes] = useState(false);
+
+  // Diário de Gratidão
+  const [gratidaoEntries, setGratidaoEntries] = useState<GratidaoEntry[]>([]);
+  const [showNovaGratidao, setShowNovaGratidao] = useState(false);
+  const [novaGratidao, setNovaGratidao] = useState({ data: '', texto: '' });
 
   // Buscar alvos ativos do DataService
   const alvosAtivos = DataService.getAlvosAtivos();
-  
-  // Buscar qualidade do mês
-  const qualidadeMes = getQualidadeMes();
 
   // Load diario entries from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('diarioEspiritual');
     if (saved) {
       setDiarioEntries(JSON.parse(saved));
+    }
+
+    // Load gratidão entries
+    const gratidaoSaved = localStorage.getItem('diarioGratidao');
+    if (gratidaoSaved) {
+      setGratidaoEntries(JSON.parse(gratidaoSaved));
     }
   }, []);
 
@@ -94,6 +107,26 @@ export default function EspiritualTab() {
     setReflexaoAtual({ aprendizado: '', aplicacao: '', palavra: '' });
   };
 
+  const handleSalvarGratidao = () => {
+    if (novaGratidao.texto.trim()) {
+      const novaEntry: GratidaoEntry = {
+        id: Date.now().toString(),
+        data: novaGratidao.data,
+        texto: novaGratidao.texto,
+      };
+
+      const updatedEntries = [novaEntry, ...gratidaoEntries];
+      setGratidaoEntries(updatedEntries);
+      localStorage.setItem('diarioGratidao', JSON.stringify(updatedEntries));
+
+      toast.success('Gratidão registrada! 🙏', {
+        description: 'Salva no seu Diário de Gratidão',
+      });
+      setShowNovaGratidao(false);
+      setNovaGratidao({ data: '', texto: '' });
+    }
+  };
+
   const ideiasAdoracao = [
     'Ler um anuário antigo',
     'Ensaiar cânticos novos',
@@ -130,28 +163,10 @@ export default function EspiritualTab() {
       </div>
 
       <div className="px-4 py-6 space-y-4">
-        {/* Card: Tema do Mês */}
-        <Card 
-          className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200 cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => setShowTemaDoMes(true)}
-        >
-          <div className="flex items-start gap-4">
-            <div className="text-4xl">{qualidadeMes.emoji}</div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-600 mb-1">Este mês, cultive:</p>
-              <h3 className="text-xl mb-2 text-blue-900">{qualidadeMes.nome}</h3>
-              <p className="text-sm text-gray-700 italic">
-                "{qualidadeMes.versiculo.texto}"
-              </p>
-              <p className="text-xs text-gray-600 mt-1">— {qualidadeMes.versiculo.referencia}</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Card: Jornada Espiritual */}
-        <Card className="p-6 bg-gradient-to-br from-orange-50 to-red-50 border-orange-200">
+        {/* Jornada Espiritual (1º lugar) */}
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
           <h3 className="flex items-center gap-2 mb-4">
-            <Flame className="w-5 h-5 text-orange-600" />
+            <Flame className="w-5 h-5 text-blue-600" />
             Jornada Espiritual
           </h3>
           
@@ -173,7 +188,7 @@ export default function EspiritualTab() {
           </div>
         </Card>
 
-        {/* Card: Leitura da Bíblia (com ref para scroll) */}
+        {/* Card: Leitura da Bíblia (2º lugar) */}
         <div ref={leituraRef} className="transition-all duration-300">
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -304,61 +319,55 @@ export default function EspiritualTab() {
           </Card>
         )}
 
-        {/* Diário Espiritual */}
-        <Card className="p-6">
+        {/* Diário de Gratidão (3º lugar - substituindo Diário Espiritual) */}
+        <Card className="p-6 bg-gradient-to-br from-orange-50 to-red-50 border-orange-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="flex items-center gap-2">
-              <Pencil className="w-5 h-5 text-green-600" />
-              Diário Espiritual
+              <Heart className="w-5 h-5 text-orange-600" />
+              Diário de Gratidão
             </h3>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setNovaGratidao({ data: new Date().toISOString().split('T')[0], texto: '' });
+                setShowNovaGratidao(true);
+              }}
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
           </div>
           
-          {diarioEntries.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-5xl mb-4">✨</div>
+          {gratidaoEntries.length === 0 ? (
+            <div className="text-center py-6">
+              <div className="text-4xl mb-3">🙏</div>
               <p className="text-sm text-gray-600 mb-2">
-                Suas reflexões aparecerão aqui
+                Comece registrando pelo que você é grato hoje
               </p>
               <p className="text-xs text-gray-500">
-                Comece marcando uma leitura da Bíblia
+                Cultivar gratidão fortalece sua espiritualidade
               </p>
             </div>
           ) : (
             <div className="space-y-3">
-              {diarioEntries.slice(0, 3).map((entry, idx) => (
-                <div key={idx} className="p-4 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm">{entry.data}</span>
-                    <span className="text-xs text-gray-600">{entry.capitulo}</span>
-                  </div>
-                  {entry.aprendizado && (
-                    <p className="text-sm text-gray-700 mb-1">
-                      💭 {entry.aprendizado}
-                    </p>
-                  )}
-                  {entry.aplicacao && (
-                    <p className="text-sm text-gray-700 mb-1">
-                      ✨ {entry.aplicacao}
-                    </p>
-                  )}
-                  {entry.palavra && (
-                    <p className="text-sm text-gray-700">
-                      📝 {entry.palavra}
-                    </p>
-                  )}
+              {gratidaoEntries.slice(0, 3).map((entry) => (
+                <div key={entry.id} className="p-3 bg-white rounded-lg">
+                  <p className="text-xs text-gray-600 mb-1">
+                    {new Date(entry.data).toLocaleDateString('pt-BR')}
+                  </p>
+                  <p className="text-sm text-gray-800">{entry.texto}</p>
                 </div>
               ))}
-              
-              {diarioEntries.length > 3 && (
-                <Button variant="ghost" className="w-full text-sm" onClick={() => setShowHistorico(true)}>
-                  Ver Todo o Histórico ({diarioEntries.length} entradas)
+              {gratidaoEntries.length > 3 && (
+                <Button variant="ghost" className="w-full text-sm">
+                  Ver todas ({gratidaoEntries.length} entradas)
                 </Button>
               )}
             </div>
           )}
         </Card>
 
-        {/* Alvos Espirituais */}
+        {/* Alvos Espirituais (4º lugar) */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="flex items-center gap-2">
@@ -382,37 +391,7 @@ export default function EspiritualTab() {
           </div>
         </Card>
 
-        {/* Recursos de Treinamento */}
-        <Card className="p-6">
-          <h3 className="flex items-center gap-2 mb-4">
-            <Lightbulb className="w-5 h-5 text-yellow-600" />
-            Recursos de Treinamento
-          </h3>
-          
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {[
-              { titulo: 'Ferro a Fio', status: 'Em progresso', cor: 'blue' },
-              { titulo: 'Apresentações Curtas', status: 'Não iniciado', cor: 'gray' },
-              { titulo: 'Curso de Ensino', status: 'Concluído', cor: 'green' },
-            ].map((recurso, idx) => (
-              <div key={idx} className="flex-shrink-0 w-40 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm mb-2">{recurso.titulo}</p>
-                <Badge 
-                  variant="secondary" 
-                  className={`text-xs ${
-                    recurso.cor === 'blue' ? 'bg-blue-100 text-blue-700' :
-                    recurso.cor === 'green' ? 'bg-green-100 text-green-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {recurso.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Ideias para Adoração em Família */}
+        {/* Ideias para Adoração em Família (5º lugar) */}
         <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
           <h3 className="flex items-center gap-2 mb-4">
             <Dice6 className="w-5 h-5 text-yellow-600" />
@@ -569,9 +548,53 @@ export default function EspiritualTab() {
         </div>
       )}
 
-      {/* Modal: Tema do Mês */}
-      {showTemaDoMes && (
-        <TemaDoMes onClose={() => setShowTemaDoMes(false)} />
+      {/* Modal: Nova Gratidão */}
+      {showNovaGratidao && (
+        <Dialog open={showNovaGratidao} onOpenChange={setShowNovaGratidao}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Registre sua Gratidão</DialogTitle>
+              <DialogDescription>
+                Registre o que você é grato hoje para fortalecer sua espiritualidade.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <p className="text-sm font-medium leading-none">Data</p>
+                <Input
+                  type="date"
+                  value={novaGratidao.data}
+                  onChange={(e) => setNovaGratidao({ ...novaGratidao, data: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium leading-none">O que você é grato?</p>
+                <Textarea
+                  value={novaGratidao.texto}
+                  onChange={(e) => setNovaGratidao({ ...novaGratidao, texto: e.target.value })}
+                  className="resize-none"
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowNovaGratidao(false)}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                className="flex-1 bg-orange-600 hover:bg-orange-700"
+                onClick={handleSalvarGratidao}
+                disabled={!novaGratidao.texto.trim()}
+              >
+                Salvar Gratidão
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
