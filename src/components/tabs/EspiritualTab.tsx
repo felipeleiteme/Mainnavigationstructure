@@ -4,7 +4,7 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
-import { DataService } from '../../services/dataService';
+import { DataService, Alvo } from '../../services/dataService';
 import LeituraBibliaPage from '../pages/LeituraBibliaPage';
 import DiarioGratidaoPage from '../pages/DiarioGratidaoPage';
 import AlvosEspirituaisPage from '../pages/AlvosEspirituaisPage';
@@ -26,11 +26,15 @@ type PaginaEspiritual =
   | 'alvos-espirituais' 
   | 'configuracoes-leitura'
   | 'nova-gratidao'
-  | 'novo-alvo';
+  | 'novo-alvo'
+  | 'editar-alvo'
+  | 'editar-gratidao';
 
 export default function EspiritualTab() {
   const [paginaAtual, setPaginaAtual] = useState<PaginaEspiritual>('home');
-  
+  const [alvoEditando, setAlvoEditando] = useState<Alvo | undefined>();
+  const [gratidaoEditando, setGratidaoEditando] = useState<GratidaoEntry | undefined>();
+
   // Buscar dados de leitura real
   const [dadosLeitura, setDadosLeitura] = useState(carregarDados());
 
@@ -38,14 +42,38 @@ export default function EspiritualTab() {
   const [gratidaoEntries, setGratidaoEntries] = useState<GratidaoEntry[]>([]);
 
   // Buscar alvos ativos do DataService
-  const alvosAtivos = DataService.getAlvosAtivos();
+  const [alvosAtivos, setAlvosAtivos] = useState(DataService.getAlvosAtivos());
 
   // Load gratidão entries from localStorage
   useEffect(() => {
-    const gratidaoSaved = localStorage.getItem('diarioGratidao');
-    if (gratidaoSaved) {
-      setGratidaoEntries(JSON.parse(gratidaoSaved));
-    }
+    const loadGratidao = () => {
+      const gratidaoSaved = localStorage.getItem('diarioGratidao');
+      if (gratidaoSaved) {
+        setGratidaoEntries(JSON.parse(gratidaoSaved));
+      }
+    };
+    
+    const loadLeitura = () => {
+      setDadosLeitura(carregarDados());
+    };
+    
+    const loadAlvos = () => {
+      setAlvosAtivos(DataService.getAlvosAtivos());
+    };
+    
+    loadGratidao();
+    loadLeitura();
+    loadAlvos();
+    
+    // Escutar mudanças de dados
+    const handleDataChange = () => {
+      loadGratidao();
+      loadLeitura();
+      loadAlvos();
+    };
+    
+    window.addEventListener('mynis-data-change', handleDataChange);
+    return () => window.removeEventListener('mynis-data-change', handleDataChange);
   }, []);
 
   const ideiasAdoracao = [
@@ -69,16 +97,26 @@ export default function EspiritualTab() {
   };
 
   // Função para salvar nova gratidão
-  const handleSalvarGratidao = (data: string, texto: string) => {
-    const novaEntry: GratidaoEntry = {
-      id: Date.now().toString(),
-      data: data,
-      texto: texto,
-    };
+  const handleSalvarGratidao = (data: string, texto: string, id?: string) => {
+    if (id) {
+      // Editar entrada existente
+      const updatedEntries = gratidaoEntries.map(entry => 
+        entry.id === id ? { ...entry, data, texto } : entry
+      );
+      setGratidaoEntries(updatedEntries);
+      localStorage.setItem('diarioGratidao', JSON.stringify(updatedEntries));
+    } else {
+      // Nova entrada
+      const novaEntry: GratidaoEntry = {
+        id: Date.now().toString(),
+        data: data,
+        texto: texto,
+      };
 
-    const updatedEntries = [novaEntry, ...gratidaoEntries];
-    setGratidaoEntries(updatedEntries);
-    localStorage.setItem('diarioGratidao', JSON.stringify(updatedEntries));
+      const updatedEntries = [novaEntry, ...gratidaoEntries];
+      setGratidaoEntries(updatedEntries);
+      localStorage.setItem('diarioGratidao', JSON.stringify(updatedEntries));
+    }
   };
 
   // Função para salvar novo alvo
@@ -107,6 +145,10 @@ export default function EspiritualTab() {
     return <DiarioGratidaoPage 
       onVoltar={() => setPaginaAtual('home')} 
       onAbrirNovaGratidao={() => setPaginaAtual('nova-gratidao')}
+      onEditarGratidao={(entry) => {
+        setGratidaoEditando(entry);
+        setPaginaAtual('editar-gratidao');
+      }}
     />;
   }
 
@@ -114,6 +156,10 @@ export default function EspiritualTab() {
     return <AlvosEspirituaisPage 
       onVoltar={() => setPaginaAtual('home')} 
       onAbrirNovoAlvo={() => setPaginaAtual('novo-alvo')}
+      onEditarAlvo={(alvo) => {
+        setAlvoEditando(alvo);
+        setPaginaAtual('editar-alvo');
+      }}
     />;
   }
 
@@ -135,6 +181,22 @@ export default function EspiritualTab() {
     return <NovoAlvoPage 
       onVoltar={() => setPaginaAtual('alvos-espirituais')} 
       onSalvar={handleSalvarAlvo}
+    />;
+  }
+
+  if (paginaAtual === 'editar-alvo') {
+    return <NovoAlvoPage 
+      onVoltar={() => setPaginaAtual('alvos-espirituais')} 
+      onSalvar={handleSalvarAlvo}
+      alvoEditando={alvoEditando}
+    />;
+  }
+
+  if (paginaAtual === 'editar-gratidao') {
+    return <NovaGratidaoPage 
+      onVoltar={() => setPaginaAtual('diario-gratidao')} 
+      onSalvar={handleSalvarGratidao}
+      entryEditando={gratidaoEditando}
     />;
   }
 

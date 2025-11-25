@@ -1,4 +1,4 @@
-import { ArrowLeft, Trash2, Plus, Heart, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, Heart, BarChart3, Edit2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 interface DiarioGratidaoPageProps {
   onVoltar: () => void;
   onAbrirNovaGratidao: () => void;
+  onEditarGratidao?: (entry: GratidaoEntry) => void;
 }
 
 interface GratidaoEntry {
@@ -15,7 +16,7 @@ interface GratidaoEntry {
   texto: string;
 }
 
-export default function DiarioGratidaoPage({ onVoltar, onAbrirNovaGratidao }: DiarioGratidaoPageProps) {
+export default function DiarioGratidaoPage({ onVoltar, onAbrirNovaGratidao, onEditarGratidao }: DiarioGratidaoPageProps) {
   // Scroll para o topo quando o componente montar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -60,24 +61,26 @@ export default function DiarioGratidaoPage({ onVoltar, onAbrirNovaGratidao }: Di
 
       {/* Conteúdo */}
       <div className="px-6 py-6 space-y-6">
-        {/* Card: Sobre */}
-        <Card className="p-6 border-2" style={{ backgroundColor: '#F5F2F7', borderColor: '#D8CEE8' }}>
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
-              <Heart className="w-6 h-6 text-white" />
+        {/* Card: Sobre - APENAS quando não há entradas */}
+        {gratidaoEntries.length === 0 && (
+          <Card className="p-6 border-2" style={{ backgroundColor: '#F5F2F7', borderColor: '#D8CEE8' }}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="mb-2">Por que cultivar gratidão?</h3>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Registrar pelo que somos gratos fortalece nossa espiritualidade e nos ajuda a ver as bênçãos de Jeová em nossa vida. 
+                  A Bíblia nos incentiva a sermos gratos em todas as circunstâncias.
+                </p>
+                <p className="text-xs text-gray-600 mt-2 italic">
+                  "Sejam gratos." — Colossenses 3:15
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="mb-2">Por que cultivar gratidão?</h3>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                Registrar pelo que somos gratos fortalece nossa espiritualidade e nos ajuda a ver as bênçãos de Jeová em nossa vida. 
-                A Bíblia nos incentiva a sermos gratos em todas as circunstâncias.
-              </p>
-              <p className="text-xs text-gray-600 mt-2 italic">
-                "Sejam gratos." — Colossenses 3:15
-              </p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        )}
 
         {/* Lista de Gratidões */}
         {gratidaoEntries.length === 0 ? (
@@ -96,29 +99,51 @@ export default function DiarioGratidaoPage({ onVoltar, onAbrirNovaGratidao }: Di
         ) : (
           <div className="space-y-3">
             {gratidaoEntries.map((entry) => (
-              <Card key={entry.id} className="p-4 hover:shadow-md transition-shadow border-primary-100">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-2">
-                      {new Date(entry.data).toLocaleDateString('pt-BR', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                    <p className="text-sm text-gray-800 leading-relaxed">
+              <Card key={entry.id} className="p-5 hover:shadow-lg transition-all border-0 shadow-sm bg-white">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-2">
+                    {/* Data */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: '#4A2C60' }}></div>
+                      <p className="text-xs uppercase tracking-wider" style={{ color: '#4A2C60', opacity: 0.7 }}>
+                        {new Date(entry.data).toLocaleDateString('pt-BR', {
+                          weekday: 'short',
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                    
+                    {/* Texto */}
+                    <p className="text-base text-gray-800 leading-relaxed">
                       {entry.texto}
                     </p>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDeletarGratidao(entry.id)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  
+                  {/* Botões de Ação */}
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditarGratidao && onEditarGratidao(entry);
+                      }}
+                      className="h-9 w-9 p-0 hover:bg-purple-50 rounded-lg transition-colors"
+                      style={{ color: '#4A2C60' }}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeletarGratidao(entry.id)}
+                      className="h-9 w-9 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}

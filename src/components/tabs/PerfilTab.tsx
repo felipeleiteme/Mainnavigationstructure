@@ -1,4 +1,4 @@
-import { User, Users, Calendar, FileText, AlertCircle, Palette, Bell, Cloud, Info, LogOut, Edit, TrendingUp, X, ChevronRight } from 'lucide-react';
+import { User, Users, Calendar, FileText, AlertCircle, Palette, Bell, Cloud, Info, LogOut, Edit, TrendingUp, X, ChevronRight, Database, Trash2, Download, AlertTriangle } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -306,6 +306,105 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
           </h3>
           
           <BackupCard onSyncComplete={handlePerfilAtualizado} />
+        </Card>
+
+        {/* Ferramentas de Desenvolvimento - NOVO */}
+        <Card className="p-6 bg-white border-2" style={{ borderColor: 'rgba(255, 140, 0, 0.3)', backgroundColor: 'rgba(255, 140, 0, 0.05)' }}>
+          <h3 className="flex items-center gap-2 mb-4">
+            <Database className="w-5 h-5" style={{ color: '#FF8C00' }} />
+            Ferramentas de Desenvolvimento
+          </h3>
+          
+          <p className="text-sm text-gray-600 mb-4">
+            Ferramentas para testar e validar todas as funcionalidades do aplicativo
+          </p>
+
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              style={{ borderColor: '#C8E046', color: '#4A2C60' }}
+              onClick={() => {
+                try {
+                  console.log('🚀 Iniciando população de dados...');
+                  import('../../utils/popularDados').then(({ popularDadosCompletos }) => {
+                    try {
+                      const resultado = popularDadosCompletos();
+                      console.log('✅ Resultado:', resultado);
+                      
+                      // Forçar atualização global disparando evento
+                      window.dispatchEvent(new Event('mynis-data-change'));
+                      
+                      toast.success('✅ Dados Populados com Sucesso!', {
+                        description: 'Todos os cenários foram criados. Verifique as abas.',
+                      });
+                      
+                      // Forçar re-render local
+                      handlePerfilAtualizado();
+                      
+                      // Força um refresh completo após 100ms para garantir
+                      setTimeout(() => {
+                        window.dispatchEvent(new Event('mynis-data-change'));
+                      }, 100);
+                    } catch (error) {
+                      console.error('❌ Erro ao popular dados:', error);
+                      toast.error('Erro ao popular dados', {
+                        description: error instanceof Error ? error.message : 'Erro desconhecido'
+                      });
+                    }
+                  }).catch(err => {
+                    console.error('❌ Erro ao importar módulo:', err);
+                    toast.error('Erro ao carregar módulo', {
+                      description: 'Não foi possível carregar o script de população'
+                    });
+                  });
+                } catch (error) {
+                  console.error('❌ Erro geral:', error);
+                  toast.error('Erro inesperado', {
+                    description: 'Ocorreu um erro ao tentar popular os dados'
+                  });
+                }
+              }}
+            >
+              <Database className="w-4 h-4 mr-2" />
+              Popular Dados de Teste
+            </Button>
+
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => {
+                import('../../utils/popularDados').then(({ exportarDados }) => {
+                  exportarDados();
+                });
+              }}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Exportar Backup JSON
+            </Button>
+
+            <Button
+              variant="outline"
+              className="w-full justify-start text-red-600 border-red-300 hover:bg-red-50"
+              onClick={() => {
+                import('../../utils/popularDados').then(({ limparTodosDados }) => {
+                  limparTodosDados();
+                });
+              }}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Limpar Todos os Dados
+            </Button>
+          </div>
+
+          <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <p className="text-xs text-orange-800 flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>
+                <strong>Atenção:</strong> "Popular Dados" cria revisitas, estudos, sessões de campo e mais para validar todas as funcionalidades. "Limpar Dados" apaga TUDO permanentemente.
+              </span>
+            </p>
+          </div>
         </Card>
 
         {/* Sobre o App */}

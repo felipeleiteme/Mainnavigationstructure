@@ -9,7 +9,6 @@ import {
   BookOpen,
   Phone,
   ChevronRight,
-  MapPin,
   Calendar,
   Sparkles,
   Zap,
@@ -314,7 +313,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
       <div style={{ backgroundColor: '#4A2C60' }} className="sticky top-0 z-50 text-white">
         <div className="px-6 pt-12 pb-4">
           <div className="flex items-center gap-3">
-            <MapPin className="w-7 h-7" />
+            <Sprout className="w-7 h-7" />
             <div>
               <h2 className="text-xl">Campo</h2>
               <p className="text-xs opacity-90">
@@ -425,104 +424,55 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
             {revisitasFiltradas.map((revisita) => (
               <Card 
                 key={revisita.id} 
-                className="p-4 bg-white border-0 shadow-sm"
+                className="p-4 bg-white border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer active:scale-[0.98]"
+                onClick={() => handleAbrirDetalhes(revisita.id)}
               >
-                {/* Conteúdo clicável */}
-                <div 
-                  className="hover:opacity-80 transition-opacity cursor-pointer"
-                  onClick={() => handleAbrirDetalhes(revisita.id)}
-                >
-                  {/* Cabeçalho do Card */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base">{revisita.nome}</h3>
-                        {revisita.interesseEstudo && (
-                          <Badge variant="secondary" className="bg-yellow-50 text-yellow-600 border border-yellow-100 text-xs px-2 py-0.5 flex items-center gap-1">
-                            <Star className="w-3 h-3" />
-                            Interesse
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-sm text-gray-600 mb-2">
-                        {getTipoIcon(revisita.origem)}
-                        <span className="line-clamp-1">{revisita.endereco}</span>
-                      </div>
-                      <Badge 
-                        className={`text-xs border ${getStatusColor(revisita.status)}`}
-                        style={revisita.status === 'comercio' ? { 
-                          backgroundColor: '#F5F2F7',
-                          color: '#4A2C60',
-                          borderColor: '#D8CEE8'
-                        } : {}}
-                      >
-                        {getStatusLabel(revisita.status)}
-                      </Badge>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                  </div>
-
-                  {/* Corpo do Card */}
-                  <div className="space-y-2">
-                    {/* Primeira conversa */}
-                    <p className="text-sm text-gray-600 line-clamp-2 italic">
-                      "{revisita.primeiraConversa}"
-                    </p>
-
-                    {/* Informações de tempo e visitas */}
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-1.5 text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        <span className={revisita.precisaRevisitar ? 'text-orange-600' : ''}>
-                          {revisita.ultimaVisitaTexto}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {revisita.quantidadeVisitas} {revisita.quantidadeVisitas === 1 ? 'visita' : 'visitas'}
-                      </span>
-                    </div>
-
-                    {/* Alerta de revisita necessária */}
-                    {revisita.precisaRevisitar && (
-                      <div className="flex items-center gap-1.5 text-xs text-orange-600 bg-orange-50 px-2 py-1.5 rounded">
-                        <AlertTriangle className="w-3 h-3" />
-                        <span>Precisa revisitar</span>
-                      </div>
-                    )}
-
-                    {/* Próxima visita agendada */}
-                    {revisita.proximaVisita && (
-                      <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="w-4 h-4 text-green-600" />
-                          <p className="text-xs text-green-700">Próxima Visita Agendada</p>
-                        </div>
-                        <p className="text-sm text-green-900 ml-6">
-                          {new Date(revisita.proximaVisita).toLocaleDateString('pt-BR', { 
-                            weekday: 'long',
-                            day: 'numeric', 
-                            month: 'long',
-                            year: 'numeric'
-                          })}
-                        </p>
-                      </div>
+                {/* Nome + Badge + Seta */}
+                <div className="flex items-start justify-between mb-1">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <h3 className="truncate">{revisita.nome}</h3>
+                    {revisita.interesseEstudo && (
+                      <Star className="w-5 h-5 flex-shrink-0" style={{ color: '#C8E046' }} />
                     )}
                   </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />
                 </div>
 
-                {/* Botão de Registrar Visita */}
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRevisitaSelecionada(revisita.id);
-                    setPaginaAtual('registrar-visita');
-                  }}
-                  className="w-full mt-3 text-white h-12 hover:opacity-90"
-                  style={{ backgroundColor: '#4A2C60' }}
-                >
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Registrar Visita
-                </Button>
+                {/* Primeira conversa / Publicação entregue */}
+                {revisita.publicacoesEntregues && revisita.publicacoesEntregues.length > 0 && (
+                  <p className="text-sm text-gray-600 mb-2 line-clamp-1">
+                    {revisita.publicacoesEntregues[0]}
+                  </p>
+                )}
+
+                {/* Badge de Status */}
+                <div className="mb-2">
+                  <Badge 
+                    className={`text-xs border ${getStatusColor(revisita.status)}`}
+                    style={revisita.status === 'comercio' ? { 
+                      backgroundColor: '#F5F2F7',
+                      color: '#4A2C60',
+                      borderColor: '#D8CEE8'
+                    } : {}}
+                  >
+                    {getStatusLabel(revisita.status)}
+                  </Badge>
+                </div>
+
+                {/* Informações com ícones (última visita + endereço) */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span className={revisita.precisaRevisitar ? 'text-orange-600' : 'text-gray-600'}>
+                      {revisita.ultimaVisitaTexto}
+                      {revisita.precisaRevisitar && ' • Revisitar urgente'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    {getTipoIcon(revisita.origem)}
+                    <span className="line-clamp-1">{revisita.endereco}</span>
+                  </div>
+                </div>
               </Card>
             ))}
           </>

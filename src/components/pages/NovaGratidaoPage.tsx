@@ -5,27 +5,34 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner@2.0.3';
 
-interface NovaGratidaoPageProps {
-  onVoltar: () => void;
-  onSalvar: (data: string, texto: string) => void;
+interface GratidaoEntry {
+  id: string;
+  data: string;
+  texto: string;
 }
 
-export default function NovaGratidaoPage({ onVoltar, onSalvar }: NovaGratidaoPageProps) {
+interface NovaGratidaoPageProps {
+  onVoltar: () => void;
+  onSalvar: (data: string, texto: string, id?: string) => void;
+  entryEditando?: GratidaoEntry;
+}
+
+export default function NovaGratidaoPage({ onVoltar, onSalvar, entryEditando }: NovaGratidaoPageProps) {
   // Scroll para o topo quando o componente montar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
   const [novaGratidao, setNovaGratidao] = useState({ 
-    data: new Date().toISOString().split('T')[0], 
-    texto: '' 
+    data: entryEditando?.data || new Date().toISOString().split('T')[0], 
+    texto: entryEditando?.texto || '' 
   });
 
   const handleSalvar = () => {
     if (novaGratidao.texto.trim()) {
-      onSalvar(novaGratidao.data, novaGratidao.texto);
-      toast.success('Gratidão registrada!', {
-        description: 'Salva no seu Diário de Gratidão',
+      onSalvar(novaGratidao.data, novaGratidao.texto, entryEditando?.id);
+      toast.success(entryEditando ? 'Gratidão atualizada!' : 'Gratidão registrada!', {
+        description: entryEditando ? 'Alterações salvas com sucesso' : 'Salva no seu Diário de Gratidão',
       });
       onVoltar();
     }
@@ -45,8 +52,8 @@ export default function NovaGratidaoPage({ onVoltar, onSalvar }: NovaGratidaoPag
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h2 className="text-xl">Nova Gratidão</h2>
-            <p className="text-sm opacity-90">O que te fez sentir grato hoje?</p>
+            <h2 className="text-xl">{entryEditando ? 'Editar Gratidão' : 'Nova Gratidão'}</h2>
+            <p className="text-sm opacity-90">{entryEditando ? 'Atualize sua gratidão' : 'O que te fez sentir grato hoje?'}</p>
           </div>
         </div>
       </div>
@@ -93,7 +100,7 @@ export default function NovaGratidaoPage({ onVoltar, onSalvar }: NovaGratidaoPag
             disabled={!novaGratidao.texto.trim()}
           >
             <Heart className="w-5 h-5 mr-2" />
-            Salvar Gratidão
+            {entryEditando ? 'Atualizar Gratidão' : 'Salvar Gratidão'}
           </Button>
         </div>
       </div>

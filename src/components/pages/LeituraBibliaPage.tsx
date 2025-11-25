@@ -51,7 +51,6 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
   const [mostrarDialogLeitura, setMostrarDialogLeitura] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [showConfiguracoes, setShowConfiguracoes] = useState(false);
 
   // Recarregar dados sempre que o componente for montado (detecta mudanças após reset)
   useEffect(() => {
@@ -169,7 +168,7 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowConfiguracoes(true)}
+            onClick={onAbrirConfiguracoes}
             className="p-2 text-white hover:bg-white/20"
           >
             <Settings className="w-5 h-5" />

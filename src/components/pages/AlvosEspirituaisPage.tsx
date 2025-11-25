@@ -1,4 +1,4 @@
-import { ArrowLeft, Plus, Check, Target, Flame, BarChart3, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Target, Flame, BarChart3, CheckCircle, Pause, Play, CheckCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -9,10 +9,12 @@ import { DataService, Alvo } from '../../services/dataService';
 interface AlvosEspirituaisPageProps {
   onVoltar: () => void;
   onAbrirNovoAlvo: () => void;
+  onEditarAlvo?: (alvo: Alvo) => void;
 }
 
-export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo }: AlvosEspirituaisPageProps) {
+export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEditarAlvo }: AlvosEspirituaisPageProps) {
   const [alvos, setAlvos] = useState<Alvo[]>([]);
+  const [alvosPausados, setAlvosPausados] = useState<Set<string>>(new Set());
 
   // Carregar alvos do DataService
   const carregarAlvos = () => {
@@ -39,10 +41,49 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo }: Alvo
     };
   }, []);
 
+  // Handlers
+  const handleConcluirAlvo = (alvo: Alvo) => {
+    DataService.atualizarAlvo(alvo.id, {
+      concluido: true,
+      progresso: 100,
+      dataConclusao: new Date().toISOString()
+    });
+
+    import('sonner@2.0.3').then(({ toast }) => {
+      toast.success('Alvo concluído! 🎉', {
+        description: `Parabéns por alcançar: ${alvo.titulo}`,
+      });
+    });
+  };
+
+  const handlePausarAlvo = (alvoId: string) => {
+    setAlvosPausados(prev => {
+      const newSet = new Set(prev);
+      newSet.add(alvoId);
+      return newSet;
+    });
+
+    import('sonner@2.0.3').then(({ toast }) => {
+      toast.success('Alvo pausado');
+    });
+  };
+
+  const handleRetomarAlvo = (alvoId: string) => {
+    setAlvosPausados(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(alvoId);
+      return newSet;
+    });
+
+    import('sonner@2.0.3').then(({ toast }) => {
+      toast.success('Alvo retomado');
+    });
+  };
+
   // Filtrar alvos por status
-  const alvosAtivosLista = alvos.filter(a => !a.concluido && a.progresso < 100);
+  const alvosAtivosLista = alvos.filter(a => !a.concluido && a.progresso < 100 && !alvosPausados.has(a.id));
   const alvosConcluidos = alvos.filter(a => a.concluido || a.progresso >= 100);
-  const alvosPausados: Alvo[] = []; // Por enquanto não temos status pausado
+  const alvosListaPausados = alvos.filter(a => alvosPausados.has(a.id) && !a.concluido);
 
   const todosAlvos = alvos;
 
@@ -68,24 +109,26 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo }: Alvo
 
       {/* Conteúdo */}
       <div className="px-6 py-6 space-y-6">
-        {/* Card: Sobre Alvos */}
-        <Card className="p-6 border-2" style={{ backgroundColor: '#F5F2F7', borderColor: '#D8CEE8' }}>
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
-              <Target className="w-6 h-6 text-white" />
+        {/* Card: Sobre Alvos - APENAS quando não há alvos */}
+        {todosAlvos.length === 0 && (
+          <Card className="p-6 border-2" style={{ backgroundColor: '#F5F2F7', borderColor: '#D8CEE8' }}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="mb-2">Por que ter alvos espirituais?</h3>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Estabelecer alvos espirituais nos ajuda a crescer em nossa relação com Jeová e nos motiva a progredir espiritualmente. 
+                  São como mapas que guiam nossa jornada cristã.
+                </p>
+                <p className="text-xs text-gray-600 mt-2 italic">
+                  "Certifique-se das coisas mais importantes." — Filipenses 1:10
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="mb-2">Por que ter alvos espirituais?</h3>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                Estabelecer alvos espirituais nos ajuda a crescer em nossa relação com Jeová e nos motiva a progredir espiritualmente. 
-                São como mapas que guiam nossa jornada cristã.
-              </p>
-              <p className="text-xs text-gray-600 mt-2 italic">
-                "Certifique-se das coisas mais importantes." — Filipenses 1:10
-              </p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        )}
 
         {/* Seção: Alvos Ativos */}
         {alvosAtivosLista.length > 0 && (
@@ -116,11 +159,19 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo }: Alvo
                     </div>
                     <Progress value={alvo.progresso} className="h-2" />
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="flex-1">
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => onEditarAlvo && onEditarAlvo(alvo)}>
                         Editar
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1">
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handlePausarAlvo(alvo.id)}>
                         Pausar
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-50" 
+                        onClick={() => handleConcluirAlvo(alvo)}
+                      >
+                        Concluir
                       </Button>
                     </div>
                   </div>
@@ -131,11 +182,11 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo }: Alvo
         )}
 
         {/* Seção: Alvos Pausados */}
-        {alvosPausados.length > 0 && (
+        {alvosListaPausados.length > 0 && (
           <div>
             <h3 className="mb-3 text-sm font-medium text-gray-700">⏸️ Pausados</h3>
             <div className="space-y-3">
-              {alvosPausados.map((alvo, idx) => (
+              {alvosListaPausados.map((alvo, idx) => (
                 <Card key={idx} className="p-5 bg-gray-50 opacity-75">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
@@ -150,7 +201,7 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo }: Alvo
                       </Badge>
                     </div>
                     <Progress value={alvo.progresso} className="h-2" />
-                    <Button size="sm" variant="outline" className="w-full">
+                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleRetomarAlvo(alvo.id)}>
                       Retomar
                     </Button>
                   </div>
@@ -223,7 +274,7 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo }: Alvo
                 <p className="text-xs text-gray-600 mt-1">Concluídos</p>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <p className="text-2xl text-gray-700">{alvosPausados.length}</p>
+                <p className="text-2xl text-gray-700">{alvosListaPausados.length}</p>
                 <p className="text-xs text-gray-600 mt-1">Pausados</p>
               </div>
             </div>

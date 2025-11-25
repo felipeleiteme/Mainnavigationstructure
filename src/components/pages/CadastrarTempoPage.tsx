@@ -416,7 +416,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex-1">
-              <h2>Cadastrar Tempo</h2>
+              <h2 className="text-xl">Cadastrar Tempo</h2>
               <p className="text-sm opacity-90">Passo 1: Escolha a atividade</p>
             </div>
           </div>
@@ -501,7 +501,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex-1">
-              <h2>Selecione a Pessoa</h2>
+              <h2 className="text-xl">Selecione a Pessoa</h2>
               <p className="text-sm opacity-90">Passo 2: Quem foi visitado?</p>
             </div>
           </div>
@@ -641,7 +641,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex-1">
-              <h2>Quanto tempo durou?</h2>
+              <h2 className="text-xl">Quanto tempo durou?</h2>
               <p className="text-sm opacity-90">
                 Passo {tipoAtual?.requerPessoa ? '3' : '2'}: Defina a duração
               </p>
@@ -810,7 +810,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h2>Revisar e Concluir</h2>
+            <h2 className="text-xl">Revisar e Concluir</h2>
             <p className="text-sm opacity-90">Última etapa: Confirme suas atividades</p>
           </div>
         </div>
