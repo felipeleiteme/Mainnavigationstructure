@@ -49,13 +49,10 @@ export default function FAB({
       <Button
         size="lg"
         onClick={onNovoEstudo}
-        className="fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 hover:scale-110"
-        style={{ backgroundColor: '#4A2C60', color: 'white' }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3D234D'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4A2C60'}
+        className="fixed bottom-20 right-4 rounded-full h-14 px-6 bg-secondary-500 text-primary-500 shadow-lg hover:shadow-xl z-40 transition-all duration-200 hover:scale-110 active:scale-100 border-0"
       >
         <Plus className="w-5 h-5 mr-2" />
-        Novo Estudo
+        <span className="font-medium">Novo Estudo</span>
       </Button>
     );
   }
@@ -66,40 +63,40 @@ export default function FAB({
       <Button
         size="lg"
         onClick={onIniciarMinisterio}
-        className="fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 hover:scale-110"
-        style={{ backgroundColor: '#4A2C60', color: 'white' }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3D234D'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4A2C60'}
+        className="fixed bottom-20 right-4 rounded-full h-14 px-6 bg-secondary-500 text-primary-500 shadow-lg hover:shadow-xl z-40 transition-all duration-200 hover:scale-110 active:scale-100 border-0"
       >
         <Plus className="w-5 h-5 mr-2" />
-        Nova Atividade
+        <span className="font-medium">Nova Atividade</span>
       </Button>
     );
   }
 
   // FAB para Sessão Ativa
-  const corSessao = sessaoAtiva.pausada 
-    ? { backgroundColor: '#FF9800', hoverColor: '#F57C00' } // Warning laranja
-    : { backgroundColor: '#C8E046', hoverColor: '#A0B638' }; // Verde lima ativo
+  // Sessão pausada: laranja com branco
+  // Sessão ativa: secundária (verde-lima) com primária (roxo)
+  const sessaoPausada = sessaoAtiva.pausada;
   
   return (
     <Button
       size="lg"
       onClick={onAbrirControles}
-      className={`fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 ${
-        pulseAnimation && !sessaoAtiva.pausada ? 'animate-pulse' : ''
+      className={`fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg hover:shadow-xl z-40 transition-all duration-200 hover:scale-110 active:scale-100 border-0 ${
+        sessaoPausada 
+          ? 'bg-orange-500 text-white' 
+          : 'bg-secondary-500 text-primary-500'
+      } ${
+        pulseAnimation && !sessaoPausada ? 'animate-pulse' : ''
       }`}
-      style={{ backgroundColor: corSessao.backgroundColor, color: sessaoAtiva.pausada ? 'white' : '#4A2C60' }}
-      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = corSessao.hoverColor}
-      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = corSessao.backgroundColor}
     >
-      {sessaoAtiva.pausada ? (
+      {sessaoPausada ? (
         <Pause className="w-5 h-5 mr-2" />
       ) : (
         <Clock className="w-5 h-5 mr-2" />
       )}
-      {sessaoAtiva.pausada ? '⏸️ Pausado - ' : '⏱️ '}
-      {formatarTempo(sessaoAtiva.tempoDecorrido)}
+      <span className="font-medium">
+        {sessaoPausada ? 'Pausado - ' : ''}
+        {formatarTempo(sessaoAtiva.tempoDecorrido)}
+      </span>
     </Button>
   );
 }

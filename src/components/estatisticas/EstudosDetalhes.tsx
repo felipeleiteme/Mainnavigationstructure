@@ -53,7 +53,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Header */}
-      <div className="text-white px-6 pt-12 pb-6 sticky top-0 z-10" style={{ backgroundColor: '#4A2C60' }}>
+      <div className="bg-primary-500 text-white px-6 pt-12 pb-6 sticky top-0 z-10">
         <button onClick={onClose} className="flex items-center gap-2 mb-4 hover:opacity-80">
           <ArrowLeft className="w-5 h-5" />
           <span>Início</span>
@@ -70,9 +70,9 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
 
       <div className="px-4 py-6 space-y-6">
         {/* Resumo do Mês */}
-        <Card className="p-6 border-2" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
+        <Card className="p-6 bg-primary-50 border-2 border-primary-200">
           <div className="space-y-3">
-            <h3 className="flex items-center gap-2" style={{ color: '#4A2C60' }}>
+            <h3 className="flex items-center gap-2 text-primary-500">
               <Target className="w-5 h-5" />
               Resumo de Novembro
             </h3>
@@ -80,7 +80,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
               Você conduziu <strong>11 estudos bíblicos</strong> este mês, com <strong>7 estudantes diferentes</strong>.
             </p>
             <p className="text-gray-700">
-              Isso representa <strong style={{ color: '#C8E046' }}>+2 estudos</strong> comparado ao mês anterior. Continue assim! 📈
+              Isso representa <strong className="text-secondary-500">+2 estudos</strong> comparado ao mês anterior. Continue assim! 📈
             </p>
           </div>
         </Card>
@@ -93,8 +93,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             <div className="space-y-1">
               <p className="text-xs text-gray-600">Total de estudos</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl" style={{ color: '#4A2C60' }}>11</p>
-                <Badge variant="secondary" className="text-xs" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
+                <p className="text-2xl text-primary-500">11</p>
+                <Badge variant="secondary" className="text-xs bg-secondary-100 text-primary-500">
                   +2 ↗️
                 </Badge>
               </div>
@@ -104,8 +104,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             <div className="space-y-1">
               <p className="text-xs text-gray-600">Estudantes ativos</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl" style={{ color: '#4A2C60' }}>7</p>
-                <Badge variant="secondary" className="text-xs" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
+                <p className="text-2xl text-primary-500">7</p>
+                <Badge variant="secondary" className="text-xs bg-secondary-100 text-primary-500">
                   +1 ↗️
                 </Badge>
               </div>
@@ -115,8 +115,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             <div className="space-y-1">
               <p className="text-xs text-gray-600">Frequência média</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl" style={{ color: '#4A2C60' }}>1.6x</p>
-                <Badge variant="secondary" className="text-xs" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
+                <p className="text-2xl text-primary-500">1.6x</p>
+                <Badge variant="secondary" className="text-xs bg-secondary-100 text-primary-500">
                   +0.1 ↗️
                 </Badge>
               </div>
@@ -126,8 +126,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             <div className="space-y-1">
               <p className="text-xs text-gray-600">Taxa de conclusão</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl" style={{ color: '#4A2C60' }}>91%</p>
-                <Badge variant="secondary" className="text-xs" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
+                <p className="text-2xl text-primary-500">91%</p>
+                <Badge variant="secondary" className="text-xs bg-secondary-100 text-primary-500">
                   +2% ↗️
                 </Badge>
               </div>
@@ -138,8 +138,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
 
         {/* Estudos por Estudante */}
         <div className="space-y-3">
-          <h3 className="flex items-center gap-2">
-            <Users className="w-5 h-5" style={{ color: '#4A2C60' }} />
+          <h3 className="flex items-center gap-2 text-primary-500">
+            <Users className="w-5 h-5" />
             Estudos por Estudante
           </h3>
           

@@ -50,28 +50,24 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white flex flex-col items-center justify-center p-6">
         <div className="text-center max-w-md">
-          <div className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: '#4A2C60' }}>
+          <div className="w-24 h-24 rounded-3xl bg-primary-500 flex items-center justify-center mx-auto mb-6">
             <Sprout className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-4xl mb-4 text-gray-900">Mynis</h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Seu melhor no ministério
+          
+          <h1 className="text-3xl mb-4">Bem-vindo ao Mynis!</h1>
+          <p className="text-gray-600 mb-2">
+            Sua ferramenta para organizar e acompanhar sua atividade cristã.
+          </p>
+          <p className="text-sm text-gray-500 mb-8">
+            Vamos começar configurando seu perfil. Leva apenas 2 minutos! ⏱️
           </p>
           
-          <div className="mb-8">
-            <div className="w-48 h-48 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(74, 44, 96, 0.1) 0%, rgba(200, 224, 70, 0.15) 100%)' }}>
-              <Sprout className="w-24 h-24" style={{ color: '#4A2C60' }} />
-            </div>
-          </div>
-
-          <Button 
-            size="lg" 
-            className="w-full hover:opacity-90"
-            style={{ backgroundColor: '#4A2C60' }}
+          <Button
+            size="lg"
+            className="w-full bg-primary-500 hover:bg-primary-600 text-white"
             onClick={nextStep}
           >
             Começar
-            <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
       </div>

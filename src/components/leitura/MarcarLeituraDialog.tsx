@@ -151,12 +151,11 @@ export default function MarcarLeituraDialog({
               Cancelar
             </Button>
             <Button
-              className="flex-1"
-              style={{ backgroundColor: '#4A2C60', color: 'white' }}
+              className="flex-1 bg-primary-500 hover:bg-primary-600 text-white"
               onClick={handleMarcarConcluido}
             >
               <CheckCircle2 className="w-4 h-4 mr-2" />
-              Confirmar Leitura
+              Marcar como Lido
             </Button>
           </div>
         </div>

@@ -131,9 +131,9 @@ export default function CronogramaPage({ onVoltar, diaSelecionado, onNavigateToE
   };
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: '#FDF8EE' }}>
+    <div className="min-h-screen pb-20 bg-neutral">
       {/* Header fixo */}
-      <div className="sticky top-0 z-50 text-white" style={{ backgroundColor: '#4A2C60' }}>
+      <div className="sticky top-0 z-50 bg-primary-500 text-white">
         <div className="px-6 pt-12 pb-4">
           <div className="flex items-center gap-3">
             <Button
@@ -150,15 +150,14 @@ export default function CronogramaPage({ onVoltar, diaSelecionado, onNavigateToE
       </div>
 
       {/* Week Navigator - FORA DO HEADER ROXO */}
-      <div className="px-6 pt-6 pb-4" style={{ backgroundColor: '#FDF8EE' }}>
+      <div className="px-6 pt-6 pb-4 bg-neutral">
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleSemanaAnterior}
-              className="p-2 hover:bg-gray-100"
-              style={{ color: '#4A2C60' }}
+              className="p-2 text-primary-500 hover:bg-gray-100"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -167,8 +166,8 @@ export default function CronogramaPage({ onVoltar, diaSelecionado, onNavigateToE
               <h3 className="text-gray-900">{getTextoSemana()}</h3>
               <div className="flex items-center gap-2">
                 <Badge 
+                  variant="nova"
                   className="text-xs px-2.5 py-0.5"
-                  style={{ backgroundColor: '#C8E046', color: '#4A2C60' }}
                 >
                   {getBadgeSemana()}
                 </Badge>
@@ -242,12 +241,11 @@ export default function CronogramaPage({ onVoltar, diaSelecionado, onNavigateToE
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div 
-                      className="w-12 h-12 rounded-lg flex flex-col items-center justify-center"
-                      style={
+                      className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center ${
                         dia.isHoje 
-                          ? { backgroundColor: '#4A2C60', color: '#FFFFFF' }
-                          : { backgroundColor: '#E6DFF0', color: '#4A2C60' }
-                      }
+                          ? 'bg-primary-500 text-white' 
+                          : 'bg-primary-100 text-primary-500'
+                      }`}
                     >
                       <span className="text-lg">
                         {dia.data.getDate()}
@@ -260,13 +258,13 @@ export default function CronogramaPage({ onVoltar, diaSelecionado, onNavigateToE
                   </div>
                   
                   {dia.isHoje && (
-                    <Badge className="text-white" style={{ backgroundColor: '#4A2C60' }}>
+                    <Badge variant="estudo">
                       Hoje
                     </Badge>
                   )}
                   
                   {!dia.isHoje && temAgendamentos && (
-                    <Badge style={{ backgroundColor: '#E6DFF0', color: '#4A2C60' }}>
+                    <Badge variant="iniciando">
                       {totalAgendamentos} {totalAgendamentos === 1 ? 'agendamento' : 'agendamentos'}
                     </Badge>
                   )}
@@ -289,13 +287,13 @@ export default function CronogramaPage({ onVoltar, diaSelecionado, onNavigateToE
                         onClick={() => onNavigateToEstudo && onNavigateToEstudo(estudo.id)}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6DFF0' }}>
-                            <BookOpen className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                          <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                            <BookOpen className="w-5 h-5 text-primary-500" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <h4 className="text-sm">{estudo.estudanteNome}</h4>
-                              <Badge className="text-white text-xs" style={{ backgroundColor: '#4A2C60' }}>
+                              <Badge variant="estudo" className="text-xs">
                                 Estudo Bíblico
                               </Badge>
                             </div>
@@ -343,13 +341,13 @@ export default function CronogramaPage({ onVoltar, diaSelecionado, onNavigateToE
                         onClick={() => onNavigateToRevisita && onNavigateToRevisita(revisita.id)}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C8E046' }}>
-                            <Users className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                          <div className="w-10 h-10 rounded-full bg-secondary-500 flex items-center justify-center flex-shrink-0">
+                            <Users className="w-5 h-5 text-primary-500" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <h4 className="text-sm">{revisita.nome}</h4>
-                              <Badge className="text-white text-xs" style={{ backgroundColor: '#C8E046', color: '#4A2C60' }}>
+                              <Badge variant="nova" className="text-xs">
                                 Revisita
                               </Badge>
                             </div>
@@ -404,11 +402,11 @@ export default function CronogramaPage({ onVoltar, diaSelecionado, onNavigateToE
 
       {/* Info Card at bottom */}
       <div className="px-6 pb-6">
-        <Card className="p-4 border" style={{ backgroundColor: '#F5F2F7', borderColor: '#E6DFF0' }}>
+        <Card className="p-4 bg-primary-50 border-2 border-primary-200">
           <div className="flex items-start gap-3">
-            <Calendar className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#4A2C60' }} />
+            <Calendar className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm mb-1" style={{ color: '#4A2C60' }}>
+              <p className="text-sm mb-1 text-primary-500">
                 <strong>Como funciona?</strong>
               </p>
               <p className="text-xs text-gray-700 leading-relaxed">

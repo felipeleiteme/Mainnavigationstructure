@@ -190,9 +190,8 @@ export default function App() {
               >
                 {/* Ícone e label */}
                 <div className={`relative z-10 flex flex-col items-center transition-colors duration-200 ${
-                  isActive ? '' : 'text-gray-400'
-                }`}
-                style={isActive ? { color: '#4A2C60' } : undefined}>
+                  isActive ? 'text-primary-500' : 'text-gray-400'
+                }`}>
                   <Icon className={`w-6 h-6 mb-1 transition-all duration-200 ${
                     isActive ? 'stroke-[2.5] scale-110' : 'stroke-2'
                   }`} />

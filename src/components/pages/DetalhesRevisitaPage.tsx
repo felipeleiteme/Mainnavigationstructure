@@ -150,9 +150,9 @@ export default function DetalhesRevisitaPage({
   };
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: '#FDF8EE' }}>
+    <div className="min-h-screen pb-20 bg-neutral">
       {/* Header fixo */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+      <div className="sticky top-0 z-10 bg-primary-500 text-white">
         <div className="flex items-center gap-4 px-6 pt-12 pb-4">
           <Button
             variant="ghost"
@@ -182,12 +182,12 @@ export default function DetalhesRevisitaPage({
         {/* Status e Tags */}
         <div className="flex items-center gap-2 flex-wrap">
           {revisita.status === 'nova' ? (
-            <Badge className="border-2 flex items-center gap-1.5" style={{ backgroundColor: '#C8E046', color: '#4A2C60', borderColor: '#C8E046' }}>
+            <Badge variant="nova" className="flex items-center gap-1.5">
               <Sparkles className="w-3 h-3" />
               {getStatusLabel(revisita.status)}
             </Badge>
           ) : revisita.status === 'comercio' ? (
-            <Badge className="border flex items-center gap-1.5" style={{ backgroundColor: '#F5F2F7', color: '#4A2C60', borderColor: '#D8CEE8' }}>
+            <Badge variant="comercio" className="flex items-center gap-1.5">
               <Store className="w-3 h-3" />
               {getStatusLabel(revisita.status)}
             </Badge>
@@ -206,9 +206,9 @@ export default function DetalhesRevisitaPage({
         </div>
 
         {/* Card: Informações de Contato */}
-        <Card className="p-6 border-2" style={{ backgroundColor: '#F5F2F7', borderColor: '#D8CEE8' }}>
+        <Card className="p-6 bg-primary-50 border-2 border-primary-200">
           <div className="flex items-start gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+            <div className="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
               <User className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
@@ -230,16 +230,14 @@ export default function DetalhesRevisitaPage({
                 <div className="grid grid-cols-2 gap-3">
                   <Button
                     onClick={handleLigar}
-                    className="h-14 w-full flex items-center justify-center gap-2 hover:opacity-90"
-                    style={{ backgroundColor: '#4A2C60', color: 'white' }}
+                    className="h-14 w-full bg-primary-500 text-white hover:bg-primary-600 flex items-center justify-center gap-2"
                   >
                     <Phone className="w-5 h-5" />
                     Ligar
                   </Button>
                   <Button
                     onClick={handleWhatsApp}
-                    className="h-14 w-full flex items-center justify-center gap-2 hover:opacity-90"
-                    style={{ backgroundColor: '#4A2C60', color: 'white' }}
+                    className="h-14 w-full bg-primary-500 text-white hover:bg-primary-600 flex items-center justify-center gap-2"
                   >
                     <MessageSquare className="w-5 h-5" />
                     WhatsApp

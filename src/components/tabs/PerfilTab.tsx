@@ -322,8 +322,7 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
           <div className="space-y-3">
             <Button
               variant="outline"
-              className="w-full justify-start"
-              style={{ borderColor: '#C8E046', color: '#4A2C60' }}
+              className="w-full justify-start border-secondary-500 text-primary-500"
               onClick={() => {
                 try {
                   console.log('🚀 Iniciando população de dados...');

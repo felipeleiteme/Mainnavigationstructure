@@ -11,51 +11,41 @@ export default function EmptyStateLeitura({ onIniciarConfiguracao, onVoltar }: E
   return (
     <div className="min-h-screen bg-neutral pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+      <div className="sticky top-0 z-10 bg-primary-500 text-white">
         <div className="flex items-center gap-4 px-6 pt-12 pb-4">
-          {onVoltar && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onVoltar}
-              className="p-2 text-white hover:bg-white/20"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onVoltar}
+            className="p-2 text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
           <div className="flex-1">
-            <h2 className="text-xl">Leitura da Bíblia</h2>
-            <p className="text-sm opacity-90">Sua base espiritual para jogar sementes</p>
+            <h2 className="text-xl">Comece sua jornada</h2>
+            <p className="text-sm opacity-90">Configure sua leitura</p>
           </div>
         </div>
       </div>
 
       {/* Conteúdo */}
-      <div className="px-6 py-8 space-y-6">
-        {/* Card principal de Empty State */}
-        <Card className="p-8 text-center border-2 border-primary-200">
-          <div className="mb-6 flex justify-center">
-            <div className="p-6 bg-primary-50 rounded-full">
-              <BookOpen className="w-16 h-16 text-primary-600" strokeWidth={1.5} />
-            </div>
+      <div className="px-6 py-6 space-y-6">
+        {/* Call to Action */}
+        <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+          <div className="w-20 h-20 rounded-full bg-purple-100 mx-auto mb-4 flex items-center justify-center">
+            <BookOpen className="w-10 h-10 text-purple-600" />
           </div>
-          
-          <h2 className="text-2xl mb-3 text-primary-700">
-            Comece sua jornada
-          </h2>
-          
-          <p className="text-gray-600 mb-8 leading-relaxed">
-            Configure seu plano de leitura personalizado e acompanhe seu progresso espiritual com metas diárias e conquistas.
+          <h3 className="mb-2">Configure sua leitura</h3>
+          <p className="text-sm text-gray-700 mb-6">
+            Para começar, configure suas preferências de leitura da Bíblia
           </p>
-
           <Button
-            className="w-full shadow-lg"
-            style={{ backgroundColor: '#4A2C60', color: 'white' }}
+            className="w-full bg-primary-500 hover:bg-primary-600 text-white shadow-lg border-0"
             size="lg"
             onClick={onIniciarConfiguracao}
           >
-            <Sparkles className="w-5 h-5 mr-2" />
-            Configurar Plano de Leitura
+            <Settings className="w-5 h-5 mr-2" />
+            Ir para Configurações
           </Button>
         </Card>
 

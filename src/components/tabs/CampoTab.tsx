@@ -308,15 +308,15 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
 
   // Página Home (Lista)
   return (
-    <div className="min-h-full" style={{ backgroundColor: '#FDF8EE' }}>
-      {/* Header fixo */}
-      <div style={{ backgroundColor: '#4A2C60' }} className="sticky top-0 z-50 text-white">
-        <div className="px-6 pt-12 pb-4">
+    <div className="min-h-full bg-neutral">
+      {/* Header Padrão Consistente */}
+      <div className="sticky top-0 z-50 bg-primary-500 text-white">
+        <div className="px-6 pt-12 pb-6">
           <div className="flex items-center gap-3">
             <Sprout className="w-7 h-7" />
             <div>
-              <h2 className="text-xl">Campo</h2>
-              <p className="text-xs opacity-90">
+              <h1 className="text-2xl">Campo</h1>
+              <p className="text-sm text-primary-100">
                 {revisitas.length} {revisitas.length === 1 ? 'revisita' : 'revisitas'}
               </p>
             </div>
@@ -324,14 +324,13 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
         </div>
       </div>
 
-      <div className="px-4 py-6 space-y-4">
+      <div className="px-6 py-6 space-y-6">
         {/* Busca */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <Input 
             placeholder="Buscar por nome, endereço..." 
-            className="h-14 pl-12 pr-16 bg-white border-2"
-            style={{ borderColor: '#D8CEE8' }}
+            className="h-14 pl-12 pr-16 bg-white border-2 border-primary-200 focus:border-primary-500"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
@@ -350,8 +349,11 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
             size="sm"
             variant={filtroAtivo === 'todos' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('todos')}
-            className={`whitespace-nowrap ${filtroAtivo === 'todos' ? '' : 'bg-white border-gray-200'}`}
-            style={filtroAtivo === 'todos' ? { backgroundColor: '#4A2C60' } : {}}
+            className={`whitespace-nowrap ${
+              filtroAtivo === 'todos' 
+                ? 'bg-primary-500 hover:bg-primary-600 text-white' 
+                : 'bg-white border-gray-200'
+            }`}
           >
             Todas
           </Button>
@@ -359,8 +361,11 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
             size="sm"
             variant={filtroAtivo === 'disponiveis' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('disponiveis')}
-            className="whitespace-nowrap bg-white border-gray-200"
-            style={filtroAtivo === 'disponiveis' ? { backgroundColor: '#4A2C60' } : {}}
+            className={`whitespace-nowrap ${
+              filtroAtivo === 'disponiveis' 
+                ? 'bg-primary-500 hover:bg-primary-600 text-white' 
+                : 'bg-white border-gray-200'
+            }`}
           >
             Disponíveis Agora
           </Button>
@@ -368,8 +373,11 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
             size="sm"
             variant={filtroAtivo === 'quentes' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('quentes')}
-            className={`whitespace-nowrap ${filtroAtivo === 'quentes' ? '' : 'bg-white border-gray-200'}`}
-            style={filtroAtivo === 'quentes' ? { backgroundColor: '#4A2C60' } : {}}
+            className={`whitespace-nowrap ${
+              filtroAtivo === 'quentes' 
+                ? 'bg-primary-500 hover:bg-primary-600 text-white' 
+                : 'bg-white border-gray-200'
+            }`}
           >
             Quentes
           </Button>
@@ -377,8 +385,11 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
             size="sm"
             variant={filtroAtivo === 'revisitar' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('revisitar')}
-            className={`whitespace-nowrap ${filtroAtivo === 'revisitar' ? '' : 'bg-white border-gray-200'}`}
-            style={filtroAtivo === 'revisitar' ? { backgroundColor: '#4A2C60' } : {}}
+            className={`whitespace-nowrap ${
+              filtroAtivo === 'revisitar' 
+                ? 'bg-primary-500 hover:bg-primary-600 text-white' 
+                : 'bg-white border-gray-200'
+            }`}
           >
             Para Revisitar
           </Button>
@@ -401,11 +412,11 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
       </div>
 
       {/* Lista de Revisitas */}
-      <div className="px-4 pb-24 space-y-3">
+      <div className="px-6 pb-24 space-y-4">
         {revisitasFiltradas.length === 0 ? (
           <Card className="p-8 text-center bg-white border-0 shadow-sm">
             <div className="flex justify-center mb-4">
-              <Sprout className="w-16 h-16" style={{ color: '#4A2C60' }} />
+              <Sprout className="w-16 h-16 text-primary-500" />
             </div>
             <h3 className="text-lg mb-2">Vamos começar sua jornada!</h3>
             <p className="text-sm text-gray-600 mb-4">
@@ -432,7 +443,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <h3 className="truncate">{revisita.nome}</h3>
                     {revisita.interesseEstudo && (
-                      <Star className="w-5 h-5 flex-shrink-0" style={{ color: '#C8E046' }} />
+                      <Star className="w-5 h-5 flex-shrink-0 text-secondary-500" />
                     )}
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />
@@ -483,14 +494,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
       <Button
         size="lg"
         onClick={handleAbrirNovaRevisita}
-        className="fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 hover:scale-110 border-0"
-        style={{ backgroundColor: '#4A2C60', color: 'white' }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#3D234D';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = '#4A2C60';
-        }}
+        className="fixed bottom-20 right-4 bg-primary-500 hover:bg-primary-600 text-white rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 hover:scale-110 border-0"
       >
         <Plus className="w-5 h-5 mr-2" />
         Nova Revisita

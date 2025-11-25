@@ -399,7 +399,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
     return (
       <div className="min-h-screen bg-gray-50 pb-48">
         {/* Header */}
-        <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+        <div className="sticky top-0 z-10 bg-primary-500 text-white">
           <div className="flex items-center gap-4 px-6 py-4">
             <Button
               variant="ghost"
@@ -435,19 +435,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
               <button
                 key={tipo.id}
                 onClick={() => handleSelecionarTipo(tipo.id)}
-                className="w-full p-4 rounded-lg border-2 border-gray-200 text-left transition-all"
-                style={{
-                  borderColor: 'var(--border-gray, #e5e7eb)',
-                  backgroundColor: 'white'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#4A2C60';
-                  e.currentTarget.style.backgroundColor = 'rgba(74, 44, 96, 0.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                  e.currentTarget.style.backgroundColor = 'white';
-                }}
+                className="w-full p-4 rounded-lg border-2 border-gray-200 bg-white text-left transition-all hover:border-primary-500 hover:bg-primary-50"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center text-primary-700">
@@ -487,7 +475,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
     return (
       <div className="min-h-screen bg-gray-50 pb-24">
         {/* Header */}
-        <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+        <div className="sticky top-0 z-10 bg-primary-500 text-white">
           <div className="flex items-center gap-4 px-6 py-4">
             <Button
               variant="ghost"
@@ -622,7 +610,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
     return (
       <div className="min-h-screen bg-gray-50 pb-24">
         {/* Header */}
-        <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+        <div className="sticky top-0 z-10 bg-primary-500 text-white">
           <div className="flex items-center gap-4 px-6 py-4">
             <Button
               variant="ghost"
@@ -799,7 +787,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+      <div className="sticky top-0 z-10 bg-primary-500 text-white">
         <div className="flex items-center gap-4 px-6 py-4">
           <Button
             variant="ghost"

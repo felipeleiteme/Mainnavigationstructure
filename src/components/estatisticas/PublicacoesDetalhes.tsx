@@ -66,7 +66,7 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
   
   // Temas mais distribuídos (mockado por enquanto - precisaria de tracking adicional)
   const temasMaisDistribuidos = [
-    { tema: 'Família/Criação de Filhos', quantidade: 4, emoji: '👨‍👩‍👧' },
+    { tema: 'Família/Criação de Filhos', quantidade: 4, emoji: '👨��👩‍👧' },
     { tema: 'Sofrimento/Consolo', quantidade: 3, emoji: '💔' },
     { tema: 'Profecias Bíblicas', quantidade: 2, emoji: '📜' }
   ];
@@ -99,7 +99,7 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Header */}
-      <div className="text-white px-6 pt-12 pb-6 sticky top-0 z-10" style={{ backgroundColor: '#4A2C60' }}>
+      <div className="bg-primary-500 text-white px-6 pt-12 pb-6 sticky top-0 z-10">
         <button onClick={onClose} className="flex items-center gap-2 mb-4 hover:opacity-80">
           <ArrowLeft className="w-5 h-5" />
           <span>Início</span>
@@ -283,10 +283,10 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
             
             <div className="flex items-center justify-between p-3 bg-white rounded-lg">
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                <Clock className="w-5 h-5 text-primary-500" />
                 <span className="text-sm">Aguardando retorno</span>
               </div>
-              <Badge variant="secondary" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' }}>
+              <Badge variant="secondary" className="bg-primary-50 text-primary-500">
                 4 (33%)
               </Badge>
             </div>

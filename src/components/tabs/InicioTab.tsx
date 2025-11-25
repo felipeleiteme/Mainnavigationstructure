@@ -269,16 +269,20 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
   // Show empty state for first-time users
   if (!hasData) {
     return (
-      <div className="min-h-full bg-gradient-to-b from-green-50 to-gray-50">
-        {/* Cabeçalho Caloroso */}
-        <div style={{ backgroundColor: '#4A2C60' }} className="text-white px-sm pt-12 pb-lg rounded-b-3xl">
-          <div className="flex items-center gap-sm mb-sm">
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-              <User className="w-8 h-8" />
-            </div>
-            <div>
-              <p className="text-lg opacity-90"><GreetingIcon className="inline w-5 h-5 mr-2" />{greeting},</p>
-              <h1 className="text-2xl">Felipe!</h1>
+      <div className="min-h-full bg-neutral">
+        {/* Header Padrão */}
+        <div className="sticky top-0 z-50 bg-primary-500 text-white">
+          <div className="px-6 pt-12 pb-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <User className="w-8 h-8" />
+              </div>
+              <div>
+                <p className="text-lg text-primary-100 flex items-center gap-2">
+                  <GreetingIcon className="w-5 h-5" /> {greeting},
+                </p>
+                <h1 className="text-2xl">Felipe!</h1>
+              </div>
             </div>
           </div>
         </div>
@@ -335,39 +339,41 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
 
   return (
     <div className="min-h-full bg-neutral">
-      {/* Header */}
-      <div className="bg-primary-500 text-white px-sm pt-12 pb-lg rounded-b-3xl">
-        <div className="flex items-center gap-sm mb-sm">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-            {DataService.getPerfil().avatar ? (
-              <img 
-                src={DataService.getPerfil().avatar} 
-                alt={DataService.getPerfil().nome} 
-                className="w-16 h-16 rounded-full object-cover border-2 border-white/30"
-              />
-            ) : (
-              <User className="w-8 h-8" />
-            )}
+      {/* Header Padrão Consistente */}
+      <div className="sticky top-0 z-50 bg-primary-500 text-white">
+        <div className="px-6 pt-12 pb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+              {DataService.getPerfil().avatar ? (
+                <img 
+                  src={DataService.getPerfil().avatar} 
+                  alt={DataService.getPerfil().nome} 
+                  className="w-16 h-16 rounded-full object-cover border-2 border-white/30"
+                />
+              ) : (
+                <User className="w-8 h-8" />
+              )}
+            </div>
+            <div>
+              <p className="text-lg text-primary-100 flex items-center gap-2">
+                <GreetingIcon className="w-5 h-5" /> {greeting},
+              </p>
+              <h1 className="text-2xl">{DataService.getPerfil().nome}!</h1>
+            </div>
           </div>
-          <div>
-            <p className="text-lg text-primary-100 flex items-center gap-2">
-              <GreetingIcon className="w-5 h-5" /> {greeting},
+          
+          {/* Versículo do Ano */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+            <p className="text-xs text-primary-100 mb-1">Texto do Ano</p>
+            <p className="text-sm opacity-90 italic">
+              "{DataService.getPerfil().textoAno?.texto || 'Dêem a Jeová a glória que o seu nome merece.'}"
             </p>
-            <h2 className="text-2xl">{DataService.getPerfil().nome}!</h2>
+            <p className="text-xs text-primary-100 mt-1">— {DataService.getPerfil().textoAno?.referencia || 'Sal. 96:8'}</p>
           </div>
-        </div>
-        
-        {/* Versículo do Ano */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mt-4">
-          <p className="text-xs font-medium text-primary-100 mb-1">Texto do Ano</p>
-          <p className="text-sm opacity-90 italic">
-            "{DataService.getPerfil().textoAno?.texto || 'Dêem a Jeová a glória que o seu nome merece.'}"
-          </p>
-          <p className="text-xs text-primary-100 mt-1">— {DataService.getPerfil().textoAno?.referencia || 'Sal. 96:8'}</p>
         </div>
       </div>
 
-      <div className="px-4 py-6 space-y-4">
+      <div className="px-6 py-6 space-y-6">
         {/* Card: Progresso do Mês */}
         <Card 
           className="p-6 cursor-pointer hover:shadow-lg transition-shadow bg-white border-primary-100"

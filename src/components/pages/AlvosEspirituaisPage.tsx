@@ -88,9 +88,9 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
   const todosAlvos = alvos;
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: '#FDF8EE' }}>
+    <div className="min-h-screen pb-20 bg-neutral">
       {/* Header fixo */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+      <div className="sticky top-0 z-10 bg-primary-500 text-white">
         <div className="flex items-center gap-4 px-6 pt-12 pb-4">
           <Button
             variant="ghost"
@@ -111,9 +111,9 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
       <div className="px-6 py-6 space-y-6">
         {/* Card: Sobre Alvos - APENAS quando não há alvos */}
         {todosAlvos.length === 0 && (
-          <Card className="p-6 border-2" style={{ backgroundColor: '#F5F2F7', borderColor: '#D8CEE8' }}>
+          <Card className="p-6 bg-primary-50 border-2 border-primary-200">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+              <div className="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
                 <Target className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -133,7 +133,7 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
         {/* Seção: Alvos Ativos */}
         {alvosAtivosLista.length > 0 && (
           <div>
-            <h3 className="mb-3 text-sm font-medium flex items-center gap-2" style={{ color: '#4A2C60' }}>
+            <h3 className="mb-3 text-sm font-medium text-primary-500 flex items-center gap-2">
               <Flame className="w-4 h-4" />
               Em Andamento
             </h3>
@@ -153,7 +153,7 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
                           </p>
                         )}
                       </div>
-                      <Badge className="text-white" style={{ backgroundColor: '#4A2C60' }}>
+                      <Badge variant="estudo">
                         {alvo.progresso}%
                       </Badge>
                     </div>
@@ -244,8 +244,8 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
         {/* Estado vazio */}
         {todosAlvos.length === 0 && (
           <Card className="p-12 text-center">
-            <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#F5F2F7' }}>
-              <Target className="w-10 h-10" style={{ color: '#4A2C60' }} />
+            <div className="w-20 h-20 rounded-full bg-primary-100 mx-auto mb-4 flex items-center justify-center">
+              <Target className="w-10 h-10 text-primary-500" />
             </div>
             <h3 className="mb-2">Estabeleça seu primeiro alvo</h3>
             <p className="text-sm text-gray-600 mb-6">
@@ -260,13 +260,13 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
         {/* Card: Estatísticas */}
         {todosAlvos.length > 0 && (
           <Card className="p-6">
-            <h3 className="mb-4 flex items-center gap-2" style={{ color: '#4A2C60' }}>
+            <h3 className="mb-4 text-primary-500 flex items-center gap-2">
               <BarChart3 className="w-5 h-5" />
               Resumo
             </h3>
             <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-4 rounded-lg" style={{ backgroundColor: '#F5F2F7' }}>
-                <p className="text-2xl" style={{ color: '#4A2C60' }}>{alvosAtivosLista.length}</p>
+              <div className="text-center p-4 bg-primary-50 rounded-lg">
+                <p className="text-2xl text-primary-500">{alvosAtivosLista.length}</p>
                 <p className="text-xs text-gray-600 mt-1">Em andamento</p>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
@@ -285,8 +285,7 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
       {/* FAB - Botão de Ação Flutuante */}
       <button
         onClick={onAbrirNovoAlvo}
-        className="fixed bottom-24 right-6 w-14 h-14 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-40 hover:opacity-90"
-        style={{ backgroundColor: '#4A2C60' }}
+        className="fixed bottom-24 right-6 w-14 h-14 bg-primary-500 hover:bg-primary-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-40"
         aria-label="Criar novo alvo"
       >
         <Plus className="w-6 h-6" />

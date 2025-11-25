@@ -367,23 +367,23 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
         </Card>
 
         {/* Card: Resumo das Configurações */}
-        <Card className="p-6 border-2" style={{ backgroundColor: '#FFFCF8', borderColor: '#C8E046' }}>
-          <h3 className="mb-4 text-primary-700 flex items-center gap-2">
-            <ClipboardList className="w-5 h-5" style={{ color: '#C8E046' }} />
+        <Card className="p-6 bg-secondary-50 border-2 border-secondary-500">
+          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
+            <ClipboardList className="w-5 h-5 text-secondary-500" />
             Resumo das Configurações
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
               <span className="text-sm text-gray-700">Plano de leitura:</span>
-              <span className="font-medium" style={{ color: '#4A2C60' }}>{getNomePlano(planoSelecionado)}</span>
+              <span className="font-medium text-primary-500">{getNomePlano(planoSelecionado)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
               <span className="text-sm text-gray-700">Meta diária:</span>
-              <span className="font-medium" style={{ color: '#A4B60E' }}>{getNomeMeta(metaDiaria)}</span>
+              <span className="font-medium text-secondary-700">{getNomeMeta(metaDiaria)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
               <span className="text-sm text-gray-700">Lembretes:</span>
-              <span className="font-medium" style={{ color: '#A4B60E' }}>
+              <span className="font-medium text-secondary-700">
                 {notificacoesDiarias && lembreteReflexao ? 'Todos ativos' : 
                  notificacoesDiarias || lembreteReflexao ? 'Parcialmente ativos' : 
                  'Desativados'}
@@ -395,8 +395,7 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
         {/* Botão de Salvar */}
         <div className="sticky bottom-6">
           <Button
-            className="w-full shadow-lg border-0"
-            style={{ backgroundColor: '#4A2C60', color: 'white' }}
+            className="w-full bg-primary-500 hover:bg-primary-600 text-white shadow-lg border-0"
             size="lg"
             onClick={handleSalvarConfiguracoes}
           >
@@ -458,8 +457,7 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmarResetESalvar}
-              className="flex-1"
-              style={{ backgroundColor: '#4A2C60', color: 'white' }}
+              className="flex-1 bg-primary-500 hover:bg-primary-600 text-white"
             >
               <AlertTriangle className="w-4 h-4 mr-2" />
               Confirmar Reset

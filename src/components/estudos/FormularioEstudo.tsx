@@ -169,7 +169,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center sm:justify-center">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
         {/* Header */}
-        <div className="sticky top-0 text-white px-6 pt-6 pb-4 z-10" style={{ backgroundColor: '#4A2C60' }}>
+        <div className="sticky top-0 bg-primary-500 text-white px-6 pt-6 pb-4 z-10">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <h2 className="text-2xl flex items-center gap-2">
@@ -310,21 +310,21 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, status: 'iniciando' })}
-                    className="w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
-                    style={{
-                      borderColor: formData.status === 'iniciando' ? '#4A2C60' : '#D8CEE8',
-                      backgroundColor: formData.status === 'iniciando' ? 'rgba(74, 44, 96, 0.05)' : 'white'
-                    }}
+                    className={`w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all ${
+                      formData.status === 'iniciando' 
+                        ? 'border-primary-500 bg-primary-50' 
+                        : 'border-gray-300 bg-white'
+                    }`}
                   >
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
-                      <Sprout className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <Sprout className="w-5 h-5 text-primary-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium" style={{ color: '#4A2C60' }}>Iniciando</p>
+                      <p className="font-medium text-primary-500">Iniciando</p>
                       <p className="text-xs text-gray-600">Primeiras lições</p>
                     </div>
                     {formData.status === 'iniciando' && (
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                      <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
                         <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
@@ -336,21 +336,21 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, status: 'progredindo' })}
-                    className="w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
-                    style={{
-                      borderColor: formData.status === 'progredindo' ? '#4A2C60' : '#D8CEE8',
-                      backgroundColor: formData.status === 'progredindo' ? 'rgba(74, 44, 96, 0.05)' : 'white'
-                    }}
+                    className={`w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all ${
+                      formData.status === 'progredindo' 
+                        ? 'border-primary-500 bg-primary-50' 
+                        : 'border-gray-300 bg-white'
+                    }`}
                   >
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
-                      <BookOpen className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="w-5 h-5 text-primary-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium" style={{ color: '#4A2C60' }}>Progredindo</p>
+                      <p className="font-medium text-primary-500">Progredindo</p>
                       <p className="text-xs text-gray-600">Avançando bem</p>
                     </div>
                     {formData.status === 'progredindo' && (
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                      <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
                         <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
@@ -362,21 +362,21 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, status: 'duvidas' })}
-                    className="w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
-                    style={{
-                      borderColor: formData.status === 'duvidas' ? '#4A2C60' : '#D8CEE8',
-                      backgroundColor: formData.status === 'duvidas' ? 'rgba(74, 44, 96, 0.05)' : 'white'
-                    }}
+                    className={`w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all ${
+                      formData.status === 'duvidas' 
+                        ? 'border-primary-500 bg-primary-50' 
+                        : 'border-gray-300 bg-white'
+                    }`}
                   >
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
-                      <HelpCircle className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <HelpCircle className="w-5 h-5 text-primary-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium" style={{ color: '#4A2C60' }}>Com dúvidas</p>
+                      <p className="font-medium text-primary-500">Com dúvidas</p>
                       <p className="text-xs text-gray-600">Precisa de atenção</p>
                     </div>
                     {formData.status === 'duvidas' && (
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                      <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
                         <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
@@ -388,21 +388,21 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, status: 'avancado' })}
-                    className="w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
-                    style={{
-                      borderColor: formData.status === 'avancado' ? '#4A2C60' : '#D8CEE8',
-                      backgroundColor: formData.status === 'avancado' ? 'rgba(74, 44, 96, 0.05)' : 'white'
-                    }}
+                    className={`w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all ${
+                      formData.status === 'avancado' 
+                        ? 'border-primary-500 bg-primary-50' 
+                        : 'border-gray-300 bg-white'
+                    }`}
                   >
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
-                      <Target className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <Target className="w-5 h-5 text-primary-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium" style={{ color: '#4A2C60' }}>Avançado</p>
+                      <p className="font-medium text-primary-500">Avançado</p>
                       <p className="text-xs text-gray-600">Próximo do batismo</p>
                     </div>
                     {formData.status === 'avancado' && (
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                      <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
                         <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
@@ -415,10 +415,10 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
               {/* Progresso */}
               <div>
                 <Label>Progresso: {formData.progresso}%</Label>
-                <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden border-2 border-secondary-400">
+                <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden border-2 border-secondary-500">
                   <div 
-                    className="h-full transition-all duration-300"
-                    style={{ width: `${formData.progresso}%`, backgroundColor: '#4A2C60' }}
+                    className="h-full bg-primary-500 transition-all duration-300"
+                    style={{ width: `${formData.progresso}%` }}
                   />
                 </div>
               </div>
@@ -494,8 +494,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
               Cancelar
             </Button>
             <Button 
-              className="h-14 flex items-center justify-center gap-2 hover:opacity-90"
-              style={{ backgroundColor: '#4A2C60', color: 'white' }}
+              className="h-14 bg-primary-500 text-white hover:bg-primary-600 flex items-center justify-center gap-2"
               onClick={handleSalvar}
             >
               <Save className="w-5 h-5" />
