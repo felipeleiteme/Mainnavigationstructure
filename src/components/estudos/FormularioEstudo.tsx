@@ -168,7 +168,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center sm:justify-center">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
-        {/* Header */}
+        {/* Header - Roxo Brandbook */}
         <div className="sticky top-0 bg-primary-500 text-white px-6 pt-6 pb-4 z-10">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
@@ -197,8 +197,8 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
         <div className="px-6 py-6 space-y-6">
           {/* Informações do Estudante */}
           <div>
-            <h3 className="flex items-center gap-2 mb-4">
-              <User className="w-5 h-5" style={{ color: '#4A2C60' }} />
+            <h3 className="flex items-center gap-2 mb-4 text-primary-500">
+              <User className="w-5 h-5" />
               Informações do Estudante
             </h3>
 
@@ -211,8 +211,11 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                   value={formData.estudanteNome}
                   onChange={(e) => setFormData({ ...formData, estudanteNome: e.target.value })}
                   placeholder="João da Silva"
-                  className={`h-14 px-4 bg-white border-2 ${errors.estudanteNome ? 'border-red-500' : ''}`}
-                  style={!errors.estudanteNome ? { borderColor: '#D8CEE8' } : {}}
+                  className={`h-14 px-4 bg-white border-2 ${
+                    errors.estudanteNome 
+                      ? 'border-red-500 focus:border-red-500' 
+                      : 'border-primary-200 focus:border-primary-500'
+                  }`}
                 />
                 {errors.estudanteNome && (
                   <p className="text-xs text-red-600 mt-1">{errors.estudanteNome}</p>
@@ -229,8 +232,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     value={formData.estudanteTelefone}
                     onChange={(e) => setFormData({ ...formData, estudanteTelefone: e.target.value })}
                     placeholder="+55 11 99999-9999"
-                    className="h-14 pl-12 pr-4 bg-white border-2"
-                    style={{ borderColor: '#D8CEE8' }}
+                    className="h-14 pl-12 pr-4 bg-white border-2 border-primary-200 focus:border-primary-500"
                   />
                 </div>
               </div>
@@ -245,8 +247,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     value={formData.endereco}
                     onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                     placeholder="Rua das Flores, 123"
-                    className="h-14 pl-12 pr-4 bg-white border-2"
-                    style={{ borderColor: '#D8CEE8' }}
+                    className="h-14 pl-12 pr-4 bg-white border-2 border-primary-200 focus:border-primary-500"
                   />
                 </div>
               </div>
@@ -255,8 +256,8 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
 
           {/* Publicação e Progresso */}
           <div>
-            <h3 className="flex items-center gap-2 mb-4">
-              <BookOpen className="w-5 h-5" style={{ color: '#4A2C60' }} />
+            <h3 className="flex items-center gap-2 mb-4 text-primary-500">
+              <BookOpen className="w-5 h-5" />
               Publicação
             </h3>
 
@@ -269,8 +270,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     id="publicacao"
                     value={formData.publicacao}
                     onChange={(e) => setFormData({ ...formData, publicacao: e.target.value })}
-                    className="w-full h-14 px-4 pr-10 bg-white border-2 rounded-md appearance-none focus:outline-none focus:ring-2"
-                    style={{ borderColor: '#D8CEE8', '--tw-ring-color': '#4A2C60' } as any}
+                    className="w-full h-14 px-4 pr-10 bg-white border-2 border-primary-200 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     {publicacoes.map(pub => (
                       <option key={pub} value={pub}>{pub}</option>
@@ -295,8 +295,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     max="10"
                     value={formData.licao}
                     onChange={(e) => setFormData({ ...formData, licao: parseInt(e.target.value) || 1 })}
-                    className="h-14 px-4 bg-white border-2"
-                    style={{ borderColor: '#D8CEE8' }}
+                    className="h-14 px-4 bg-white border-2 border-primary-200 focus:border-primary-500"
                   />
                   <p className="text-xs text-gray-600 mt-1">Lições de 1 a 10</p>
                 </div>
@@ -313,7 +312,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     className={`w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all ${
                       formData.status === 'iniciando' 
                         ? 'border-primary-500 bg-primary-50' 
-                        : 'border-gray-300 bg-white'
+                        : 'border-gray-300 bg-white hover:border-primary-300'
                     }`}
                   >
                     <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
@@ -339,7 +338,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     className={`w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all ${
                       formData.status === 'progredindo' 
                         ? 'border-primary-500 bg-primary-50' 
-                        : 'border-gray-300 bg-white'
+                        : 'border-gray-300 bg-white hover:border-primary-300'
                     }`}
                   >
                     <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
@@ -365,7 +364,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     className={`w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all ${
                       formData.status === 'duvidas' 
                         ? 'border-primary-500 bg-primary-50' 
-                        : 'border-gray-300 bg-white'
+                        : 'border-gray-300 bg-white hover:border-primary-300'
                     }`}
                   >
                     <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
@@ -391,7 +390,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     className={`w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all ${
                       formData.status === 'avancado' 
                         ? 'border-primary-500 bg-primary-50' 
-                        : 'border-gray-300 bg-white'
+                        : 'border-gray-300 bg-white hover:border-primary-300'
                     }`}
                   >
                     <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
@@ -427,8 +426,8 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
 
           {/* Agendamento */}
           <div>
-            <h3 className="flex items-center gap-2 mb-4">
-              <Calendar className="w-5 h-5" style={{ color: '#4A2C60' }} />
+            <h3 className="flex items-center gap-2 mb-4 text-primary-500">
+              <Calendar className="w-5 h-5" />
               {isEdicao ? 'Último Estudo' : 'Próximo Estudo'}
             </h3>
 
@@ -442,11 +441,14 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     type="date"
                     value={formData.data}
                     onChange={(e) => setFormData({ ...formData, data: e.target.value })}
-                    className={`h-14 px-4 pr-12 bg-white border-2 [&::-webkit-calendar-picker-indicator]:opacity-0 ${errors.data ? 'border-red-500' : ''}`}
-                    style={!errors.data ? { borderColor: '#D8CEE8' } : {}}
+                    className={`h-14 px-4 pr-12 bg-white border-2 [&::-webkit-calendar-picker-indicator]:opacity-0 ${
+                      errors.data 
+                        ? 'border-red-500 focus:border-red-500' 
+                        : 'border-primary-200 focus:border-primary-500'
+                    }`}
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <Calendar className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    <Calendar className="w-5 h-5 text-primary-500" />
                   </div>
                 </div>
               </div>
@@ -460,11 +462,14 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     type="time"
                     value={formData.horario}
                     onChange={(e) => setFormData({ ...formData, horario: e.target.value })}
-                    className={`h-14 px-4 pr-12 bg-white border-2 [&::-webkit-calendar-picker-indicator]:opacity-0 ${errors.horario ? 'border-red-500' : ''}`}
-                    style={!errors.horario ? { borderColor: '#D8CEE8' } : {}}
+                    className={`h-14 px-4 pr-12 bg-white border-2 [&::-webkit-calendar-picker-indicator]:opacity-0 ${
+                      errors.horario 
+                        ? 'border-red-500 focus:border-red-500' 
+                        : 'border-primary-200 focus:border-primary-500'
+                    }`}
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <Clock className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    <Clock className="w-5 h-5 text-primary-500" />
                   </div>
                 </div>
               </div>
@@ -473,7 +478,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t p-4 space-y-3">
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 space-y-3">
           {isEdicao && (
             <Button 
               variant="outline" 
@@ -494,7 +499,8 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
               Cancelar
             </Button>
             <Button 
-              className="h-14 bg-primary-500 text-white hover:bg-primary-600 flex items-center justify-center gap-2"
+              variant="default"
+              className="h-14 flex items-center justify-center gap-2"
               onClick={handleSalvar}
             >
               <Save className="w-5 h-5" />

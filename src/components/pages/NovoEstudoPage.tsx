@@ -150,20 +150,20 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
   const modoEdicao = !!estudoEditar;
 
   return (
-    <div className="min-h-screen pb-48" style={{ backgroundColor: '#FDF8EE' }}>
-      {/* Header fixo */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
-        <div className="flex items-center gap-4 px-6 pt-12 pb-4">
+    <div className="min-h-screen pb-48 bg-neutral">
+      {/* Header Fixo - Padrão Brandbook */}
+      <div className="sticky top-0 z-50 bg-gradient-to-br from-primary-600 to-primary-500 text-white">
+        <div className="flex items-center gap-4 px-6 pt-12 pb-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={onVoltar}
-            className="p-2 text-white hover:bg-white/20"
+            className="p-2 text-white hover:bg-white/20 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-6 h-6" />
           </Button>
-          <div className="flex-1">
-            <h2 className="text-xl">{modoEdicao ? 'Editar Estudo' : 'Novo Estudo Bíblico'}</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl truncate">{modoEdicao ? 'Editar Estudo' : 'Novo Estudo Bíblico'}</h2>
             <p className="text-sm opacity-90">
               {modoEdicao ? 'Atualize as informações' : 'Cadastre um novo estudante'}
             </p>
@@ -179,7 +179,7 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
             <div className="flex items-start gap-3">
               <span className="text-2xl">🎉</span>
               <div>
-                <p className="text-sm mb-1">
+                <p className="text-sm mb-1 text-primary-700">
                   <strong>Parabéns!</strong> Você está convertendo uma revisita em estudo bíblico.
                 </p>
                 <p className="text-xs text-gray-600">
@@ -192,8 +192,8 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
 
         {/* Card: Informações do Estudante */}
         <Card className="p-5">
-          <h3 className="mb-4 flex items-center gap-2">
-            <User className="w-5 h-5" style={{ color: '#4A2C60' }} />
+          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
+            <User className="w-5 h-5" />
             Informações de Contato
           </h3>
           
@@ -205,8 +205,7 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
                 placeholder="Ex: Maria Silva"
                 value={formData.estudanteNome}
                 onChange={(e) => handleChange('estudanteNome', e.target.value)}
-                className="h-14 px-4 bg-white border-2"
-                style={{ borderColor: '#D8CEE8' }}
+                className="h-14 px-4 bg-white border-2 border-primary-200 focus:border-primary-500"
                 autoFocus
               />
             </div>
@@ -219,8 +218,7 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
                 placeholder="(00) 00000-0000"
                 value={formData.estudanteTelefone}
                 onChange={(e) => handleChange('estudanteTelefone', e.target.value)}
-                className="h-14 px-4 bg-white border-2"
-                style={{ borderColor: '#D8CEE8' }}
+                className="h-14 px-4 bg-white border-2 border-primary-200 focus:border-primary-500"
               />
             </div>
 
@@ -231,8 +229,7 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
                 placeholder="Rua, número, bairro, cidade"
                 value={formData.estudanteEndereco}
                 onChange={(e) => handleChange('estudanteEndereco', e.target.value)}
-                className="h-14 px-4 bg-white border-2"
-                style={{ borderColor: '#D8CEE8' }}
+                className="h-14 px-4 bg-white border-2 border-primary-200 focus:border-primary-500"
               />
             </div>
           </div>
@@ -240,8 +237,8 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
 
         {/* Card: Detalhes do Estudo */}
         <Card className="p-5">
-          <h3 className="mb-4 flex items-center gap-2">
-            <BookOpen className="w-5 h-5" style={{ color: '#4A2C60' }} />
+          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
+            <BookOpen className="w-5 h-5" />
             Detalhes do Estudo
           </h3>
           
@@ -253,8 +250,7 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
                   id="publicacao"
                   value={formData.publicacao}
                   onChange={(e) => handleChange('publicacao', e.target.value)}
-                  className="w-full h-14 px-4 pr-10 bg-white border-2 rounded-md appearance-none focus:outline-none focus:ring-2"
-                  style={{ borderColor: '#D8CEE8', '--tw-ring-color': '#4A2C60' } as any}
+                  className="w-full h-14 px-4 pr-10 bg-white border-2 border-primary-200 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >
                   {publicacoes.map((pub, idx) => (
                     <option key={idx} value={pub}>{pub}</option>
@@ -276,23 +272,23 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
                     key={status.id}
                     onClick={() => handleChange('status', status.id)}
                     type="button"
-                    className="w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
-                    style={{
-                      borderColor: formData.status === status.id ? '#4A2C60' : '#D8CEE8',
-                      backgroundColor: formData.status === status.id ? 'rgba(74, 44, 96, 0.05)' : 'white'
-                    }}
+                    className={`w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all ${
+                      formData.status === status.id 
+                        ? 'border-primary-500 bg-primary-50' 
+                        : 'border-primary-200 bg-white hover:border-primary-300'
+                    }`}
                   >
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
-                      <status.icon className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <status.icon className="w-5 h-5 text-primary-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium" style={{ color: '#4A2C60' }}>
+                      <p className="font-medium text-primary-700">
                         {status.nome}
                       </p>
                       <p className="text-xs text-gray-600">{status.descricao}</p>
                     </div>
                     {formData.status === status.id && (
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                      <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
                         <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
@@ -307,8 +303,8 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
 
         {/* Card: Agendamento */}
         <Card className="p-5">
-          <h3 className="mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5" style={{ color: '#4A2C60' }} />
+          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
+            <Calendar className="w-5 h-5" />
             Agendamento
           </h3>
           
@@ -321,11 +317,10 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
                   type="date"
                   value={formData.data}
                   onChange={(e) => handleChange('data', e.target.value)}
-                  className="h-14 px-4 pr-12 bg-white border-2 [&::-webkit-calendar-picker-indicator]:opacity-0"
-                  style={{ borderColor: '#D8CEE8' }}
+                  className="h-14 px-4 pr-12 bg-white border-2 border-primary-200 focus:border-primary-500 [&::-webkit-calendar-picker-indicator]:opacity-0"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <Calendar className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                  <Calendar className="w-5 h-5 text-primary-500" />
                 </div>
               </div>
             </div>
@@ -338,11 +333,10 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
                   type="time"
                   value={formData.horario}
                   onChange={(e) => handleChange('horario', e.target.value)}
-                  className="h-14 px-4 pr-12 bg-white border-2 [&::-webkit-calendar-picker-indicator]:opacity-0"
-                  style={{ borderColor: '#D8CEE8' }}
+                  className="h-14 px-4 pr-12 bg-white border-2 border-primary-200 focus:border-primary-500 [&::-webkit-calendar-picker-indicator]:opacity-0"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <Clock className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                  <Clock className="w-5 h-5 text-primary-500" />
                 </div>
               </div>
             </div>
@@ -351,8 +345,8 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
 
         {/* Card: Observações */}
         <Card className="p-5">
-          <h3 className="mb-4 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5" style={{ color: '#4A2C60' }} />
+          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
+            <MessageSquare className="w-5 h-5" />
             Observações
           </h3>
           
@@ -360,7 +354,7 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
             placeholder="Ex: Estudante muito interessado, faz boas perguntas..."
             value={formData.observacoes}
             onChange={(e) => handleChange('observacoes', e.target.value)}
-            className="resize-none min-h-[120px] bg-white"
+            className="resize-none min-h-[120px] bg-white border-2 border-primary-200 focus:border-primary-500"
             rows={5}
           />
         </Card>
@@ -388,10 +382,8 @@ export default function NovoEstudoPage({ onVoltar, estudoEditar, revisitaConvers
 
         {/* Botão Salvar */}
         <Button 
-          className="w-full text-white shadow-lg py-6 text-lg"
-          style={{ backgroundColor: '#4A2C60' }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          variant="default"
+          className="w-full py-6 text-lg shadow-lg"
           onClick={handleSalvar}
         >
           <CheckCircle2 className="w-5 h-5 mr-2" />

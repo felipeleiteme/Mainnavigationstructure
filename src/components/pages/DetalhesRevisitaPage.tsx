@@ -52,7 +52,7 @@ export default function DetalhesRevisitaPage({
 
   if (!revisita) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral flex items-center justify-center">
         <p className="text-gray-600">Carregando...</p>
       </div>
     );
@@ -151,28 +151,30 @@ export default function DetalhesRevisitaPage({
 
   return (
     <div className="min-h-screen pb-20 bg-neutral">
-      {/* Header fixo */}
-      <div className="sticky top-0 z-10 bg-primary-500 text-white">
-        <div className="flex items-center gap-4 px-6 pt-12 pb-4">
+      {/* Header Fixo - Padrão Brandbook */}
+      <div className="sticky top-0 z-50 bg-gradient-to-br from-primary-600 to-primary-500 text-white">
+        <div className="flex items-center gap-4 px-6 pt-12 pb-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={onVoltar}
-            className="p-2 text-white hover:bg-white/20"
+            className="p-2 text-white hover:bg-white/20 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-6 h-6" />
           </Button>
-          <div className="flex-1">
-            <h2 className="text-xl">{revisita.nome}</h2>
-            <p className="text-sm opacity-90">{revisita.quantidadeVisitas} {revisita.quantidadeVisitas === 1 ? 'visita' : 'visitas'}</p>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl truncate">{revisita.nome}</h2>
+            <p className="text-sm opacity-90">
+              {revisita.quantidadeVisitas} {revisita.quantidadeVisitas === 1 ? 'visita' : 'visitas'}
+            </p>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onEditar(revisita)}
-            className="p-2 text-white hover:bg-white/20"
+            className="p-2 text-white hover:bg-white/20 transition-colors flex-shrink-0"
           >
-            <Edit className="w-5 h-5" />
+            <Edit className="w-6 h-6" />
           </Button>
         </div>
       </div>
@@ -212,32 +214,34 @@ export default function DetalhesRevisitaPage({
               <User className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="mb-4">Informações de Contato</h3>
+              <h3 className="mb-4 text-primary-700">Informações de Contato</h3>
             </div>
           </div>
           <div className="space-y-4">
             <div>
               <p className="text-xs text-gray-600 mb-1">Nome completo</p>
-              <p className="text-sm">{revisita.nome}</p>
+              <p className="text-sm text-gray-900">{revisita.nome}</p>
             </div>
             
             {revisita.telefone && (
               <div>
                 <p className="text-xs text-gray-600 mb-1">Telefone</p>
-                <p className="text-sm mb-3">{revisita.telefone}</p>
+                <p className="text-sm text-gray-900 mb-3">{revisita.telefone}</p>
                 
                 {/* Botões de Ação */}
                 <div className="grid grid-cols-2 gap-3">
                   <Button
+                    variant="default"
                     onClick={handleLigar}
-                    className="h-14 w-full bg-primary-500 text-white hover:bg-primary-600 flex items-center justify-center gap-2"
+                    className="h-14 w-full flex items-center justify-center gap-2"
                   >
                     <Phone className="w-5 h-5" />
                     Ligar
                   </Button>
                   <Button
+                    variant="default"
                     onClick={handleWhatsApp}
-                    className="h-14 w-full bg-primary-500 text-white hover:bg-primary-600 flex items-center justify-center gap-2"
+                    className="h-14 w-full flex items-center justify-center gap-2"
                   >
                     <MessageSquare className="w-5 h-5" />
                     WhatsApp
@@ -248,12 +252,11 @@ export default function DetalhesRevisitaPage({
 
             <div>
               <p className="text-xs text-gray-600 mb-1">Endereço completo</p>
-              <p className="text-sm mb-2">{revisita.endereco}</p>
+              <p className="text-sm text-gray-900 mb-2">{revisita.endereco}</p>
               <Button 
                 variant="link" 
                 size="sm" 
-                className="p-0 h-auto text-xs"
-                style={{ color: '#4A2C60' }}
+                className="p-0 h-auto text-xs text-primary-600"
                 onClick={handleVerNoMapa}
               >
                 <MapPin className="w-3 h-3 mr-1" />
@@ -264,7 +267,7 @@ export default function DetalhesRevisitaPage({
             {revisita.disponibilidade && (
               <div>
                 <p className="text-xs text-gray-600 mb-1">Disponibilidade</p>
-                <p className="text-sm">{revisita.disponibilidade}</p>
+                <p className="text-sm text-gray-900">{revisita.disponibilidade}</p>
               </div>
             )}
           </div>
@@ -273,16 +276,12 @@ export default function DetalhesRevisitaPage({
         {/* Card de Ação: Converter em Estudo Bíblico */}
         {revisita.interesseEstudo && (
           <Card 
-            className="p-6 border-2 cursor-pointer hover:shadow-lg transition-all active:scale-[0.98]"
-            style={{ 
-              background: 'linear-gradient(135deg, #4A2C60 0%, #5E3877 100%)',
-              borderColor: '#4A2C60'
-            }}
+            className="p-6 border-2 border-primary-500 cursor-pointer hover:shadow-lg transition-all active:scale-[0.98] bg-gradient-to-br from-primary-600 to-primary-500"
             onClick={() => onIniciarEstudo(revisita)}
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C8E046' }}>
-                <BookOpen className="w-6 h-6" style={{ color: '#4A2C60' }} />
+              <div className="w-12 h-12 rounded-full bg-secondary-500 flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-6 h-6 text-primary-500" />
               </div>
               <div className="flex-1">
                 <h3 className="text-white mb-1">Converter em Estudo Bíblico</h3>
@@ -301,14 +300,14 @@ export default function DetalhesRevisitaPage({
 
         {/* Card: Última Visita */}
         <Card className="p-5">
-          <h3 className="mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-gray-600" />
+          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
+            <Clock className="w-5 h-5" />
             Última Visita
           </h3>
           <div className="space-y-3">
             <div>
               <p className="text-xs text-gray-600 mb-1">Data</p>
-              <p className="text-sm">
+              <p className="text-sm text-gray-900">
                 {revisita.ultimaVisita 
                   ? new Date(revisita.ultimaVisita).toLocaleDateString('pt-BR', {
                       weekday: 'long',
@@ -326,7 +325,7 @@ export default function DetalhesRevisitaPage({
             {revisita.proximaVisita && (
               <div className="pt-3 border-t border-gray-200">
                 <p className="text-xs text-gray-600 mb-1">Próxima Visita Agendada</p>
-                <p className="text-sm">
+                <p className="text-sm text-gray-900">
                   {new Date(revisita.proximaVisita).toLocaleDateString('pt-BR', {
                     weekday: 'long',
                     year: 'numeric',
@@ -345,8 +344,8 @@ export default function DetalhesRevisitaPage({
 
         {/* Card: Primeira Conversa */}
         <Card className="p-5">
-          <h3 className="mb-4 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-gray-600" />
+          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
+            <MessageSquare className="w-5 h-5" />
             Primeira Conversa
           </h3>
           <p className="text-sm text-gray-700 leading-relaxed">
@@ -356,19 +355,19 @@ export default function DetalhesRevisitaPage({
 
         {/* Card: Detalhes Adicionais */}
         <Card className="p-5">
-          <h3 className="mb-4 flex items-center gap-2" style={{ color: '#4A2C60' }}>
+          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
             <FileText className="w-5 h-5" />
             Detalhes Adicionais
           </h3>
           <div className="space-y-4">
             <div>
               <p className="text-xs text-gray-600 mb-1">Origem do contato</p>
-              <p className="text-sm capitalize">{getOrigemLabel(revisita.origem)}</p>
+              <p className="text-sm text-gray-900 capitalize">{getOrigemLabel(revisita.origem)}</p>
             </div>
             
             <div>
               <p className="text-xs text-gray-600 mb-1">Data de adição</p>
-              <p className="text-sm">
+              <p className="text-sm text-gray-900">
                 {revisita.dataAdicao ? new Date(revisita.dataAdicao).toLocaleDateString('pt-BR', {
                   weekday: 'long',
                   year: 'numeric',
@@ -397,7 +396,7 @@ export default function DetalhesRevisitaPage({
         {/* Card: Observações */}
         {revisita.observacoes && (
           <Card className="p-5">
-            <h3 className="mb-4 flex items-center gap-2" style={{ color: '#4A2C60' }}>
+            <h3 className="mb-4 flex items-center gap-2 text-primary-700">
               <FileText className="w-5 h-5" />
               Observações
             </h3>
@@ -410,14 +409,14 @@ export default function DetalhesRevisitaPage({
         {/* Card: Publicações Deixadas */}
         {revisita.publicacoesDeixadas && revisita.publicacoesDeixadas.length > 0 && (
           <Card className="p-5">
-            <h3 className="mb-4 flex items-center gap-2" style={{ color: '#4A2C60' }}>
+            <h3 className="mb-4 flex items-center gap-2 text-primary-700">
               <BookOpen className="w-5 h-5" />
               Publicações Deixadas
             </h3>
             <div className="space-y-2">
               {revisita.publicacoesDeixadas.map((pub, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#4A2C60' }} />
+                <div key={idx} className="flex items-center gap-2 text-sm text-gray-900">
+                  <div className="w-2 h-2 rounded-full bg-primary-500" />
                   <span>{pub}</span>
                 </div>
               ))}
@@ -427,17 +426,17 @@ export default function DetalhesRevisitaPage({
 
         {/* Card: Estatísticas */}
         <Card className="p-5">
-          <h3 className="mb-4 flex items-center gap-2" style={{ color: '#4A2C60' }}>
+          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
             <BarChart3 className="w-5 h-5" />
             Resumo
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: '#F5F2F7' }}>
-              <p className="text-3xl" style={{ color: '#4A2C60' }}>{revisita.quantidadeVisitas}</p>
+            <div className="text-center p-4 rounded-lg bg-primary-50">
+              <p className="text-3xl text-primary-500 font-semibold">{revisita.quantidadeVisitas}</p>
               <p className="text-xs text-gray-600 mt-1">Total de visitas</p>
             </div>
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: '#F5F2F7' }}>
-              <p className="text-3xl" style={{ color: '#4A2C60' }}>
+            <div className="text-center p-4 rounded-lg bg-primary-50">
+              <p className="text-3xl text-primary-500 font-semibold">
                 {(() => {
                   if (!revisita.ultimaVisita) return '-';
                   const dataVisita = new Date(revisita.ultimaVisita);
@@ -454,7 +453,7 @@ export default function DetalhesRevisitaPage({
         {/* Card: Histórico de Visitas */}
         {revisita.historicoVisitas && revisita.historicoVisitas.length > 0 && (
           <Card className="p-5">
-            <h3 className="mb-4 flex items-center gap-2" style={{ color: '#4A2C60' }}>
+            <h3 className="mb-4 flex items-center gap-2 text-primary-700">
               <Calendar className="w-5 h-5" />
               Histórico de Visitas ({revisita.historicoVisitas.length})
             </h3>
@@ -463,8 +462,9 @@ export default function DetalhesRevisitaPage({
               {[...revisita.historicoVisitas].reverse().map((visita, index) => (
                 <div 
                   key={visita.id} 
-                  className="border-l-4 pl-4 py-2"
-                  style={{ borderColor: visita.encontrou ? '#C8E046' : '#E5E7EB' }}
+                  className={`border-l-4 pl-4 py-2 ${
+                    visita.encontrou ? 'border-secondary-500' : 'border-gray-200'
+                  }`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -474,18 +474,14 @@ export default function DetalhesRevisitaPage({
                         <XCircle className="w-5 h-5 text-gray-400" />
                       )}
                       <div>
-                        <p className="text-sm">{new Date(visita.data).toLocaleDateString('pt-BR')}</p>
+                        <p className="text-sm text-gray-900">{new Date(visita.data).toLocaleDateString('pt-BR')}</p>
                         <p className="text-xs text-gray-500">
                           {visita.encontrou ? 'Encontrou' : 'Não encontrou'}
                         </p>
                       </div>
                     </div>
                     {index === 0 && (
-                      <Badge 
-                        variant="secondary" 
-                        className="text-xs"
-                        style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' }}
-                      >
+                      <Badge variant="secondary" className="text-xs bg-primary-50 text-primary-700 border-primary-200">
                         Mais recente
                       </Badge>
                     )}
@@ -499,10 +495,10 @@ export default function DetalhesRevisitaPage({
 
                   {visita.publicacoesDeixadas && visita.publicacoesDeixadas.length > 0 && (
                     <div className="flex items-start gap-2 mt-2">
-                      <BookMarked className="w-4 h-4 mt-0.5" style={{ color: '#4A2C60' }} />
+                      <BookMarked className="w-4 h-4 mt-0.5 text-primary-500" />
                       <div>
                         <p className="text-xs text-gray-600">Publicações deixadas:</p>
-                        <p className="text-sm">{visita.publicacoesDeixadas.join(', ')}</p>
+                        <p className="text-sm text-gray-900">{visita.publicacoesDeixadas.join(', ')}</p>
                       </div>
                     </div>
                   )}
@@ -522,9 +518,9 @@ export default function DetalhesRevisitaPage({
         {/* Botão de Registrar Visita */}
         {onRegistrarVisita && (
           <Button
+            variant="default"
             onClick={() => onRegistrarVisita(revisitaId)}
-            className="w-full text-white h-14"
-            style={{ backgroundColor: '#4A2C60' }}
+            className="w-full h-14"
           >
             <Plus className="w-5 h-5 mr-2" />
             Registrar Nova Visita
@@ -555,7 +551,7 @@ export default function DetalhesRevisitaPage({
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <Card className="p-6 max-w-sm w-full animate-scale-in">
-            <h3 className="mb-2">Confirmar Remoção</h3>
+            <h3 className="mb-2 text-primary-700">Confirmar Remoção</h3>
             <p className="text-sm text-gray-600 mb-6">
               Tem certeza que deseja remover a revisita com <strong>{revisita.nome}</strong>? 
               Esta ação não pode ser desfeita.
@@ -570,7 +566,7 @@ export default function DetalhesRevisitaPage({
               </Button>
               <Button 
                 onClick={handleExcluir}
-                className="flex-1 bg-red-600 hover:bg-red-700"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
               >
                 Remover
               </Button>
