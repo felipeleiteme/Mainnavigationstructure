@@ -1,0 +1,300 @@
+/**
+ * MYNIS DESIGN TOKENS
+ * Baseado no Brandbook oficial
+ * Sistema centralizado para manutenção e consistência
+ */
+
+@layer base {
+  :root {
+    /* ==========================================
+       CORES PRIMÁRIAS (Roxo Profundo)
+       ========================================== */
+    --color-primary-50: 245 242 247;   /* #F5F2F7 */
+    --color-primary-100: 230 223 240;  /* #E6DFF0 */
+    --color-primary-200: 212 200 224;  /* #D4C8E0 */
+    --color-primary-300: 184 163 202;  /* #B8A3CA */
+    --color-primary-400: 142 104 160;  /* #8E68A0 */
+    --color-primary-500: 74 44 96;     /* #4A2C60 - BASE */
+    --color-primary-600: 61 35 77;     /* #3D234D */
+    --color-primary-700: 48 27 59;     /* #301B3B */
+    --color-primary-800: 35 20 41;     /* #231429 */
+    --color-primary-900: 22 13 24;     /* #160D18 */
+
+    /* ==========================================
+       CORES SECUNDÁRIAS (Verde Lima)
+       ========================================== */
+    --color-secondary-50: 249 252 233;  /* #F9FCE9 */
+    --color-secondary-100: 241 248 207; /* #F1F8CF */
+    --color-secondary-200: 232 244 166; /* #E8F4A6 */
+    --color-secondary-300: 220 236 109; /* #DCEC6D */
+    --color-secondary-400: 210 232 90;  /* #D2E85A */
+    --color-secondary-500: 200 224 70;  /* #C8E046 - BASE */
+    --color-secondary-600: 160 182 56;  /* #A0B638 */
+    --color-secondary-700: 122 140 42;  /* #7A8C2A */
+    --color-secondary-800: 84 98 29;    /* #54621D */
+    --color-secondary-900: 46 56 16;    /* #2E3810 */
+
+    /* ==========================================
+       CORES NEUTRAS (Creme/Bege)
+       ========================================== */
+    --color-neutral: 253 248 238;       /* #FDF8EE - BASE Neutra */
+    --color-neutral-light: 254 251 244; /* #FEFBF4 */
+    --color-neutral-dark: 250 244 230;  /* #FAF4E6 */
+
+    /* ==========================================
+       CORES FUNCIONAIS
+       ========================================== */
+    --color-success: 76 175 80;    /* #4CAF50 */
+    --color-error: 244 67 54;      /* #F44336 */
+    --color-warning: 255 152 0;    /* #FF9800 */
+    --color-info: 33 150 243;      /* #2196F3 */
+
+    /* ==========================================
+       ESCALA DE CINZAS
+       ========================================== */
+    --color-gray-50: 250 250 250;   /* #FAFAFA */
+    --color-gray-100: 245 245 245;  /* #F5F5F5 */
+    --color-gray-200: 238 238 238;  /* #EEEEEE */
+    --color-gray-300: 224 224 224;  /* #E0E0E0 */
+    --color-gray-400: 189 189 189;  /* #BDBDBD */
+    --color-gray-500: 158 158 158;  /* #9E9E9E */
+    --color-gray-600: 117 117 117;  /* #757575 */
+    --color-gray-700: 97 97 97;     /* #616161 */
+    --color-gray-800: 66 66 66;     /* #424242 */
+    --color-gray-900: 33 33 33;     /* #212121 */
+
+    /* ==========================================
+       ESPAÇAMENTOS (Grid 8pt)
+       ========================================== */
+    --spacing-xxs: 0.25rem;  /* 4px */
+    --spacing-xs: 0.5rem;    /* 8px */
+    --spacing-sm: 1rem;      /* 16px - PADRÃO */
+    --spacing-md: 1.5rem;    /* 24px */
+    --spacing-lg: 2rem;      /* 32px */
+    --spacing-xl: 3rem;      /* 48px */
+    --spacing-xxl: 4rem;     /* 64px */
+
+    /* ==========================================
+       RAIOS DE BORDA
+       ========================================== */
+    --radius-sm: 0.5rem;   /* 8px - botões, inputs */
+    --radius-md: 0.75rem;  /* 12px - cards padrão */
+    --radius-lg: 1rem;     /* 16px - cards destaque */
+    --radius-full: 9999px; /* círculos */
+
+    /* ==========================================
+       TIPOGRAFIA - TAMANHOS
+       ========================================== */
+    --font-size-display: 2.5rem;    /* 40px */
+    --font-size-h1: 1.75rem;        /* 28px */
+    --font-size-h2: 1.5rem;         /* 24px */
+    --font-size-h3: 1.25rem;        /* 20px */
+    --font-size-body: 1rem;         /* 16px - MÍNIMO MOBILE */
+    --font-size-body-sm: 0.875rem;  /* 14px */
+    --font-size-caption: 0.75rem;   /* 12px */
+
+    /* ==========================================
+       TIPOGRAFIA - LINE HEIGHTS
+       ========================================== */
+    --line-height-display: 1.2;
+    --line-height-heading: 1.3;
+    --line-height-body: 1.5;
+    --line-height-caption: 1.4;
+    --line-height-button: 1.0;
+
+    /* ==========================================
+       TIPOGRAFIA - FONT WEIGHTS
+       ========================================== */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* ==========================================
+       SOMBRAS
+       ========================================== */
+    --shadow-sm: 0 1px 2px rgba(74, 44, 96, 0.05);
+    --shadow-md: 0 2px 8px rgba(74, 44, 96, 0.08);
+    --shadow-lg: 0 4px 16px rgba(74, 44, 96, 0.12);
+    --shadow-xl: 0 8px 24px rgba(74, 44, 96, 0.16);
+
+    /* ==========================================
+       TAMANHOS DE ÍCONES
+       ========================================== */
+    --icon-xs: 1rem;      /* 16px - inline */
+    --icon-sm: 1.25rem;   /* 20px - badges */
+    --icon-md: 1.5rem;    /* 24px - PADRÃO UI */
+    --icon-lg: 2rem;      /* 32px - FABs */
+    --icon-xl: 3rem;      /* 48px - empty states */
+
+    /* ==========================================
+       COMPONENTES - ALTURA
+       ========================================== */
+    --button-height: 3rem;    /* 48px */
+    --input-height: 3rem;     /* 48px */
+    --fab-height: 3.5rem;     /* 56px */
+
+    /* ==========================================
+       Z-INDEX (Hierarquia)
+       ========================================== */
+    --z-base: 0;
+    --z-dropdown: 10;
+    --z-sticky: 20;
+    --z-fixed: 30;
+    --z-modal-backdrop: 40;
+    --z-modal: 50;
+    --z-popover: 60;
+    --z-tooltip: 70;
+  }
+}
+
+/* ==========================================
+   CLASSES UTILITÁRIAS CUSTOMIZADAS
+   ========================================== */
+
+/* ==========================================
+   CORES - BACKGROUNDS
+   ========================================== */
+/* Roxo (Primary) */
+.bg-primary-50 { background-color: rgb(var(--color-primary-50)); }
+.bg-primary-100 { background-color: rgb(var(--color-primary-100)); }
+.bg-primary-200 { background-color: rgb(var(--color-primary-200)); }
+.bg-primary-300 { background-color: rgb(var(--color-primary-300)); }
+.bg-primary-400 { background-color: rgb(var(--color-primary-400)); }
+.bg-primary-500 { background-color: rgb(var(--color-primary-500)); }
+.bg-primary-600 { background-color: rgb(var(--color-primary-600)); }
+.bg-primary-700 { background-color: rgb(var(--color-primary-700)); }
+.bg-primary-800 { background-color: rgb(var(--color-primary-800)); }
+.bg-primary-900 { background-color: rgb(var(--color-primary-900)); }
+
+/* Verde Lima (Secondary) */
+.bg-secondary-50 { background-color: rgb(var(--color-secondary-50)); }
+.bg-secondary-100 { background-color: rgb(var(--color-secondary-100)); }
+.bg-secondary-200 { background-color: rgb(var(--color-secondary-200)); }
+.bg-secondary-300 { background-color: rgb(var(--color-secondary-300)); }
+.bg-secondary-400 { background-color: rgb(var(--color-secondary-400)); }
+.bg-secondary-500 { background-color: rgb(var(--color-secondary-500)); }
+.bg-secondary-600 { background-color: rgb(var(--color-secondary-600)); }
+.bg-secondary-700 { background-color: rgb(var(--color-secondary-700)); }
+.bg-secondary-800 { background-color: rgb(var(--color-secondary-800)); }
+.bg-secondary-900 { background-color: rgb(var(--color-secondary-900)); }
+
+/* Neutro (Creme) */
+.bg-neutral { background-color: rgb(var(--color-neutral)); }
+.bg-neutral-light { background-color: rgb(var(--color-neutral-light)); }
+.bg-neutral-dark { background-color: rgb(var(--color-neutral-dark)); }
+
+/* ==========================================
+   CORES - TEXTOS
+   ========================================== */
+/* Roxo (Primary) */
+.text-primary-50 { color: rgb(var(--color-primary-50)); }
+.text-primary-100 { color: rgb(var(--color-primary-100)); }
+.text-primary-200 { color: rgb(var(--color-primary-200)); }
+.text-primary-300 { color: rgb(var(--color-primary-300)); }
+.text-primary-400 { color: rgb(var(--color-primary-400)); }
+.text-primary-500 { color: rgb(var(--color-primary-500)); }
+.text-primary-600 { color: rgb(var(--color-primary-600)); }
+.text-primary-700 { color: rgb(var(--color-primary-700)); }
+.text-primary-800 { color: rgb(var(--color-primary-800)); }
+.text-primary-900 { color: rgb(var(--color-primary-900)); }
+
+/* Verde Lima (Secondary) */
+.text-secondary-50 { color: rgb(var(--color-secondary-50)); }
+.text-secondary-100 { color: rgb(var(--color-secondary-100)); }
+.text-secondary-200 { color: rgb(var(--color-secondary-200)); }
+.text-secondary-300 { color: rgb(var(--color-secondary-300)); }
+.text-secondary-400 { color: rgb(var(--color-secondary-400)); }
+.text-secondary-500 { color: rgb(var(--color-secondary-500)); }
+.text-secondary-600 { color: rgb(var(--color-secondary-600)); }
+.text-secondary-700 { color: rgb(var(--color-secondary-700)); }
+.text-secondary-800 { color: rgb(var(--color-secondary-800)); }
+.text-secondary-900 { color: rgb(var(--color-secondary-900)); }
+
+/* ==========================================
+   CORES - BORDAS
+   ========================================== */
+/* Roxo (Primary) */
+.border-primary-50 { border-color: rgb(var(--color-primary-50)); }
+.border-primary-100 { border-color: rgb(var(--color-primary-100)); }
+.border-primary-200 { border-color: rgb(var(--color-primary-200)); }
+.border-primary-300 { border-color: rgb(var(--color-primary-300)); }
+.border-primary-400 { border-color: rgb(var(--color-primary-400)); }
+.border-primary-500 { border-color: rgb(var(--color-primary-500)); }
+.border-primary-600 { border-color: rgb(var(--color-primary-600)); }
+.border-primary-700 { border-color: rgb(var(--color-primary-700)); }
+.border-primary-800 { border-color: rgb(var(--color-primary-800)); }
+.border-primary-900 { border-color: rgb(var(--color-primary-900)); }
+
+/* Verde Lima (Secondary) */
+.border-secondary-50 { border-color: rgb(var(--color-secondary-50)); }
+.border-secondary-100 { border-color: rgb(var(--color-secondary-100)); }
+.border-secondary-200 { border-color: rgb(var(--color-secondary-200)); }
+.border-secondary-300 { border-color: rgb(var(--color-secondary-300)); }
+.border-secondary-400 { border-color: rgb(var(--color-secondary-400)); }
+.border-secondary-500 { border-color: rgb(var(--color-secondary-500)); }
+.border-secondary-600 { border-color: rgb(var(--color-secondary-600)); }
+.border-secondary-700 { border-color: rgb(var(--color-secondary-700)); }
+.border-secondary-800 { border-color: rgb(var(--color-secondary-800)); }
+.border-secondary-900 { border-color: rgb(var(--color-secondary-900)); }
+
+/* ==========================================
+   TIPOGRAFIA DO BRANDBOOK
+   ========================================== */
+
+/* Textos com escala do brandbook */
+.text-display {
+  font-family: 'Young Serif', serif;
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-display);
+}
+
+.text-h1 {
+  font-family: 'Young Serif', serif;
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-heading);
+}
+
+.text-h2 {
+  font-family: 'Young Serif', serif;
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-heading);
+}
+
+.text-h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-body);
+}
+
+.text-body {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+}
+
+.text-body-sm {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+}
+
+.text-caption {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-caption);
+}
+
+.text-button {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-button);
+}

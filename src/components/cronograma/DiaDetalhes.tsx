@@ -1,4 +1,4 @@
-import { X, Play, MessageSquare, MapPin, BookOpen, CheckCircle2, Circle, Calendar, Edit } from 'lucide-react';
+import { X, Play, MessageSquare, MapPin, BookOpen, CheckCircle2, Circle, Calendar, Edit, Sparkles, PartyPopper, FileText, Sun, CloudSun, Moon, Clock, Bell, BookMarked, BarChart3, Users, Heart } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -30,10 +30,10 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
   const atividadesDia = DataService.getAtividadeDia(dataEsteDia);
   
   const [checklistItems, setChecklistItems] = useState([
-    { id: 'leituraBiblica', label: 'Leitura da Bíblia', checked: atividadesDia?.leituraBiblica || false, icon: '📖' },
-    { id: 'textoDiario', label: 'Texto Diário', checked: atividadesDia?.textoDiario || false, icon: '📝' },
-    { id: 'oracao', label: 'Oração', checked: atividadesDia?.oracao || false, icon: '🙏' },
-    { id: 'adoracaoFamilia', label: 'Adoração em Família', checked: atividadesDia?.adoracaoFamilia || false, icon: '👨‍👩‍👧' }
+    { id: 'leituraBiblica', label: 'Leitura da Bíblia', checked: atividadesDia?.leituraBiblica || false, icon: BookOpen },
+    { id: 'textoDiario', label: 'Texto Diário', checked: atividadesDia?.textoDiario || false, icon: FileText },
+    { id: 'oracao', label: 'Oração', checked: atividadesDia?.oracao || false, icon: Heart },
+    { id: 'adoracaoFamilia', label: 'Adoração em Família', checked: atividadesDia?.adoracaoFamilia || false, icon: Users }
   ]);
 
   const [anotacoes, setAnotacoes] = useState('');
@@ -43,10 +43,10 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
   useEffect(() => {
     if (atividadesDia) {
       setChecklistItems([
-        { id: 'leituraBiblica', label: 'Leitura da Bíblia', checked: atividadesDia.leituraBiblica, icon: '📖' },
-        { id: 'textoDiario', label: 'Texto Diário', checked: atividadesDia.textoDiario, icon: '📝' },
-        { id: 'oracao', label: 'Oração', checked: atividadesDia.oracao, icon: '🙏' },
-        { id: 'adoracaoFamilia', label: 'Adoração em Família', checked: atividadesDia.adoracaoFamilia, icon: '👨‍👩‍👧' }
+        { id: 'leituraBiblica', label: 'Leitura da Bíblia', checked: atividadesDia.leituraBiblica, icon: BookOpen },
+        { id: 'textoDiario', label: 'Texto Diário', checked: atividadesDia.textoDiario, icon: FileText },
+        { id: 'oracao', label: 'Oração', checked: atividadesDia.oracao, icon: Heart },
+        { id: 'adoracaoFamilia', label: 'Adoração em Família', checked: atividadesDia.adoracaoFamilia, icon: Users }
       ]);
     }
   }, [atividadesDia]);
@@ -59,18 +59,21 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
   // Subtexto contextual
   const getSubtexto = () => {
     if (tipoDia === 'atual' && dia.status !== 'Livre') {
-      return 'Veja o que você planejou para hoje ✨';
+      return { icon: Sparkles, texto: 'Veja o que você planejou para hoje' };
     } else if (tipoDia === 'atual' && dia.status === 'Livre') {
-      return 'Um dia tranquilo pela frente 🌤️';
+      return { icon: CloudSun, texto: 'Um dia tranquilo pela frente' };
     } else if (tipoDia === 'passado' && dia.status !== 'Livre') {
-      return 'Veja o que você realizou neste dia 🎉';
+      return { icon: PartyPopper, texto: 'Veja o que você realizou neste dia' };
     } else if (tipoDia === 'passado' && dia.status === 'Livre') {
-      return 'Um dia de descanso 😌';
+      return { icon: Moon, texto: 'Um dia de descanso' };
     } else {
-      return 'Veja o que você planejou ✨';
+      return { icon: Sparkles, texto: 'Veja o que você planejou' };
     }
   };
 
+  const subtextoInfo = getSubtexto();
+  const SubtextoIcon = subtextoInfo.icon;
+  
   // Buscar estudos REAIS do DataService para este dia
   const todosEstudos = DataService.getEstudos();
   const estudosNoDia = todosEstudos.filter(e => {
@@ -129,23 +132,26 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center sm:justify-center">
       <div 
-        className="bg-white w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up"
+        className="bg-white w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-br from-indigo-50 to-purple-50 px-6 pt-6 pb-4 border-b z-10">
+        <div className="sticky top-0 text-white px-6 pt-6 pb-4 border-b z-10" style={{ backgroundColor: '#4A2C60' }}>
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
-              <h2 className="text-2xl text-gray-900">
+              <h2 className="text-2xl">
                 {dia.dia}-feira, {dia.data} de novembro
               </h2>
-              <p className="text-sm text-gray-600 mt-1">{getSubtexto()}</p>
+              <p className="text-sm opacity-90 mt-1">
+                <SubtextoIcon className="w-5 h-5 mr-1" />
+                {subtextoInfo.texto}
+              </p>
             </div>
             <button 
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/80 hover:bg-white flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -160,46 +166,55 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
             
             <div className="grid grid-cols-3 gap-3">
               {/* Manhã */}
-              <div className={`p-3 rounded-lg text-center ${
-                cronograma.manha 
-                  ? 'bg-green-50 border-2 border-green-200' 
-                  : 'bg-gray-50 border-2 border-gray-200'
-              }`}>
-                <div className="text-2xl mb-1">☀️</div>
+              <div 
+                className="p-3 rounded-lg text-center border-2"
+                style={
+                  cronograma.manha
+                    ? { backgroundColor: '#F5F2F7', borderColor: '#D1C4E0' }
+                    : { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }
+                }
+              >
+                <Sun className="w-8 h-8 mx-auto mb-1 text-amber-500" />
                 <p className="text-xs font-medium">
                   {cronograma.manha ? 'Manhã planejada' : 'Manhã livre'}
                 </p>
                 {cronograma.manha && tipoDia === 'passado' && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs mt-2">
-                    ✓ Concluído - 2h30min
+                  <Badge variant="secondary" className="text-xs mt-2" style={{ backgroundColor: '#E6DFF0', color: '#4A2C60' }}>
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Concluído - 2h30min
                   </Badge>
                 )}
               </div>
 
               {/* Tarde */}
-              <div className={`p-3 rounded-lg text-center ${
-                cronograma.tarde 
-                  ? 'bg-green-50 border-2 border-green-200' 
-                  : 'bg-gray-50 border-2 border-gray-200'
-              }`}>
-                <div className="text-2xl mb-1">🌤️</div>
+              <div 
+                className="p-3 rounded-lg text-center border-2"
+                style={
+                  cronograma.tarde
+                    ? { backgroundColor: '#F5F2F7', borderColor: '#D1C4E0' }
+                    : { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }
+                }
+              >
+                <CloudSun className="w-8 h-8 mx-auto mb-1 text-orange-500" />
                 <p className="text-xs font-medium">
                   {cronograma.tarde ? 'Tarde planejada' : 'Tarde livre'}
                 </p>
                 {cronograma.tarde && tipoDia === 'passado' && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs mt-2">
-                    ✓ Concluído - 1h45min
+                  <Badge variant="secondary" className="text-xs mt-2" style={{ backgroundColor: '#E6DFF0', color: '#4A2C60' }}>
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Concluído - 1h45min
                   </Badge>
                 )}
               </div>
 
               {/* Noite */}
-              <div className={`p-3 rounded-lg text-center ${
-                cronograma.noite 
-                  ? 'bg-green-50 border-2 border-green-200' 
-                  : 'bg-gray-50 border-2 border-gray-200'
-              }`}>
-                <div className="text-2xl mb-1">🌙</div>
+              <div 
+                className="p-3 rounded-lg text-center border-2"
+                style={
+                  cronograma.noite
+                    ? { backgroundColor: '#F5F2F7', borderColor: '#D1C4E0' }
+                    : { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }
+                }
+              >
+                <Moon className="w-8 h-8 mx-auto mb-1 text-indigo-500" />
                 <p className="text-xs font-medium">
                   {cronograma.noite ? 'Noite planejada' : 'Noite livre'}
                 </p>
@@ -208,7 +223,8 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
 
             {tipoDia !== 'passado' && (cronograma.manha || cronograma.tarde || cronograma.noite) && (
               <Button 
-                className="w-full mt-3 bg-green-600 hover:bg-green-700"
+                className="w-full mt-3 hover:opacity-90"
+                style={{ backgroundColor: '#4A2C60' }}
                 onClick={onIniciarMinisterio}
               >
                 <Play className="w-4 h-4 mr-2" />
@@ -220,42 +236,40 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
           {/* Seção: Estudos Agendados */}
           <div>
             <h3 className="mb-3 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-blue-600" />
+              <BookOpen className="w-5 h-5" style={{ color: '#4A2C60' }} />
               {tipoDia === 'atual' ? 'Estudos de Hoje' : tipoDia === 'passado' ? 'Estudos Realizados' : 'Estudos Agendados'}
             </h3>
             
             {estudos.length > 0 ? (
               <div className="space-y-3">
                 {estudos.map((estudo: any, idx) => (
-                  <Card key={idx} className="p-4">
+                  <Card key={idx} className="p-4 bg-white">
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <span className="text-blue-700 font-medium">{estudo.avatar}</span>
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6DFF0' }}>
+                        <span className="font-medium" style={{ color: '#4A2C60' }}>{estudo.avatar}</span>
                       </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <h4 className="font-medium">{estudo.nome}</h4>
-                          {estudo.realizado && (
-                            <Badge className="bg-green-600 text-white text-xs">
-                              ✅ Realizado
-                            </Badge>
-                          )}
+                          <Badge className="text-white text-xs" style={{ backgroundColor: '#4A2C60' }}>
+                            Estudo Bíblico
+                          </Badge>
                         </div>
                         
                         <div className="space-y-1 text-sm text-gray-600">
                           <p className="flex items-center gap-2">
-                            🕐 {estudo.horario}
+                            <Clock className="w-4 h-4" /> {estudo.horario}
                           </p>
                           <p className="flex items-center gap-2">
-                            📖 {estudo.publicacao}
+                            <BookOpen className="w-4 h-4" /> {estudo.publicacao}
                           </p>
                           <p className="flex items-center gap-2">
-                            📍 {estudo.endereco}
+                            <MapPin className="w-4 h-4" /> {estudo.endereco}
                           </p>
                           {!estudo.realizado && (
                             <p className="flex items-center gap-2 text-orange-600">
-                              🔔 {estudo.lembrete}
+                              <Bell className="w-4 h-4" /> {estudo.lembrete}
                             </p>
                           )}
                         </div>
@@ -292,7 +306,7 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
               </div>
             ) : (
               <Card className="p-6 text-center bg-gray-50">
-                <div className="text-4xl mb-2">📚</div>
+                <BookMarked className="w-12 h-12 mx-auto mb-2 text-gray-400" />
                 <p className="text-sm text-gray-700 mb-1">Nenhum estudo agendado para este dia</p>
                 <p className="text-xs text-gray-600 mb-3">Que tal aproveitar para revisitar?</p>
                 {tipoDia !== 'passado' && (
@@ -308,7 +322,7 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
           {tipoDia === 'atual' && (
             <div>
               <h3 className="mb-3 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <CheckCircle2 className="w-5 h-5" style={{ color: '#4A2C60' }} />
                 Suas Atividades
               </h3>
               
@@ -332,7 +346,7 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
                         </span>
                       </div>
                       {item.checked && (
-                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
                       )}
                     </div>
                   ))}
@@ -345,26 +359,26 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
           {tipoDia === 'passado' && (
             <div>
               <h3 className="mb-3 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <CheckCircle2 className="w-5 h-5" style={{ color: '#4A2C60' }} />
                 Atividades Realizadas
               </h3>
               
               <Card className="p-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
                     <span className="text-gray-700">Sessão de ministério: <strong>2h30min (Manhã)</strong></span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
                     <span className="text-gray-700">Estudos realizados: <strong>2 estudos</strong></span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
                     <span className="text-gray-700">Leitura bíblica: <strong>Lucas 10</strong></span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
                     <span className="text-gray-700">Texto diário: <strong>Concluído</strong></span>
                   </div>
                 </div>
@@ -425,7 +439,8 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
             <>
               {(cronograma.manha || cronograma.tarde || cronograma.noite) && (
                 <Button 
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full hover:opacity-90"
+                  style={{ backgroundColor: '#4A2C60' }}
                   onClick={onIniciarMinisterio}
                 >
                   <Play className="w-4 h-4 mr-2" />
@@ -439,7 +454,8 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
           ) : (
             <>
               <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
-                📊 Ver Relatório do Dia
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Ver Relatório do Dia
               </Button>
               <Button variant="outline" className="w-full">
                 <Edit className="w-4 h-4 mr-2" />

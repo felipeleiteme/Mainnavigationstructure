@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, TrendingUp, Calendar, Target, Users, Clock, ChevronRight } from 'lucide-react';
+import { ArrowLeft, BookOpen, TrendingUp, Calendar, Target, Users, Clock, ChevronRight, Sprout, Star, AlertTriangle, CheckCircle2, BarChart3 } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -53,7 +53,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white px-6 pt-12 pb-6 sticky top-0 z-10">
+      <div className="text-white px-6 pt-12 pb-6 sticky top-0 z-10" style={{ backgroundColor: '#4A2C60' }}>
         <button onClick={onClose} className="flex items-center gap-2 mb-4 hover:opacity-80">
           <ArrowLeft className="w-5 h-5" />
           <span>Início</span>
@@ -70,9 +70,9 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
 
       <div className="px-4 py-6 space-y-6">
         {/* Resumo do Mês */}
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+        <Card className="p-6 border-2" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
           <div className="space-y-3">
-            <h3 className="flex items-center gap-2 text-blue-900">
+            <h3 className="flex items-center gap-2" style={{ color: '#4A2C60' }}>
               <Target className="w-5 h-5" />
               Resumo de Novembro
             </h3>
@@ -80,7 +80,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
               Você conduziu <strong>11 estudos bíblicos</strong> este mês, com <strong>7 estudantes diferentes</strong>.
             </p>
             <p className="text-gray-700">
-              Isso representa <strong className="text-green-600">+2 estudos</strong> comparado ao mês anterior. Continue assim! 📈
+              Isso representa <strong style={{ color: '#C8E046' }}>+2 estudos</strong> comparado ao mês anterior. Continue assim! 📈
             </p>
           </div>
         </Card>
@@ -93,8 +93,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             <div className="space-y-1">
               <p className="text-xs text-gray-600">Total de estudos</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl text-blue-600">11</p>
-                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                <p className="text-2xl" style={{ color: '#4A2C60' }}>11</p>
+                <Badge variant="secondary" className="text-xs" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
                   +2 ↗️
                 </Badge>
               </div>
@@ -104,8 +104,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             <div className="space-y-1">
               <p className="text-xs text-gray-600">Estudantes ativos</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl text-blue-600">7</p>
-                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                <p className="text-2xl" style={{ color: '#4A2C60' }}>7</p>
+                <Badge variant="secondary" className="text-xs" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
                   +1 ↗️
                 </Badge>
               </div>
@@ -115,8 +115,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             <div className="space-y-1">
               <p className="text-xs text-gray-600">Frequência média</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl text-blue-600">1.6x</p>
-                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                <p className="text-2xl" style={{ color: '#4A2C60' }}>1.6x</p>
+                <Badge variant="secondary" className="text-xs" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
                   +0.1 ↗️
                 </Badge>
               </div>
@@ -126,8 +126,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             <div className="space-y-1">
               <p className="text-xs text-gray-600">Taxa de conclusão</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl text-blue-600">91%</p>
-                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                <p className="text-2xl" style={{ color: '#4A2C60' }}>91%</p>
+                <Badge variant="secondary" className="text-xs" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
                   +2% ↗️
                 </Badge>
               </div>
@@ -139,7 +139,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
         {/* Estudos por Estudante */}
         <div className="space-y-3">
           <h3 className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-600" />
+            <Users className="w-5 h-5" style={{ color: '#4A2C60' }} />
             Estudos por Estudante
           </h3>
           
@@ -157,9 +157,9 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
                       <p className="text-sm text-gray-600 truncate">{estudante.publicacao}</p>
                     </div>
                     <Badge variant="secondary" className="flex-shrink-0">
-                      {estudante.status === 'Progredindo' && '📖'}
-                      {estudante.status === 'Iniciando' && '🌱'}
-                      {estudante.status === 'Avançado' && '⭐'}
+                      {estudante.status === 'Progredindo' && <BookOpen className="w-3 h-3" />}
+                      {estudante.status === 'Iniciando' && <Sprout className="w-3 h-3" />}
+                      {estudante.status === 'Avançado' && <Star className="w-3 h-3" />}
                       {' '}{estudante.status}
                     </Badge>
                   </div>
@@ -206,7 +206,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
         {/* Calendário de Estudos */}
         <Card className="p-6">
           <h3 className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-blue-600" />
+            <Calendar className="w-5 h-5" style={{ color: '#4A2C60' }} />
             Calendário de Estudos
           </h3>
           
@@ -232,13 +232,14 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
                   key={dia}
                   className={`aspect-square flex items-center justify-center rounded-lg text-sm relative ${
                     estudosDia 
-                      ? 'bg-blue-100 text-blue-900 font-medium' 
+                      ? 'font-medium' 
                       : 'text-gray-600'
                   }`}
+                  style={estudosDia ? { backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' } : {}}
                 >
                   {dia}
                   {estudosDia && estudosDia.estudos > 1 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 text-white text-xs rounded-full flex items-center justify-center" style={{ backgroundColor: '#4A2C60' }}>
                       {estudosDia.estudos}
                     </span>
                   )}
@@ -248,7 +249,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
           </div>
           
           <p className="text-sm text-gray-600 mt-4 flex items-center gap-2">
-            <span className="w-4 h-4 bg-blue-100 rounded"></span>
+            <span className="w-4 h-4 rounded" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}></span>
             = Dia com estudo
           </p>
         </Card>
@@ -256,12 +257,12 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
         {/* Insights e Padrões */}
         <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
           <h3 className="flex items-center gap-2 mb-4 text-purple-900">
-            📊 Padrões Identificados
+            <BarChart3 className="w-5 h-5" /> Padrões Identificados
           </h3>
           
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-2">
-              <span className="text-green-600 flex-shrink-0">✅</span>
+              <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
               <div>
                 <p className="text-gray-900"><strong>Melhor dia da semana:</strong> Quinta-feira (4 estudos)</p>
                 <p className="text-gray-600 text-xs mt-1">A maioria dos seus estudos acontece nas quintas.</p>
@@ -269,7 +270,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             </div>
             
             <div className="flex items-start gap-2">
-              <span className="text-green-600 flex-shrink-0">✅</span>
+              <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
               <div>
                 <p className="text-gray-900"><strong>Horário preferido:</strong> 16h - 19h (6 estudos)</p>
                 <p className="text-gray-600 text-xs mt-1">Você prefere estudar no final da tarde.</p>
@@ -277,7 +278,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             </div>
             
             <div className="flex items-start gap-2">
-              <span className="text-orange-600 flex-shrink-0">⚠️</span>
+              <AlertTriangle className="w-4 h-4 text-orange-600 flex-shrink-0" />
               <div>
                 <p className="text-gray-900"><strong>Atenção:</strong> Maria está com intervalo longo</p>
                 <p className="text-gray-600 text-xs mt-1">Faz 14 dias desde o último estudo com Maria.</p>
@@ -285,7 +286,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             </div>
             
             <div className="flex items-start gap-2">
-              <span className="text-blue-600 flex-shrink-0">🎯</span>
+              <Target className="w-4 h-4 flex-shrink-0" style={{ color: '#4A2C60' }} />
               <div>
                 <p className="text-gray-900"><strong>Progresso:</strong> 2 estudantes avançaram de nível</p>
                 <p className="text-gray-600 text-xs mt-1">João passou de Iniciando para Progredindo</p>
@@ -314,8 +315,11 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
                 <div key={idx} className="flex flex-col items-center gap-1 flex-1">
                   <div className="w-full flex items-end justify-center" style={{ height: '100px' }}>
                     <div 
-                      className={`w-8 ${idx === 5 ? 'bg-blue-600' : 'bg-blue-300'} rounded-t`}
-                      style={{ height: `${(item.valor / 12) * 100}%` }}
+                      className="w-8 rounded-t"
+                      style={{ 
+                        height: `${(item.valor / 12) * 100}%`,
+                        backgroundColor: idx === 5 ? '#4A2C60' : 'rgba(74, 44, 96, 0.3)'
+                      }}
                     />
                   </div>
                   <span className="text-xs text-gray-600">{item.mes}</span>
@@ -335,8 +339,14 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
       </div>
 
       {/* Botões de Ação Fixos */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 space-y-2">
-        <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={onNavigateToEstudos}>
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 space-y-2 z-20">
+        <Button 
+          className="w-full" 
+          style={{ backgroundColor: '#4A2C60', color: 'white' }}
+          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          onClick={onNavigateToEstudos}
+        >
           <BookOpen className="w-4 h-4 mr-2" />
           Ver Todos os Estudos
         </Button>

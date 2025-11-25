@@ -1,4 +1,4 @@
-import { Calendar, TrendingUp, BookOpen, Sprout, Video, FileText, User } from 'lucide-react';
+import { Calendar, TrendingUp, BookOpen, Sprout, User, Sun, CloudSun, Moon, CheckCircle, Zap } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
@@ -8,15 +8,13 @@ import DashboardEmptyState from '../inicio/DashboardEmptyState';
 import EstatisticasPage from '../pages/EstatisticasPage';
 import CronogramaPage from '../pages/CronogramaPage';
 import ProgressoPage from '../pages/ProgressoPage';
+import CadastrarTempoPage from '../pages/CadastrarTempoPage';
 import EstudosDetalhes from '../estatisticas/EstudosDetalhes';
 import RevisitasDetalhes from '../estatisticas/RevisitasDetalhes';
-import PublicacoesDetalhes from '../estatisticas/PublicacoesDetalhes';
-import VideosDetalhes from '../estatisticas/VideosDetalhes';
 import DiaDetalhes from '../cronograma/DiaDetalhes';
 import { DataService } from '../../services/dataService';
 import { seedDemoData } from '../../services/seedData';
 import FAB from '../shared/FAB';
-import IniciarSessaoModal from '../shared/IniciarSessaoModal';
 import ControlesSessaoModal from '../shared/ControlesSessaoModal';
 import ResumoSessaoModal from '../shared/ResumoSessaoModal';
 import { toast } from 'sonner';
@@ -27,100 +25,93 @@ interface InicioTabProps {
 
 export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
   const [hasData, setHasData] = useState(true); // Check if user has any data
-  const [paginaAtual, setPaginaAtual] = useState<'home' | 'estatisticas' | 'cronograma' | 'progresso'>('home');
+  const [paginaAtual, setPaginaAtual] = useState<'home' | 'estatisticas' | 'cronograma' | 'progresso' | 'cadastrar-tempo'>('home');
   const [diaSelecionado, setDiaSelecionado] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0); // Para forçar atualização das estatísticas
   const [showEstudosDetalhes, setShowEstudosDetalhes] = useState(false);
   const [showRevisitasDetalhes, setShowRevisitasDetalhes] = useState(false);
-  const [showPublicacoesDetalhes, setShowPublicacoesDetalhes] = useState(false);
-  const [showVideosDetalhes, setShowVideosDetalhes] = useState(false);
   const [showDiaDetalhes, setShowDiaDetalhes] = useState(false);
 
   // Estados da sessão de ministério
-  const [showIniciarSessao, setShowIniciarSessao] = useState(false);
   const [showControlesSessao, setShowControlesSessao] = useState(false);
   const [showResumoSessao, setShowResumoSessao] = useState(false);
-  const [sessaoAtiva, setSessaoAtiva] = useState<{
-    tempoDecorrido: number;
-    pausada: boolean;
-    tipo: string;
-    revisitasVisitadas: number;
-    estudosRealizados: number;
-    iniciadaEm: number;
-  } | null>(null);
+  const [sessaoAtiva, setSessaoAtiva] = useState(DataService.getSessaoAtiva());
+  
+  // Estado para cronograma da semana
+  const [diasSemana, setDiasSemana] = useState<any[]>([]);
 
-  // Carregar sessão salva ao montar componente
+  // Carregar dados do cronograma da semana
   useEffect(() => {
-    const sessaoSalva = localStorage.getItem('sessaoAtiva');
-    if (sessaoSalva) {
-      const sessao = JSON.parse(sessaoSalva);
-      // Calcular tempo decorrido desde quando foi salva
-      const agora = Date.now();
-      const tempoPassado = Math.floor((agora - sessao.ultimaAtualizacao) / 60000); // minutos
-      sessao.tempoDecorrido = (sessao.tempoDecorrido || 0) + (sessao.pausada ? 0 : tempoPassado);
-      setSessaoAtiva(sessao);
-    }
+    carregarCronogramaSemana();
+    
+    // Listen for data changes
+    const handleDataChange = () => carregarCronogramaSemana();
+    window.addEventListener('mynis-data-change', handleDataChange);
+    
+    return () => {
+      window.removeEventListener('mynis-data-change', handleDataChange);
+    };
   }, []);
+  
+  const carregarCronogramaSemana = () => {
+    const hoje = new Date();
+    const primeiroDiaSemana = new Date(hoje);
+    primeiroDiaSemana.setDate(hoje.getDate() - hoje.getDay() + 1); // Monday
+    primeiroDiaSemana.setHours(0, 0, 0, 0);
 
-  // Atualizar cronômetro a cada minuto
-  useEffect(() => {
-    if (sessaoAtiva && !sessaoAtiva.pausada) {
-      const interval = setInterval(() => {
-        setSessaoAtiva(prev => {
-          if (!prev) return null;
-          const novaSessao = {
-            ...prev,
-            tempoDecorrido: prev.tempoDecorrido + 1,
-          };
-          // Salvar no localStorage
-          localStorage.setItem('sessaoAtiva', JSON.stringify({
-            ...novaSessao,
-            ultimaAtualizacao: Date.now(),
-          }));
-          return novaSessao;
-        });
-      }, 60000); // 1 minuto
+    const todosEstudos = DataService.getEstudos();
+    const todasRevisitas = DataService.getRevisitas();
+    
+    const diasNomes = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    const diasData: any[] = [];
 
-      return () => clearInterval(interval);
+    for (let i = 0; i < 7; i++) {
+      const diaAtual = new Date(primeiroDiaSemana);
+      diaAtual.setDate(primeiroDiaSemana.getDate() + i);
+      
+      const dataStr = diaAtual.toISOString().split('T')[0];
+      const hojeStr = hoje.toISOString().split('T')[0];
+      
+      // Filter estudos and revisitas for this day
+      const estudosDoDia = todosEstudos.filter(e => {
+        const estudoDate = e.data.split('T')[0];
+        return estudoDate === dataStr;
+      });
+      
+      const revisitasDoDia = todasRevisitas.filter(r => {
+        if (!r.proximaVisita) return false;
+        const proximaVisitaDate = r.proximaVisita.split('T')[0];
+        return proximaVisitaDate === dataStr;
+      });
+      
+      const totalAgendamentos = estudosDoDia.length + revisitasDoDia.length;
+      const isPast = diaAtual < hoje && dataStr !== hojeStr;
+      const isToday = dataStr === hojeStr;
+      
+      diasData.push({
+        dia: diasNomes[i],
+        data: diaAtual.getDate().toString(),
+        estudos: estudosDoDia.length,
+        revisitas: revisitasDoDia.length,
+        totalAgendamentos,
+        isPast,
+        isToday,
+        status: totalAgendamentos > 0 
+          ? isToday 
+            ? `${totalAgendamentos} ${totalAgendamentos > 1 ? 'agendamentos' : 'agendamento'} hoje`
+            : `${totalAgendamentos} ${totalAgendamentos > 1 ? 'agendamentos' : 'agendamento'}`
+          : 'Livre'
+      });
     }
-  }, [sessaoAtiva]);
+    
+    // Filter out past days
+    setDiasSemana(diasData.filter(d => !d.isPast));
+  };
 
   const handleIniciarSessao = (tipo: string) => {
     const novaSessao = DataService.iniciarSessaoAtiva(tipo);
     setSessaoAtiva(novaSessao);
-    setShowIniciarSessao(false);
     toast.success('Sessão iniciada! Boa pregação! 🙏');
-  };
-
-  const handleCadastroManual = (dados: { tipo: string; horas: number; minutos: number }) => {
-    // Criar uma "sessão virtual" com o tempo já preenchido
-    const tempoTotal = dados.horas * 60 + dados.minutos;
-    
-    const sessaoVirtual = {
-      tempoDecorrido: tempoTotal,
-      pausada: false,
-      tipo: dados.tipo,
-      revisitasVisitadas: 0,
-      estudosRealizados: 0,
-      iniciadaEm: Date.now(),
-      ultimaAtualizacao: Date.now(),
-      publicacoes: 0,
-      videos: 0,
-    };
-    
-    // Salvar no localStorage para que finalizarSessaoAtiva possa acessar
-    localStorage.setItem('sessaoAtiva', JSON.stringify(sessaoVirtual));
-    
-    // Definir sessão como "manual" para mostrar no resumo
-    setSessaoAtiva(sessaoVirtual);
-    setShowIniciarSessao(false);
-    
-    // Ir direto para o resumo
-    setShowResumoSessao(true);
-    
-    toast.success(`Tempo registrado: ${dados.horas}h ${dados.minutos}min ⏱️`, {
-      description: 'Complete as informações para salvar no relatório',
-    });
   };
 
   const handlePausarSessao = () => {
@@ -230,8 +221,6 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
   // Calcular estatísticas reais do DataService
   const totalEstudos = DataService.getTotalEstudosMes();
   const totalRevisitasNovas = DataService.getTotalRevisitasNovasMes();
-  const totalPublicacoes = DataService.getTotalPublicacoesMes();
-  const totalVideos = DataService.getTotalVideosMes();
   const horasCampo = DataService.getTotalHorasCampo();
   const horasCredito = DataService.getTotalHorasCredito();
   const horasTotal = horasCampo + horasCredito;
@@ -241,25 +230,40 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
   const ofensivaLeitura = DataService.getOfensivaLeitura();
   const alvosAtivos = DataService.getAlvosAtivos().length;
   
-  // Função para formatar horas no formato "Xh Ymin" ou "XhYmin"
-  const formatarHoras = (horas: number): string => {
+  // Calcular estatísticas anuais
+  const anoAtual = new Date().getFullYear();
+  const horasAno = DataService.getTotalHorasAno(anoAtual);
+  const metaAnual = DataService.getMetaAnual();
+  const progressoAnual = (horasAno / metaAnual) * 100;
+  
+  // Format hours
+  const formatarHoras = (horas: number) => {
     const h = Math.floor(horas);
-    const min = Math.round((horas - h) * 60);
-    if (min === 0) return `${h}h`;
-    if (h === 0) return `${min}min`;
-    return `${h}h${min}`;
+    const m = Math.round((horas - h) * 60);
+    return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  };
+  
+  // Get publisher type label
+  const getTipoPublicadorLabel = (tipo: string) => {
+    const tipos: Record<string, string> = {
+      'publicador-regular': 'Publicador Regular',
+      'pioneiro-auxiliar-30': 'Pioneiro Auxiliar (30h)',
+      'pioneiro-auxiliar-50': 'Pioneiro Auxiliar (50h)',
+      'pioneiro-regular': 'Pioneiro Regular',
+    };
+    return tipos[tipo] || tipo;
   };
 
   const currentHour = new Date().getHours();
   let greeting = 'Boa noite';
-  let greetingIcon = '🌙';
+  let GreetingIcon = Moon;
   
   if (currentHour < 12) {
     greeting = 'Bom dia';
-    greetingIcon = '☀️';
+    GreetingIcon = Sun;
   } else if (currentHour < 18) {
     greeting = 'Boa tarde';
-    greetingIcon = '🌤️';
+    GreetingIcon = CloudSun;
   }
 
   // Show empty state for first-time users
@@ -267,13 +271,13 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
     return (
       <div className="min-h-full bg-gradient-to-b from-green-50 to-gray-50">
         {/* Cabeçalho Caloroso */}
-        <div className="bg-gradient-to-br from-green-600 to-green-700 text-white px-6 pt-12 pb-8 rounded-b-3xl">
-          <div className="flex items-center gap-4 mb-4">
+        <div style={{ backgroundColor: '#4A2C60' }} className="text-white px-sm pt-12 pb-lg rounded-b-3xl">
+          <div className="flex items-center gap-sm mb-sm">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
               <User className="w-8 h-8" />
             </div>
             <div>
-              <p className="text-lg opacity-90">{greetingIcon} {greeting},</p>
+              <p className="text-lg opacity-90"><GreetingIcon className="inline w-5 h-5 mr-2" />{greeting},</p>
               <h1 className="text-2xl">Felipe!</h1>
             </div>
           </div>
@@ -307,168 +311,218 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
   }
 
   if (paginaAtual === 'cronograma') {
-    return <CronogramaPage onVoltar={() => setPaginaAtual('home')} diaSelecionado={diaSelecionado} />;
+    return <CronogramaPage 
+      onVoltar={() => setPaginaAtual('home')} 
+      diaSelecionado={diaSelecionado}
+      onNavigateToEstudo={(estudoId) => {
+        // Navegar para aba de estudos e abrir detalhes
+        onNavigateToTab?.('estudos', { estudoId, abrirDetalhes: true });
+      }}
+      onNavigateToRevisita={(revisitaId) => {
+        // Navegar para aba de campo e abrir detalhes
+        onNavigateToTab?.('campo', { revisitaId, abrirDetalhes: true });
+      }}
+    />;
   }
 
   if (paginaAtual === 'progresso') {
     return <ProgressoPage onVoltar={() => setPaginaAtual('home')} />;
   }
 
+  if (paginaAtual === 'cadastrar-tempo') {
+    return <CadastrarTempoPage onVoltar={() => setPaginaAtual('home')} />;
+  }
+
   return (
-    <div className="min-h-full bg-gradient-to-b from-green-50 to-gray-50">
-      {/* Cabeçalho Caloroso */}
-      <div className="bg-gradient-to-br from-green-600 to-green-700 text-white px-6 pt-12 pb-8 rounded-b-3xl">
-        <div className="flex items-center gap-4 mb-4">
+    <div className="min-h-full bg-neutral">
+      {/* Header */}
+      <div className="bg-primary-500 text-white px-sm pt-12 pb-lg rounded-b-3xl">
+        <div className="flex items-center gap-sm mb-sm">
           <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-            <User className="w-8 h-8" />
+            {DataService.getPerfil().avatar ? (
+              <img 
+                src={DataService.getPerfil().avatar} 
+                alt={DataService.getPerfil().nome} 
+                className="w-16 h-16 rounded-full object-cover border-2 border-white/30"
+              />
+            ) : (
+              <User className="w-8 h-8" />
+            )}
           </div>
           <div>
-            <p className="text-lg opacity-90">{greetingIcon} {greeting},</p>
-            <h1 className="text-2xl">{DataService.getPerfil().nome}!</h1>
+            <p className="text-lg text-primary-100 flex items-center gap-2">
+              <GreetingIcon className="w-5 h-5" /> {greeting},
+            </p>
+            <h2 className="text-2xl">{DataService.getPerfil().nome}!</h2>
           </div>
         </div>
         
         {/* Versículo do Ano */}
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mt-4">
-          <p className="text-xs font-medium opacity-75 mb-1">Texto do Ano</p>
+          <p className="text-xs font-medium text-primary-100 mb-1">Texto do Ano</p>
           <p className="text-sm opacity-90 italic">
-            "Dêem a Jeová a glória que o seu nome merece."
+            "{DataService.getPerfil().textoAno?.texto || 'Dêem a Jeová a glória que o seu nome merece.'}"
           </p>
-          <p className="text-xs opacity-75 mt-1">— Sal. 96:8</p>
+          <p className="text-xs text-primary-100 mt-1">— {DataService.getPerfil().textoAno?.referencia || 'Sal. 96:8'}</p>
         </div>
       </div>
 
       <div className="px-4 py-6 space-y-4">
         {/* Card: Progresso do Mês */}
-        <Card className="p-6">
+        <Card 
+          className="p-6 cursor-pointer hover:shadow-lg transition-shadow bg-white border-primary-100"
+          onClick={() => setPaginaAtual('progresso')}
+        >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-600" />
-              Progresso do Mês
-            </h3>
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
-              ✅ No ritmo!
-            </Badge>
+            <div className="flex-1">
+              <h3 className="flex items-center gap-2 text-primary-700">
+                <TrendingUp className="w-6 h-6 text-primary-600" />
+                Progresso do Mês
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                {getTipoPublicadorLabel(DataService.getPerfil().tipoPublicador)}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="flex items-center gap-1 bg-secondary-100 text-secondary-800 border-secondary-300">
+                <CheckCircle className="w-3 h-3" /> No ritmo!
+              </Badge>
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
           </div>
           
           <div className="space-y-3">
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-3xl text-green-600">{formatarHoras(horasTotal)}</p>
-                <p className="text-sm text-gray-500">de {formatarHoras(metaMensal)}h</p>
+                <p className="text-3xl text-primary-600">{formatarHoras(horasTotal)}</p>
+                <p className="text-sm text-gray-500">de {metaMensal}h/mês</p>
               </div>
-              <p className="text-xs text-gray-600">
-                Campo: {formatarHoras(horasCampo)} | Crédito: {formatarHoras(horasCredito)}
-              </p>
             </div>
             
             {/* Barra de progresso com visualização dupla */}
-            <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
-              {/* Barra de campo (verde sólido) */}
+            <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden border-2 border-secondary-400">
+              {/* Barra de campo (roxo sólido) */}
               <div 
-                className="absolute top-0 left-0 h-full bg-green-600"
+                className="absolute top-0 left-0 h-full bg-primary-600"
                 style={{ width: `${progressoCampo}%` }}
               />
-              {/* Barra de crédito (verde hachurado) */}
+              {/* Barra de crédito (verde lima, sobreposta) */}
               <div 
-                className="absolute top-0 h-full bg-green-300 opacity-60"
-                style={{ 
-                  left: `${progressoCampo}%`,
-                  width: `${progressoPercentual - progressoCampo}%`,
-                  backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 8px)'
-                }}
-              />
-              {/* Linha de meta */}
-              <div 
-                className="absolute top-0 h-full border-r-2 border-dashed border-gray-500"
-                style={{ left: '100%' }}
+                className="absolute top-0 left-0 h-full bg-secondary-500"
+                style={{ width: `${progressoPercentual}%` }}
               />
             </div>
             
-            <p className="text-sm text-gray-600">
-              💪 Você está no caminho certo! Continue assim.
+            <p className="text-sm text-gray-600 flex items-center gap-1">
+              <Zap className="w-4 h-4 text-secondary-600" /> Você está no caminho certo! Continue assim.
             </p>
           </div>
         </Card>
 
         {/* Card: Cronograma da Semana */}
-        <Card className="p-6">
-          <h3 className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-indigo-600" />
-            Cronograma da Semana
-          </h3>
+        <Card 
+          className="p-6 cursor-pointer hover:shadow-lg transition-shadow bg-white border-primary-100"
+          onClick={() => setPaginaAtual('cronograma')}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="flex items-center gap-2 text-primary-700">
+              <Calendar className="w-5 h-5 text-primary-600" />
+              Cronograma da Semana
+            </h3>
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
           
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2">
-            {[
-              { dia: 'Seg', data: '18', status: 'Manhã planejada', estudos: 2 },
-              { dia: 'Ter', data: '19', status: 'Livre', estudos: 0 },
-              { dia: 'Qua', data: '20', status: 'Tarde planejada', estudos: 1 },
-              { dia: 'Qui', data: '21', status: 'Manhã planejada', estudos: 3 },
-              { dia: 'Sex', data: '22', status: 'Livre', estudos: 0 },
-              { dia: 'Sáb', data: '23', status: 'Manhã planejada', estudos: 2 },
-              { dia: 'Dom', data: '24', status: 'Livre', estudos: 0 },
-            ].map((dia, idx) => (
-              <button
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
+            {diasSemana.map((dia, idx) => (
+              <div
                 key={idx}
-                className={`flex-shrink-0 w-24 p-3 rounded-lg border transition-all ${
+                className={`flex-shrink-0 w-28 p-3 rounded-lg border pointer-events-none ${
                   dia.status !== 'Livre' 
-                    ? 'bg-green-50 border-green-200 hover:bg-green-100' 
-                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                    ? 'bg-secondary-50 border-secondary-300' 
+                    : 'bg-gray-50 border-gray-200'
                 }`}
-                onClick={() => {
-                  setDiaSelecionado(dia);
-                  setShowDiaDetalhes(true);
-                }}
               >
                 <p className="text-xs text-gray-600">{dia.dia}</p>
-                <p className="text-lg">{dia.data}</p>
-                <p className="text-xs text-gray-700 mt-1">{dia.status}</p>
+                <p className="text-lg text-primary-700">{dia.data}</p>
                 {dia.estudos > 0 && (
-                  <p className="text-xs text-green-700 mt-1">{dia.estudos} estudos</p>
+                  <p className="text-xs mt-1 text-primary-600">
+                    {dia.estudos} {dia.estudos > 1 ? 'estudos' : 'estudo'}
+                  </p>
                 )}
-              </button>
+                {dia.revisitas > 0 && (
+                  <p className="text-xs mt-1 text-primary-600">
+                    {dia.revisitas} {dia.revisitas > 1 ? 'revisitas' : 'revisita'}
+                  </p>
+                )}
+                {dia.totalAgendamentos === 0 && (
+                  <p className="text-xs text-gray-700 mt-1">Livre</p>
+                )}
+              </div>
             ))}
           </div>
         </Card>
 
         {/* Card: Estatísticas do Mês */}
-        <Card className="p-6">
-          <h3 className="mb-4">Estatísticas do Mês</h3>
+        <Card 
+          className="p-6 cursor-pointer hover:shadow-lg transition-shadow bg-white border-primary-100"
+          onClick={() => setPaginaAtual('estatisticas')}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-6 h-6 text-primary-600" />
+              <h3 className="text-primary-700">Estatísticas</h3>
+            </div>
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <button 
-              className="text-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-              onClick={() => setShowEstudosDetalhes(true)}
-            >
-              <BookOpen className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-              <p className="text-2xl text-blue-900">{totalEstudos}</p>
-              <p className="text-sm text-gray-600">Estudos</p>
-            </button>
+          {/* Meta Anual */}
+          <div className="mb-4 p-4 rounded-xl bg-white border-2 border-primary-200">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-primary-700">Meta Anual {anoAtual}</span>
+              <span className="text-2xl text-primary-700">{metaAnual}h</span>
+            </div>
             
-            <button 
-              className="text-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-              onClick={() => setShowRevisitasDetalhes(true)}
-            >
-              <Sprout className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <p className="text-2xl text-green-900">{totalRevisitasNovas}</p>
-              <p className="text-sm text-gray-600">Revisitas Novas</p>
-            </button>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-primary-600">Realizado</span>
+                <span className="text-lg text-primary-800">{formatarHoras(horasAno)}</span>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-primary-700">{progressoAnual.toFixed(0)}% concluído</span>
+                <span className="text-gray-600">
+                  Faltam {formatarHoras(metaAnual - horasAno)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid de estatísticas */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-3 rounded-lg bg-secondary-50 border-2 border-secondary-200">
+              <BookOpen className="w-6 h-6 mx-auto mb-1 text-secondary-700" />
+              <p className="text-2xl text-secondary-700">{totalEstudos}</p>
+              <p className="text-xs text-gray-600">Estudos</p>
+            </div>
             
-            <button className="text-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-              onClick={() => setShowPublicacoesDetalhes(true)}
-            >
-              <FileText className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-              <p className="text-2xl text-purple-900">{totalPublicacoes}</p>
-              <p className="text-sm text-gray-600">Publicações</p>
-            </button>
-            
-            <button className="text-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
-              onClick={() => setShowVideosDetalhes(true)}
-            >
-              <Video className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-              <p className="text-2xl text-orange-900">{totalVideos}</p>
-              <p className="text-sm text-gray-600">Vídeos</p>
-            </button>
+            <div className="text-center p-3 rounded-lg bg-secondary-50 border-2 border-secondary-200">
+              <Sprout className="w-6 h-6 mx-auto mb-1 text-secondary-700" />
+              <p className="text-2xl text-secondary-700">{totalRevisitasNovas}</p>
+              <p className="text-xs text-gray-600">Revisitas</p>
+            </div>
+          </div>
+
+          {/* Footer hint */}
+          <div className="mt-4 pt-3 border-t border-gray-100 text-[rgb(10,10,10)]">
+            <p className="text-xs text-gray-500 opacity-30 text-center">
+              Toque para ver detalhes completos
+            </p>
           </div>
         </Card>
 
@@ -483,7 +537,7 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
           tempoDecorrido: sessaoAtiva.tempoDecorrido,
           pausada: sessaoAtiva.pausada,
         } : undefined}
-        onIniciarMinisterio={() => setShowIniciarSessao(true)}
+        onIniciarMinisterio={() => setPaginaAtual('cadastrar-tempo')}
         onAbrirControles={() => setShowControlesSessao(true)}
       />
       
@@ -509,28 +563,6 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
         />
       )}
       
-      {/* Modal Detalhes de Publicações */}
-      {showPublicacoesDetalhes && (
-        <PublicacoesDetalhes 
-          onClose={() => setShowPublicacoesDetalhes(false)}
-          onNavigateToPublicacoes={() => {
-            setShowPublicacoesDetalhes(false);
-            onNavigateToTab?.('publicacoes');
-          }}
-        />
-      )}
-      
-      {/* Modal Detalhes de Vídeos */}
-      {showVideosDetalhes && (
-        <VideosDetalhes 
-          onClose={() => setShowVideosDetalhes(false)}
-          onNavigateToVideos={() => {
-            setShowVideosDetalhes(false);
-            onNavigateToTab?.('videos');
-          }}
-        />
-      )}
-      
       {/* Modal Detalhes do Dia */}
       {showDiaDetalhes && (
         <DiaDetalhes 
@@ -548,15 +580,6 @@ export default function InicioTab({ onNavigateToTab }: InicioTabProps) {
           onAdicionarVisita={handleAdicionarVisita}
           onFinalizarSessao={handleFinalizarSessao}
           sessao={sessaoAtiva}
-        />
-      )}
-      
-      {/* Modal Iniciar Sessão */}
-      {showIniciarSessao && (
-        <IniciarSessaoModal
-          onClose={() => setShowIniciarSessao(false)}
-          onIniciarSessao={handleIniciarSessao}
-          onCadastroManual={handleCadastroManual}
         />
       )}
       

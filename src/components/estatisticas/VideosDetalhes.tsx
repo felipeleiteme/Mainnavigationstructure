@@ -1,4 +1,4 @@
-import { ArrowLeft, Video, TrendingUp, Play, ThumbsUp, MessageSquare, Sparkles } from 'lucide-react';
+import { ArrowLeft, Video, TrendingUp, Play, ThumbsUp, MessageSquare, Sparkles, Target, Users, BookOpen, Lightbulb, BarChart3, Star, Microscope, PartyPopper, Download } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -47,6 +47,16 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
     }));
   
   // Categorias de vídeos
+  const getIcon = (nome: string) => {
+    switch(nome) {
+      case 'Ensino': return Target;
+      case 'Família': return Users;
+      case 'Reino': return BookOpen;
+      case 'Propósito': return Star;
+      default: return Microscope;
+    }
+  };
+
   const categorias = Array.from(videosPorCategoria.entries())
     .map(([nome, quantidade]) => ({
       nome,
@@ -56,10 +66,7 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
            nome === 'Família' ? 'green' :
            nome === 'Reino' ? 'purple' :
            nome === 'Propósito' ? 'orange' : 'pink',
-      emoji: nome === 'Ensino' ? '🎯' :
-             nome === 'Família' ? '👨‍👩‍👧' :
-             nome === 'Reino' ? '📚' :
-             nome === 'Propósito' ? '🌟' : '🔬'
+      icon: getIcon(nome)
     }))
     .sort((a, b) => b.quantidade - a.quantidade);
 
@@ -93,7 +100,7 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Header */}
-      <div className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white px-6 pt-12 pb-6 sticky top-0 z-10">
+      <div className="text-white px-6 pt-12 pb-6 sticky top-0 z-10" style={{ backgroundColor: '#4A2C60' }}>
         <button onClick={onClose} className="flex items-center gap-2 mb-4 hover:opacity-80">
           <ArrowLeft className="w-5 h-5" />
           <span>Início</span>
@@ -207,7 +214,7 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
               <div key={idx}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">{cat.emoji}</span>
+                    <cat.icon className="w-5 h-5" />
                     <span className="text-sm">{cat.nome}</span>
                   </div>
                   <span className="text-sm font-medium">{cat.quantidade} ({cat.percentual}%)</span>
@@ -222,7 +229,7 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
             ))}
           </div>
           
-          <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded">
+          <p className="text-sm text-gray-700 p-3 rounded" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)' }}>
             💡 Você usa principalmente vídeos motivacionais. Boa estratégia para interessados!
           </p>
         </Card>
@@ -247,8 +254,8 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
         </Card>
 
         {/* Reações e Follow-up */}
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <h3 className="mb-4 text-blue-900">Reações e Follow-up</h3>
+        <Card className="p-6 bg-gradient-to-br border" style={{ backgroundImage: 'linear-gradient(to bottom right, rgba(74, 44, 96, 0.05), rgba(74, 44, 96, 0.1))', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
+          <h3 className="mb-4" style={{ color: '#4A2C60' }}>Reações e Follow-up</h3>
           
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="text-center p-3 bg-white rounded-lg">
@@ -270,7 +277,7 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
           
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2 p-3 bg-white rounded">
-              <span className="text-xl">✨</span>
+              <Sparkles className="w-5 h-5 text-yellow-500" />
               <span><strong>2 pessoas</strong> iniciaram estudo após assistir</span>
             </div>
             <div className="flex items-center gap-2 p-3 bg-white rounded">
@@ -285,11 +292,12 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
           
           <div className="mt-4 p-4 bg-purple-100 border-2 border-purple-300 rounded-lg">
             <p className="text-sm text-purple-900 text-center">
-              <strong className="text-lg">🎉 Destaque:</strong>
+              <PartyPopper className="w-6 h-6 inline-block text-purple-600 mb-1" />
               <br />
               <strong>25% dos vídeos resultaram em novos estudos bíblicos!</strong>
               <br />
-              <span className="text-xs">Excelente taxa de conversão 🎯</span>
+              <Target className="w-4 h-4 inline-block text-purple-700" />
+              <span className="text-xs"> Excelente taxa de conversão</span>
             </p>
           </div>
         </Card>

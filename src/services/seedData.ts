@@ -217,6 +217,8 @@ export function seedDemoData() {
       endereco: 'Rua Nova, 100',
       origem: 'casa-em-casa' as const,
       dataAdicao: new Date(anoAtual, mesAtual, 5).toISOString(),
+      ultimaVisita: new Date(anoAtual, mesAtual, diaAtual - 3).toISOString(),
+      proximaVisita: new Date(anoAtual, mesAtual, diaAtual + 1, 15, 0).toISOString(), // Amanhã às 15h
       quantidadeVisitas: 2,
       status: 'nova' as const,
       primeiraConversa: 'Interessado em família',
@@ -230,6 +232,8 @@ export function seedDemoData() {
       endereco: 'Av. Paulista, 200',
       origem: 'testemunho-publico' as const,
       dataAdicao: new Date(anoAtual, mesAtual, 8).toISOString(),
+      ultimaVisita: new Date(anoAtual, mesAtual, diaAtual - 5).toISOString(),
+      proximaVisita: new Date(anoAtual, mesAtual, diaAtual + 2, 16, 30).toISOString(), // Daqui a 2 dias às 16h30
       quantidadeVisitas: 3,
       status: 'quente' as const,
       primeiraConversa: 'Pergunta sobre sofrimento',
@@ -243,6 +247,8 @@ export function seedDemoData() {
       endereco: 'Rua São João, 300',
       origem: 'casa-em-casa' as const,
       dataAdicao: new Date(anoAtual, mesAtual, 12).toISOString(),
+      ultimaVisita: new Date(anoAtual, mesAtual, diaAtual - 7).toISOString(),
+      proximaVisita: new Date(anoAtual, mesAtual, diaAtual + 4, 10, 30).toISOString(), // Daqui a 4 dias às 10h30
       quantidadeVisitas: 1,
       status: 'nova' as const,
       primeiraConversa: 'Aceitou revista',
@@ -256,11 +262,28 @@ export function seedDemoData() {
       endereco: 'Rua das Palmeiras, 400',
       origem: 'testemunho-informal' as const,
       dataAdicao: new Date(anoAtual, mesAtual, 14).toISOString(),
+      ultimaVisita: new Date(anoAtual, mesAtual, diaAtual - 2).toISOString(),
+      proximaVisita: new Date(anoAtual, mesAtual, diaAtual, 11, 0).toISOString(), // HOJE às 11h
       quantidadeVisitas: 2,
       status: 'nova' as const,
       primeiraConversa: 'Vizinha que perguntou sobre reuniões',
       publicacoesEntregues: ['Folheto'],
       interesseEstudo: false
+    },
+    {
+      nome: 'Maria da Silva',
+      avatar: 'MS',
+      telefone: '+55 11 98888-6666',
+      endereco: 'Rua da Silva',
+      origem: 'casa-em-casa' as const,
+      dataAdicao: new Date(anoAtual, mesAtual, 10).toISOString(),
+      ultimaVisita: new Date(anoAtual, mesAtual, diaAtual - 7).toISOString(),
+      proximaVisita: new Date(anoAtual, mesAtual, diaAtual, 14, 30).toISOString(), // HOJE às 14h30
+      quantidadeVisitas: 1,
+      status: 'nova' as const,
+      primeiraConversa: 'Sim',
+      publicacoesEntregues: [],
+      interesseEstudo: true
     },
     {
       nome: 'José Pereira',

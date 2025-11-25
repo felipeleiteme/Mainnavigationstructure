@@ -1,8 +1,3 @@
-import { useState, useEffect, useRef } from 'react';
-import { ChevronRight, Check, Clock, X } from 'lucide-react';
-import { Card } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
 import { toast } from 'sonner@2.0.3';
 import { 
   gerarProximasAcoes, 
@@ -10,7 +5,7 @@ import {
   adiarAcao, 
   removerAcao,
   ProximaAcao 
-} from '../../utils/proximasAcoes';
+} from '../../utils/helpers/proximasAcoes';
 
 interface ProximasAcoesProps {
   onNavigate: (destino: any) => void;
@@ -145,10 +140,12 @@ export default function ProximasAcoes({ onNavigate }: ProximasAcoesProps) {
   if (acoes.length === 0) {
     return (
       <Card className="p-6 text-center">
-        <div className="text-4xl mb-3">🎉</div>
+        <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)' }}>
+          <PartyPopper className="w-8 h-8" style={{ color: '#4A2C60' }} />
+        </div>
         <h3 className="mb-2">Tudo em dia!</h3>
         <p className="text-sm text-gray-600">
-          Você está em dia com suas atividades. Continue assim! ✨
+          Você está em dia com suas atividades. Continue assim!
         </p>
       </Card>
     );
@@ -170,7 +167,8 @@ export default function ProximasAcoes({ onNavigate }: ProximasAcoesProps) {
                 <div className="absolute right-0 top-0 bottom-0 flex items-center gap-2 pr-4">
                   <Button
                     size="sm"
-                    className="bg-green-600 hover:bg-green-700 h-full"
+                    className="h-full hover:opacity-90"
+                    style={{ backgroundColor: '#4A2C60' }}
                     onClick={() => handleConcluir(acao)}
                   >
                     <Check className="w-4 h-4" />

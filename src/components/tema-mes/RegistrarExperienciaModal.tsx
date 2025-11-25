@@ -7,6 +7,7 @@ import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { toast } from 'sonner@2.0.3';
 import { Qualidade } from '../../data/qualidades';
+import { Calendar } from 'lucide-react';
 
 interface RegistrarExperienciaModalProps {
   qualidade: Qualidade;
@@ -78,13 +79,20 @@ export default function RegistrarExperienciaModal({
           {/* Data */}
           <div>
             <Label htmlFor="data">Data (opcional)</Label>
-            <Input
-              id="data"
-              type="date"
-              value={data}
-              onChange={(e) => setData(e.target.value)}
-              max={new Date().toISOString().split('T')[0]}
-            />
+            <div className="relative">
+              <Input
+                id="data"
+                type="date"
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                className="h-14 px-4 pr-12 bg-white border-2 [&::-webkit-calendar-picker-indicator]:opacity-0"
+                style={{ borderColor: '#D8CEE8' }}
+              />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Calendar className="w-5 h-5" style={{ color: '#4A2C60' }} />
+              </div>
+            </div>
             <p className="text-xs text-gray-500 mt-1">Padrão: Hoje</p>
           </div>
 
@@ -99,7 +107,7 @@ export default function RegistrarExperienciaModal({
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
               rows={5}
-              className="resize-none"
+              className="resize-none min-h-[120px] bg-white"
               maxLength={500}
             />
             <p className="text-xs text-gray-500 mt-1 text-right">

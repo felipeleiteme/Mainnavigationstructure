@@ -1,4 +1,4 @@
-import { ArrowLeft, Sprout, TrendingUp, MapPin, Home, Store, Building2, Calendar, User2 } from 'lucide-react';
+import { ArrowLeft, Sprout, TrendingUp, MapPin, Home, Store, Building2, Calendar, User2, PartyPopper, Zap, Sparkles, AlertTriangle, Target, CheckCircle2, BarChart3, BookOpen, Flame, CircleDot, Moon as MoonIcon, BookMarked } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -56,7 +56,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
       endereco: r.endereco,
       status: r.status === 'nova' ? 'Nova' : 
               r.status === 'quente' ? 'Quente' : 
-              r.status === 'fria' ? 'Fria' : 'Descanso',
+              r.status === 'interessado' ? 'Interessado' : 'Descanso',
       visitas: r.quantidadeVisitas,
       ultimaVisita: diasDesdeVisita ? `${diasDesdeVisita} ${diasDesdeVisita === 1 ? 'dia' : 'dias'}` : 'Primeira visita',
       nota: r.primeiraConversa + (r.publicacoesEntregues.length > 0 ? `. Entregue: ${r.publicacoesEntregues.join(', ')}` : ''),
@@ -70,7 +70,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Header */}
-      <div className="bg-gradient-to-br from-green-600 to-green-700 text-white px-6 pt-12 pb-6 sticky top-0 z-10">
+      <div className="text-white px-6 pt-12 pb-6 sticky top-0 z-10" style={{ background: 'linear-gradient(to bottom right, #4A2C60, #5A3C70)' }}>
         <button onClick={onClose} className="flex items-center gap-2 mb-4 hover:opacity-80">
           <ArrowLeft className="w-5 h-5" />
           <span>Início</span>
@@ -87,28 +87,28 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
 
       <div className="px-4 py-6 space-y-6 pb-32">
         {/* Resumo do Mês */}
-        <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+        <Card className="p-6 border-2" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
           <div className="space-y-3">
-            <h3 className="flex items-center gap-2 text-green-900">
-              🎉 Parabéns!
+            <h3 className="flex items-center gap-2" style={{ color: '#4A2C60' }}>
+              <PartyPopper className="w-5 h-5" /> Parabéns!
             </h3>
             <p className="text-gray-700">
               Você adicionou <strong>5 novas revisitas</strong> este mês!
             </p>
             <p className="text-gray-700">
-              Isso mostra seu excelente trabalho no campo. Continue plantando sementes! 🌱
+              Isso mostra seu excelente trabalho no campo. Continue plantando sementes!
             </p>
             
             <div className="flex items-center gap-4 pt-2">
               <div>
                 <p className="text-sm text-gray-600">Este mês</p>
-                <p className="text-2xl text-green-600">5</p>
+                <p className="text-2xl" style={{ color: '#C8E046' }}>5</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Mês anterior</p>
                 <p className="text-2xl text-gray-400">3</p>
               </div>
-              <Badge variant="secondary" className="bg-green-100 text-green-700">
+              <Badge variant="secondary" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
                 +2 (+67%) ↗️
               </Badge>
             </div>
@@ -118,7 +118,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
         {/* Lista de Novas Revisitas */}
         <div className="space-y-3">
           <h3 className="flex items-center gap-2">
-            <Sprout className="w-5 h-5 text-green-600" />
+            <Sprout className="w-5 h-5" style={{ color: '#4A2C60' }} />
             Suas Novas Revisitas
           </h3>
           
@@ -138,8 +138,8 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
                     <Badge variant="secondary" className={`flex-shrink-0 ${
                       revisita.status === 'Quente' 
                         ? 'bg-orange-100 text-orange-700' 
-                        : 'bg-blue-100 text-blue-700'
-                    }`}>
+                        : ''
+                    }`} style={revisita.status !== 'Quente' ? { backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' } : {}}>
                       {revisita.status === 'Quente' ? '⚡' : '🆕'} {revisita.status}
                     </Badge>
                   </div>
@@ -162,8 +162,8 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
                     </div>
                     
                     {revisita.converteuEstudo && (
-                      <Badge className="bg-blue-600 text-white text-xs">
-                        ✨ Convertida em estudo!
+                      <Badge className="text-white text-xs flex items-center gap-1" style={{ backgroundColor: '#4A2C60' }}>
+                        <Sparkles className="w-3 h-3" /> Convertida em estudo!
                       </Badge>
                     )}
                     
@@ -182,7 +182,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
                     <Button size="sm" variant="outline" className="text-xs flex-1">
                       Ver Detalhes
                     </Button>
-                    <Button size="sm" className="text-xs flex-1 bg-green-600 hover:bg-green-700">
+                    <Button size="sm" className="text-xs flex-1" style={{ backgroundColor: '#4A2C60', color: 'white' }}>
                       Agendar Visita
                     </Button>
                   </div>
@@ -210,12 +210,12 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Store className="w-4 h-4 text-blue-600" />
+                <Store className="w-4 h-4" style={{ color: '#4A2C60' }} />
                 <span className="text-sm">Testemunho Informal</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm">1 pessoa</span>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700">20%</Badge>
+                <Badge variant="secondary" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' }}>20%</Badge>
               </div>
             </div>
             
@@ -231,19 +231,21 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
             </div>
           </div>
           
-          <p className="text-sm text-gray-600 mt-4 bg-green-50 p-3 rounded">
-            💡 A maioria das suas revisitas vem do trabalho casa em casa. Bom trabalho! 🎯
+          <p className="text-sm text-gray-600 mt-4 bg-green-50 p-3 rounded flex items-center gap-2">
+            <Zap className="w-4 h-4 text-yellow-600" />
+            <span>A maioria das suas revisitas vem do trabalho casa em casa. Bom trabalho!</span>
+            <Target className="w-4 h-4 text-green-600" />
           </p>
         </Card>
 
         {/* Taxa de Conversão */}
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <h3 className="mb-4 text-blue-900">Funil de Conversão</h3>
+        <Card className="p-6" style={{ background: 'linear-gradient(to bottom right, rgba(74, 44, 96, 0.05), rgba(74, 44, 96, 0.1))', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
+          <h3 className="mb-4" style={{ color: '#4A2C60' }}>Funil de Conversão</h3>
           
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-full bg-gray-200 rounded-full h-8 relative overflow-hidden">
-                <div className="absolute inset-0 bg-blue-600 rounded-full" style={{ width: '100%' }}>
+                <div className="absolute inset-0 rounded-full" style={{ width: '100%', backgroundColor: '#4A2C60' }}>
                   <span className="absolute inset-0 flex items-center justify-center text-white text-sm">
                     Contatos: 23 (100%)
                   </span>
@@ -251,9 +253,9 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-3">
               <div className="w-full bg-gray-200 rounded-full h-8 relative overflow-hidden">
-                <div className="absolute inset-0 bg-blue-500 rounded-full" style={{ width: '35%' }}>
+                <div className="absolute inset-0 rounded-full" style={{ width: '35%', backgroundColor: 'rgba(74, 44, 96, 0.7)' }}>
                   <span className="absolute inset-0 flex items-center justify-center text-white text-sm">
                     Interessados: 8 (35%)
                   </span>
@@ -337,7 +339,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
             
             <div className="text-center p-3 bg-white rounded-lg">
               <p className="text-2xl">🆕</p>
-              <p className="text-xl text-blue-600">1</p>
+              <p className="text-xl" style={{ color: '#4A2C60' }}>1</p>
               <p className="text-xs text-gray-600">Ainda não revisitada</p>
             </div>
             
@@ -395,7 +397,8 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
       {/* Botões de Ação Fixos */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 space-y-2">
         <Button 
-          className="w-full bg-green-600 hover:bg-green-700"
+          style={{ backgroundColor: '#4A2C60', color: 'white' }}
+          className="w-full"
           onClick={onNavigateToCampo}
         >
           <Sprout className="w-4 h-4 mr-2" />

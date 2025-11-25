@@ -1,4 +1,4 @@
-import { X, BookOpen, User, Phone, MapPin, Calendar, Clock, Save, Trash2 } from 'lucide-react';
+import { X, BookOpen, User, Phone, MapPin, Calendar, Clock, Save, Trash2, Sprout, HelpCircle, Target } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -7,6 +7,7 @@ import { Badge } from '../ui/badge';
 import { useState, useEffect } from 'react';
 import { DataService, Estudo } from '../../services/dataService';
 import { toast } from 'sonner';
+import { SmartNotificationManager } from '../../utils/notifications/smartNotifications';
 
 interface FormularioEstudoProps {
   onClose: () => void;
@@ -28,7 +29,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
     estudanteNome: estudo?.estudanteNome || revisitaConversao?.nome || '',
     estudanteTelefone: estudo?.estudanteTelefone || revisitaConversao?.telefone || '',
     endereco: estudo?.endereco || revisitaConversao?.endereco || '',
-    publicacao: estudo?.publicacao || 'Boas Notícias do Reino de Deus',
+    publicacao: estudo?.publicacao || 'Seja Feliz para Sempre!',
     licao: estudo?.licao || 1,
     data: estudo?.data ? new Date(estudo.data).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     horario: estudo?.horario || '14:00',
@@ -40,11 +41,10 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
 
   // Publicações disponíveis
   const publicacoes = [
-    'Boas Notícias do Reino de Deus',
-    'O Que a Bíblia Realmente Ensina?',
-    'Desfrute da Vida',
-    'Achegue-se a Jeová',
-    'Bíblia'
+    'Seja Feliz para Sempre!',
+    'Aprenda com as Histórias da Bíblia',
+    'Aprenda do Grande Instrutor',
+    'Outra publicação',
   ];
 
   // Validação
@@ -97,10 +97,31 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
       if (isEdicao && estudo?.id) {
         // Atualizar estudo existente
         DataService.atualizarEstudo(estudo.id, novoEstudo);
+        
+        // Remover notificações antigas e reagendar
+        SmartNotificationManager.removeSchedulesByEntity(estudo.id);
+        SmartNotificationManager.scheduleEstudoNotification(
+          estudo.id,
+          formData.estudanteNome,
+          formData.data,
+          formData.horario,
+          formData.endereco
+        );
+        
         toast.success('Estudo atualizado com sucesso! 📖');
       } else {
         // Adicionar novo estudo
-        DataService.adicionarEstudo(novoEstudo);
+        const estudoCriado = DataService.adicionarEstudo(novoEstudo);
+        
+        // Agendar notificações inteligentes (24h e 1h antes)
+        SmartNotificationManager.scheduleEstudoNotification(
+          estudoCriado.id,
+          formData.estudanteNome,
+          formData.data,
+          formData.horario,
+          formData.endereco
+        );
+        
         toast.success(
           isConversao 
             ? '🎉 Revisita convertida em estudo! Parabéns!' 
@@ -123,6 +144,10 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
     if (confirm('Tem certeza que deseja remover este estudo?')) {
       try {
         DataService.removerEstudo(estudo.id);
+        
+        // Remover notificações agendadas
+        SmartNotificationManager.removeSchedulesByEntity(estudo.id);
+        
         toast.success('Estudo removido');
         onSave?.();
         onClose();
@@ -144,7 +169,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center sm:justify-center">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-br from-blue-600 to-blue-700 text-white px-6 pt-6 pb-4 z-10">
+        <div className="sticky top-0 text-white px-6 pt-6 pb-4 z-10" style={{ backgroundColor: '#4A2C60' }}>
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <h2 className="text-2xl flex items-center gap-2">
@@ -173,7 +198,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
           {/* Informações do Estudante */}
           <div>
             <h3 className="flex items-center gap-2 mb-4">
-              <User className="w-5 h-5 text-blue-600" />
+              <User className="w-5 h-5" style={{ color: '#4A2C60' }} />
               Informações do Estudante
             </h3>
 
@@ -186,7 +211,8 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                   value={formData.estudanteNome}
                   onChange={(e) => setFormData({ ...formData, estudanteNome: e.target.value })}
                   placeholder="João da Silva"
-                  className={errors.estudanteNome ? 'border-red-500' : ''}
+                  className={`h-14 px-4 bg-white border-2 ${errors.estudanteNome ? 'border-red-500' : ''}`}
+                  style={!errors.estudanteNome ? { borderColor: '#D8CEE8' } : {}}
                 />
                 {errors.estudanteNome && (
                   <p className="text-xs text-red-600 mt-1">{errors.estudanteNome}</p>
@@ -197,13 +223,14 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
               <div>
                 <Label htmlFor="telefone">Telefone (Opcional)</Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
                     id="telefone"
                     value={formData.estudanteTelefone}
                     onChange={(e) => setFormData({ ...formData, estudanteTelefone: e.target.value })}
                     placeholder="+55 11 99999-9999"
-                    className="pl-10"
+                    className="h-14 pl-12 pr-4 bg-white border-2"
+                    style={{ borderColor: '#D8CEE8' }}
                   />
                 </div>
               </div>
@@ -212,13 +239,14 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
               <div>
                 <Label htmlFor="endereco">Endereço (Opcional)</Label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
                     id="endereco"
                     value={formData.endereco}
                     onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                     placeholder="Rua das Flores, 123"
-                    className="pl-10"
+                    className="h-14 pl-12 pr-4 bg-white border-2"
+                    style={{ borderColor: '#D8CEE8' }}
                   />
                 </div>
               </div>
@@ -228,7 +256,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
           {/* Publicação e Progresso */}
           <div>
             <h3 className="flex items-center gap-2 mb-4">
-              <BookOpen className="w-5 h-5 text-blue-600" />
+              <BookOpen className="w-5 h-5" style={{ color: '#4A2C60' }} />
               Publicação
             </h3>
 
@@ -236,16 +264,24 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
               {/* Publicação */}
               <div>
                 <Label htmlFor="publicacao">Publicação *</Label>
-                <select
-                  id="publicacao"
-                  value={formData.publicacao}
-                  onChange={(e) => setFormData({ ...formData, publicacao: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {publicacoes.map(pub => (
-                    <option key={pub} value={pub}>{pub}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    id="publicacao"
+                    value={formData.publicacao}
+                    onChange={(e) => setFormData({ ...formData, publicacao: e.target.value })}
+                    className="w-full h-14 px-4 pr-10 bg-white border-2 rounded-md appearance-none focus:outline-none focus:ring-2"
+                    style={{ borderColor: '#D8CEE8', '--tw-ring-color': '#4A2C60' } as any}
+                  >
+                    {publicacoes.map(pub => (
+                      <option key={pub} value={pub}>{pub}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               {/* Lição (apenas para Boas Notícias) */}
@@ -259,33 +295,130 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
                     max="10"
                     value={formData.licao}
                     onChange={(e) => setFormData({ ...formData, licao: parseInt(e.target.value) || 1 })}
+                    className="h-14 px-4 bg-white border-2"
+                    style={{ borderColor: '#D8CEE8' }}
                   />
                   <p className="text-xs text-gray-600 mt-1">Lições de 1 a 10</p>
                 </div>
               )}
 
-              {/* Status */}
+              {/* Status do Progresso */}
               <div>
-                <Label htmlFor="status">Status do Estudo</Label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="iniciando">Iniciando</option>
-                  <option value="progredindo">Progredindo</option>
-                  <option value="avancado">Avançado</option>
-                </select>
+                <Label className="mb-3 block">Status do progresso</Label>
+                <div className="space-y-2">
+                  {/* Iniciando */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, status: 'iniciando' })}
+                    className="w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
+                    style={{
+                      borderColor: formData.status === 'iniciando' ? '#4A2C60' : '#D8CEE8',
+                      backgroundColor: formData.status === 'iniciando' ? 'rgba(74, 44, 96, 0.05)' : 'white'
+                    }}
+                  >
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
+                      <Sprout className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium" style={{ color: '#4A2C60' }}>Iniciando</p>
+                      <p className="text-xs text-gray-600">Primeiras lições</p>
+                    </div>
+                    {formData.status === 'iniciando' && (
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Progredindo */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, status: 'progredindo' })}
+                    className="w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
+                    style={{
+                      borderColor: formData.status === 'progredindo' ? '#4A2C60' : '#D8CEE8',
+                      backgroundColor: formData.status === 'progredindo' ? 'rgba(74, 44, 96, 0.05)' : 'white'
+                    }}
+                  >
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
+                      <BookOpen className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium" style={{ color: '#4A2C60' }}>Progredindo</p>
+                      <p className="text-xs text-gray-600">Avançando bem</p>
+                    </div>
+                    {formData.status === 'progredindo' && (
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Com dúvidas */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, status: 'duvidas' })}
+                    className="w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
+                    style={{
+                      borderColor: formData.status === 'duvidas' ? '#4A2C60' : '#D8CEE8',
+                      backgroundColor: formData.status === 'duvidas' ? 'rgba(74, 44, 96, 0.05)' : 'white'
+                    }}
+                  >
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
+                      <HelpCircle className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium" style={{ color: '#4A2C60' }}>Com dúvidas</p>
+                      <p className="text-xs text-gray-600">Precisa de atenção</p>
+                    </div>
+                    {formData.status === 'duvidas' && (
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Avançado */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, status: 'avancado' })}
+                    className="w-full p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
+                    style={{
+                      borderColor: formData.status === 'avancado' ? '#4A2C60' : '#D8CEE8',
+                      backgroundColor: formData.status === 'avancado' ? 'rgba(74, 44, 96, 0.05)' : 'white'
+                    }}
+                  >
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
+                      <Target className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium" style={{ color: '#4A2C60' }}>Avançado</p>
+                      <p className="text-xs text-gray-600">Próximo do batismo</p>
+                    </div>
+                    {formData.status === 'avancado' && (
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
+                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Progresso */}
               <div>
                 <Label>Progresso: {formData.progresso}%</Label>
-                <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden border-2 border-secondary-400">
                   <div 
-                    className="h-full bg-blue-600 transition-all duration-300"
-                    style={{ width: `${formData.progresso}%` }}
+                    className="h-full transition-all duration-300"
+                    style={{ width: `${formData.progresso}%`, backgroundColor: '#4A2C60' }}
                   />
                 </div>
               </div>
@@ -295,7 +428,7 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
           {/* Agendamento */}
           <div>
             <h3 className="flex items-center gap-2 mb-4">
-              <Calendar className="w-5 h-5 text-blue-600" />
+              <Calendar className="w-5 h-5" style={{ color: '#4A2C60' }} />
               {isEdicao ? 'Último Estudo' : 'Próximo Estudo'}
             </h3>
 
@@ -304,14 +437,17 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
               <div>
                 <Label htmlFor="data">Data *</Label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id="data"
                     type="date"
                     value={formData.data}
                     onChange={(e) => setFormData({ ...formData, data: e.target.value })}
-                    className={`pl-10 ${errors.data ? 'border-red-500' : ''}`}
+                    className={`h-14 px-4 pr-12 bg-white border-2 [&::-webkit-calendar-picker-indicator]:opacity-0 ${errors.data ? 'border-red-500' : ''}`}
+                    style={!errors.data ? { borderColor: '#D8CEE8' } : {}}
                   />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Calendar className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                  </div>
                 </div>
               </div>
 
@@ -319,14 +455,17 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
               <div>
                 <Label htmlFor="horario">Horário *</Label>
                 <div className="relative">
-                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id="horario"
                     type="time"
                     value={formData.horario}
                     onChange={(e) => setFormData({ ...formData, horario: e.target.value })}
-                    className={`pl-10 ${errors.horario ? 'border-red-500' : ''}`}
+                    className={`h-14 px-4 pr-12 bg-white border-2 [&::-webkit-calendar-picker-indicator]:opacity-0 ${errors.horario ? 'border-red-500' : ''}`}
+                    style={!errors.horario ? { borderColor: '#D8CEE8' } : {}}
                   />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Clock className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -334,32 +473,33 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t p-4 space-y-2">
+        <div className="sticky bottom-0 bg-white border-t p-4 space-y-3">
           {isEdicao && (
             <Button 
               variant="outline" 
-              className="w-full text-red-600 border-red-300 hover:bg-red-50"
+              className="w-full h-14 text-red-600 border-red-300 hover:bg-red-50 flex items-center justify-center gap-2"
               onClick={handleDeletar}
             >
-              <Trash2 className="w-4 h-4 mr-2" />
+              <Trash2 className="w-5 h-5" />
               Remover Estudo
             </Button>
           )}
           
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <Button 
               variant="outline" 
-              className="flex-1"
+              className="h-14 flex items-center justify-center"
               onClick={onClose}
             >
               Cancelar
             </Button>
             <Button 
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              className="h-14 flex items-center justify-center gap-2 hover:opacity-90"
+              style={{ backgroundColor: '#4A2C60', color: 'white' }}
               onClick={handleSalvar}
             >
-              <Save className="w-4 h-4 mr-2" />
-              {isEdicao ? 'Atualizar' : 'Salvar Estudo'}
+              <Save className="w-5 h-5" />
+              {isEdicao ? 'Atualizar' : 'Salvar'}
             </Button>
           </div>
         </div>

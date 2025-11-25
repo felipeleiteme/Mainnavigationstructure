@@ -1,4 +1,4 @@
-import { ArrowLeft, FileText, TrendingUp, Calendar } from 'lucide-react';
+import { ArrowLeft, BookOpen, TrendingUp, Calendar, CheckCircle2, Lightbulb, BarChart3, Clock, HelpCircle, FileText, Download } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -99,14 +99,14 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Header */}
-      <div className="bg-gradient-to-br from-purple-600 to-purple-700 text-white px-6 pt-12 pb-6 sticky top-0 z-10">
+      <div className="text-white px-6 pt-12 pb-6 sticky top-0 z-10" style={{ backgroundColor: '#4A2C60' }}>
         <button onClick={onClose} className="flex items-center gap-2 mb-4 hover:opacity-80">
           <ArrowLeft className="w-5 h-5" />
           <span>Início</span>
         </button>
         
         <div className="flex items-center gap-3 mb-2">
-          <FileText className="w-8 h-8" />
+          <BookOpen className="w-8 h-8" />
           <div>
             <h1 className="text-2xl">Publicações</h1>
             <p className="text-sm opacity-90">Novembro 2025</p>
@@ -119,7 +119,7 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
         <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
           <div className="space-y-3">
             <h3 className="flex items-center gap-2 text-purple-900">
-              📚 Ótimo trabalho!
+              <CheckCircle2 className="w-5 h-5" /> Ótimo trabalho!
             </h3>
             <p className="text-gray-700">
               Você distribuiu <strong>12 publicações</strong> este mês, levando a mensagem da Bíblia a mais pessoas.
@@ -168,8 +168,8 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
           </div>
           
           <div className="mt-4 grid grid-cols-3 gap-3">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <p className="text-2xl text-blue-600">8</p>
+            <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)' }}>
+              <p className="text-2xl" style={{ color: '#4A2C60' }}>8</p>
               <p className="text-xs text-gray-600">Revistas<br />67%</p>
             </div>
             <div className="text-center p-3 bg-green-50 rounded-lg">
@@ -211,8 +211,8 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
         </Card>
 
         {/* Temas Mais Distribuídos */}
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <h3 className="mb-4 text-blue-900">Temas Mais Distribuídos</h3>
+        <Card className="p-6" style={{ background: 'linear-gradient(to bottom right, rgba(74, 44, 96, 0.05), rgba(74, 44, 96, 0.1))', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
+          <h3 className="mb-4" style={{ color: '#4A2C60' }}>Temas Mais Distribuídos</h3>
           
           <div className="space-y-3">
             {temasMaisDistribuidos.map((tema, idx) => (
@@ -224,7 +224,7 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
                     <p className="text-xs text-gray-600">#{idx + 1} mais distribuído</p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                <Badge variant="secondary" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' }}>
                   {tema.quantidade}
                 </Badge>
               </div>
@@ -247,7 +247,7 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
                   <div className="flex gap-0.5">
                     {[...Array(semana.quantidade)].map((_, i) => (
                       <div key={i} className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center text-white text-xs">
-                        📖
+                        <BookOpen className="w-3 h-3" />
                       </div>
                     ))}
                     {semana.quantidade === 0 && (
@@ -260,8 +260,9 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
             ))}
           </div>
           
-          <p className="text-sm text-gray-700 mt-4 bg-green-50 p-3 rounded">
-            ✅ Você distribuiu publicações de forma consistente ao longo do mês!
+          <p className="text-sm text-gray-700 mt-4 bg-green-50 p-3 rounded flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            Você distribuiu publicações de forma consistente ao longo do mês!
           </p>
         </Card>
 
@@ -272,7 +273,7 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-white rounded-lg">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">✅</span>
+                <CheckCircle2 className="w-5 h-5 text-green-600" />
                 <span className="text-sm">Com follow-up planejado</span>
               </div>
               <Badge variant="secondary" className="bg-green-100 text-green-700">
@@ -282,17 +283,17 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
             
             <div className="flex items-center justify-between p-3 bg-white rounded-lg">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">⏳</span>
+                <Clock className="w-5 h-5" style={{ color: '#4A2C60' }} />
                 <span className="text-sm">Aguardando retorno</span>
               </div>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+              <Badge variant="secondary" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' }}>
                 4 (33%)
               </Badge>
             </div>
             
             <div className="flex items-center justify-between p-3 bg-white rounded-lg">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">❓</span>
+                <HelpCircle className="w-5 h-5 text-gray-600" />
                 <span className="text-sm">Sem follow-up</span>
               </div>
               <Badge variant="secondary" className="bg-gray-100 text-gray-700">
@@ -302,10 +303,13 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
           </div>
           
           <div className="mt-4 p-3 bg-white rounded-lg border-2 border-orange-200">
-            <p className="text-sm text-orange-900">
-              <strong>💡 Oportunidade:</strong>
-              <br />
-              Você tem <strong>4 publicações</strong> que podem se tornar revisitas! Considere retornar aos endereços.
+            <p className="text-sm text-orange-900 flex items-start gap-2">
+              <Lightbulb className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <span>
+                <strong>Oportunidade:</strong>
+                <br />
+                Você tem <strong>4 publicações</strong> que podem se tornar revisitas! Considere retornar aos endereços.
+              </span>
             </p>
           </div>
         </Card>
@@ -353,10 +357,12 @@ export default function PublicacoesDetalhes({ onClose }: PublicacoesDetalhesProp
         </Button>
         <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" size="sm">
-            📊 Histórico Completo
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Histórico Completo
           </Button>
           <Button variant="outline" size="sm">
-            📥 Solicitar Publicações
+            <Download className="w-4 h-4 mr-2" />
+            Solicitar Publicações
           </Button>
         </div>
       </div>

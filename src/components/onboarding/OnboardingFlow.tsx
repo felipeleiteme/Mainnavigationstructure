@@ -48,25 +48,26 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   // Tela 1: Boas-vindas
   if (step === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white flex flex-col items-center justify-center p-6">
         <div className="text-center max-w-md">
-          <div className="w-24 h-24 bg-green-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <div className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: '#4A2C60' }}>
             <Sprout className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-4xl mb-4 text-gray-900">Mynis</h1>
           <p className="text-xl text-gray-600 mb-8">
-            Dando o seu melhor no ministério 💚
+            Seu melhor no ministério
           </p>
           
           <div className="mb-8">
-            <div className="w-48 h-48 mx-auto mb-4 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-6xl">🌱</span>
+            <div className="w-48 h-48 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(74, 44, 96, 0.1) 0%, rgba(200, 224, 70, 0.15) 100%)' }}>
+              <Sprout className="w-24 h-24" style={{ color: '#4A2C60' }} />
             </div>
           </div>
 
           <Button 
             size="lg" 
-            className="w-full bg-green-600 hover:bg-green-700"
+            className="w-full hover:opacity-90"
+            style={{ backgroundColor: '#4A2C60' }}
             onClick={nextStep}
           >
             Começar
@@ -87,45 +88,57 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
           <div className="space-y-4">
             <Card
-              className="p-6 cursor-pointer hover:shadow-lg transition-shadow border-2 border-transparent hover:border-green-500"
+              className="p-6 cursor-pointer hover:shadow-lg transition-shadow border-2 transition-all"
+              style={{ 
+                borderColor: 'transparent',
+                ...(userData.tipoPublicador === 'publicador' ? { borderColor: '#4A2C60', backgroundColor: '#F5F2F7' } : {})
+              }}
               onClick={() => setTipoPublicador('publicador')}
             >
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                  <BookOpen className="w-8 h-8 text-blue-600" />
+                <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
+                  <BookOpen className="w-8 h-8" style={{ color: '#4A2C60' }} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl mb-1">📖 Publicador</h3>
+                  <h3 className="text-xl mb-1">Publicador</h3>
                   <p className="text-sm text-gray-600">Servindo ao meu ritmo</p>
                 </div>
               </div>
             </Card>
 
             <Card
-              className="p-6 cursor-pointer hover:shadow-lg transition-shadow border-2 border-transparent hover:border-green-500"
+              className="p-6 cursor-pointer hover:shadow-lg transition-shadow border-2 transition-all"
+              style={{ 
+                borderColor: 'transparent',
+                ...(userData.tipoPublicador === 'auxiliar' ? { borderColor: '#4A2C60', backgroundColor: '#F5F2F7' } : {})
+              }}
               onClick={() => setTipoPublicador('auxiliar')}
             >
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                  <Sprout className="w-8 h-8 text-green-600" />
+                <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E6DFF0' }}>
+                  <Sprout className="w-8 h-8" style={{ color: '#4A2C60' }} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl mb-1">🌱 Pioneiro Auxiliar</h3>
+                  <h3 className="text-xl mb-1">Pioneiro Auxiliar</h3>
                   <p className="text-sm text-gray-600">Meta de 50 horas</p>
                 </div>
               </div>
             </Card>
 
             <Card
-              className="p-6 cursor-pointer hover:shadow-lg transition-shadow border-2 border-transparent hover:border-green-500"
+              className="p-6 cursor-pointer hover:shadow-lg transition-shadow border-2 transition-all"
+              style={{ 
+                borderColor: 'transparent',
+                ...(userData.tipoPublicador === 'regular' ? { borderColor: '#4A2C60', backgroundColor: '#F5F2F7' } : {})
+              }}
               onClick={() => setTipoPublicador('regular')}
             >
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Rocket className="w-8 h-8 text-purple-600" />
+                <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)' }}>
+                  <Rocket className="w-8 h-8" style={{ color: '#4A2C60' }} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl mb-1">🚀 Pioneiro Regular</h3>
+                  <h3 className="text-xl mb-1">Pioneiro Regular</h3>
                   <p className="text-sm text-gray-600">Meta de 70 horas</p>
                 </div>
               </div>
@@ -176,7 +189,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <Input
                   type="number"
                   placeholder="Digite suas horas"
-                  className="text-center text-xl h-16"
+                  className="text-center text-xl h-16 bg-white border-2"
+                  style={{ borderColor: '#D8CEE8' }}
                   value={userData.metaHoras || ''}
                   onChange={(e) => setUserData({ ...userData, metaHoras: Number(e.target.value) })}
                 />
@@ -186,7 +200,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
           <Button 
             size="lg" 
-            className="w-full bg-green-600 hover:bg-green-700"
+            className="w-full hover:opacity-90"
+            style={{ backgroundColor: '#4A2C60' }}
             onClick={nextStep}
             disabled={!userData.metaHoras}
           >
@@ -231,11 +246,12 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                         <td key={dia} className="p-2">
                           <button
                             onClick={() => toggleCronograma(pIdx, dia)}
-                            className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                            className={`w-10 h-10 rounded-lg border-2 transition-all`}
+                            style={
                               userData.cronograma![pIdx][dia]
-                                ? 'bg-green-100 border-green-500'
-                                : 'bg-gray-100 border-gray-300 hover:border-gray-400'
-                            }`}
+                                ? { backgroundColor: '#E6DFF0', borderColor: '#4A2C60' }
+                                : { backgroundColor: '#F3F4F6', borderColor: '#D1D5DB' }
+                            }
                           />
                         </td>
                       ))}
@@ -260,7 +276,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             </Button>
             <Button 
               size="lg" 
-              className="flex-1 bg-green-600 hover:bg-green-700"
+              className="flex-1 hover:opacity-90"
+              style={{ backgroundColor: '#4A2C60' }}
               onClick={nextStep}
             >
               Continuar
@@ -293,11 +310,12 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             {sugestoes.map((sugestao, idx) => (
               <Card
                 key={idx}
-                className={`p-4 cursor-pointer hover:shadow-md transition-shadow border-2 ${
+                className="p-4 cursor-pointer hover:shadow-md transition-shadow border-2"
+                style={
                   userData.versiculoAno === `${sugestao.texto} — ${sugestao.ref}`
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-transparent'
-                }`}
+                    ? { borderColor: '#4A2C60', backgroundColor: '#F5F2F7' }
+                    : { borderColor: 'transparent' }
+                }
                 onClick={() => setUserData({ 
                   ...userData, 
                   versiculoAno: `${sugestao.texto} — ${sugestao.ref}` 
@@ -315,6 +333,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               placeholder="Digite seu versículo..."
               value={userData.versiculoAno || ''}
               onChange={(e) => setUserData({ ...userData, versiculoAno: e.target.value })}
+              className="h-14 px-4 bg-white border-2"
+              style={{ borderColor: '#D8CEE8' }}
             />
           </Card>
 
@@ -328,7 +348,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             </Button>
             <Button 
               size="lg" 
-              className="flex-1 bg-green-600 hover:bg-green-700"
+              className="flex-1 hover:opacity-90"
+              style={{ backgroundColor: '#4A2C60' }}
               onClick={nextStep}
             >
               Continuar
@@ -346,7 +367,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       <div className="min-h-screen bg-gray-50 flex flex-col p-6">
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
               <span className="text-4xl">🔒</span>
             </div>
             <h2 className="text-3xl mb-2">Privacidade</h2>
@@ -371,94 +392,13 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
           <Button 
             size="lg" 
-            className="w-full bg-green-600 hover:bg-green-700"
-            onClick={nextStep}
+            className="w-full hover:opacity-90"
+            style={{ backgroundColor: '#4A2C60' }}
+            onClick={handleComplete}
           >
             Aceitar e Continuar
             <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Tela 7: Proteja seus dados
-  if (step === 6 || (step === 5 && userData.tipoPublicador === 'publicador')) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col p-6">
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-4xl">☁️</span>
-            </div>
-            <h2 className="text-3xl mb-2">Proteja seus dados</h2>
-            <p className="text-gray-600">
-              Nunca perca suas informações com backup automático ✨
-            </p>
-          </div>
-
-          <Card className="p-6 mb-6">
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">✓</span>
-                <div>
-                  <p className="text-sm">Acesse de qualquer lugar</p>
-                  <p className="text-xs text-gray-600">Seus dados sempre com você</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">✓</span>
-                <div>
-                  <p className="text-sm">Backup automático</p>
-                  <p className="text-xs text-gray-600">Relaxe, está tudo seguro</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">✓</span>
-                <div>
-                  <p className="text-sm">Segurança total</p>
-                  <p className="text-xs text-gray-600">Criptografia de ponta a ponta</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <div className="space-y-3">
-            <Button 
-              size="lg" 
-              className="w-full bg-white border-2 border-gray-300 text-gray-900 hover:bg-gray-50"
-              onClick={() => {
-                setUserData({ ...userData, sincronizacao: 'google' });
-                handleComplete();
-              }}
-            >
-              <span className="text-xl mr-2">G</span>
-              Conectar com Google
-            </Button>
-
-            <Button 
-              size="lg" 
-              className="w-full bg-black text-white hover:bg-gray-900"
-              onClick={() => {
-                setUserData({ ...userData, sincronizacao: 'apple' });
-                handleComplete();
-              }}
-            >
-              <span className="text-xl mr-2"></span>
-              Conectar com Apple
-            </Button>
-
-            <Button 
-              variant="ghost"
-              className="w-full"
-              onClick={() => {
-                setUserData({ ...userData, sincronizacao: 'skip' });
-                handleComplete();
-              }}
-            >
-              Pular por enquanto
-            </Button>
-          </div>
         </div>
       </div>
     );

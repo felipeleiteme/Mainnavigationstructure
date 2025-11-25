@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Home, Heart, Sprout, BookOpen, User } from 'lucide-react';
 import { Toaster, toast } from 'sonner@2.0.3';
+import './styles/globals.css';
 import InicioTab from './components/tabs/InicioTab';
 import EspiritualTab from './components/tabs/EspiritualTab';
 import CampoTab from './components/tabs/CampoTab';
@@ -8,7 +9,7 @@ import EstudosTab from './components/tabs/EstudosTab';
 import PerfilTab from './components/tabs/PerfilTab';
 import OnboardingFlow, { OnboardingData } from './components/onboarding/OnboardingFlow';
 import TrocarPerfilModal from './components/shared/TrocarPerfilModal';
-import { NotificationScheduler } from './utils/notifications';
+import { NotificationScheduler } from './utils/notifications/notifications';
 import { DataService } from './services/dataService';
 import IniciarSessaoModal from './components/shared/IniciarSessaoModal';
 import ControlesSessaoModal from './components/shared/ControlesSessaoModal';
@@ -21,6 +22,9 @@ interface TabOptions {
   scroll?: string;
   acao?: string;
   highlight?: boolean;
+  estudoId?: string;
+  revisitaId?: string;
+  abrirDetalhes?: boolean;
 }
 
 interface Perfil {
@@ -141,7 +145,7 @@ export default function App() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen" style={{ backgroundColor: '#FDF8EE' }}>
       {/* Toast Notifications */}
       <Toaster position="top-center" />
       
@@ -151,14 +155,28 @@ export default function App() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
         {activeTab === 'inicio' && <InicioTab onNavigateToTab={handleNavigateToTab} />}
-        {activeTab === 'espiritual' && <EspiritualTab scrollTo={tabOptions.scroll} highlight={tabOptions.highlight} />}
-        {activeTab === 'campo' && <CampoTab filtro={tabOptions.filtro} onNavigateToTab={handleNavigateToTab} />}
-        {activeTab === 'estudos' && <EstudosTab filtro={tabOptions.filtro} onNavigateToTab={handleNavigateToTab} />}
+        {activeTab === 'espiritual' && <EspiritualTab />}
+        {activeTab === 'campo' && (
+          <CampoTab 
+            filtro={tabOptions.filtro} 
+            onNavigateToTab={handleNavigateToTab}
+            revisitaId={tabOptions.revisitaId}
+            abrirDetalhes={tabOptions.abrirDetalhes}
+          />
+        )}
+        {activeTab === 'estudos' && (
+          <EstudosTab 
+            filtro={tabOptions.filtro} 
+            onNavigateToTab={handleNavigateToTab}
+            estudoId={tabOptions.estudoId}
+            abrirDetalhes={tabOptions.abrirDetalhes}
+          />
+        )}
         {activeTab === 'perfil' && <PerfilTab scrollTo={tabOptions.scroll} acao={tabOptions.acao} />}
       </div>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t z-50" style={{ borderColor: 'rgba(74, 44, 96, 0.1)' }}>
         <div className="flex items-center justify-around h-16">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -168,23 +186,20 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                onTouchStart={tab.id === 'perfil' ? handleAvatarTouchStart : undefined}
-                onTouchEnd={tab.id === 'perfil' ? handleAvatarTouchEnd : undefined}
-                onMouseDown={tab.id === 'perfil' ? handleAvatarTouchStart : undefined}
-                onMouseUp={tab.id === 'perfil' ? handleAvatarTouchEnd : undefined}
-                onMouseLeave={tab.id === 'perfil' ? handleAvatarTouchEnd : undefined}
-                className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-                  isActive ? 'text-green-600' : 'text-gray-400'
-                }`}
+                className="flex flex-col items-center justify-center flex-1 h-full relative"
               >
-                {tab.id === 'perfil' ? (
-                  <div className={`w-8 h-8 rounded-full mb-1 bg-${perfilAtivo.cor}-100 flex items-center justify-center ring-2 ${isActive ? `ring-${perfilAtivo.cor}-500` : 'ring-gray-300'}`}>
-                    <Icon className={`w-5 h-5 ${isActive ? `text-${perfilAtivo.cor}-600` : 'text-gray-400'}`} />
-                  </div>
-                ) : (
-                  <Icon className={`w-6 h-6 mb-1 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-                )}
-                <span className="text-xs">{tab.label}</span>
+                {/* Ícone e label */}
+                <div className={`relative z-10 flex flex-col items-center transition-colors duration-200 ${
+                  isActive ? '' : 'text-gray-400'
+                }`}
+                style={isActive ? { color: '#4A2C60' } : undefined}>
+                  <Icon className={`w-6 h-6 mb-1 transition-all duration-200 ${
+                    isActive ? 'stroke-[2.5] scale-110' : 'stroke-2'
+                  }`} />
+                  <span className={`text-xs transition-all duration-200 ${
+                    isActive ? 'font-medium' : ''
+                  }`}>{tab.label}</span>
+                </div>
               </button>
             );
           })}

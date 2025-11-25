@@ -15,15 +15,15 @@ export interface Estudo {
   estudanteNome: string;
   estudanteAvatar?: string;
   estudanteTelefone?: string;
+  estudanteEndereco?: string;
   publicacao: string;
   licao?: number;
-  progresso: number; // 0-100
+  progresso?: number; // 0-100
   data: string; // ISO date
-  horario?: string;
-  endereco?: string;
+  horario: string;
   observacoes?: string;
-  status: 'iniciando' | 'progredindo' | 'avancado';
-  criadoEm: string;
+  status: 'iniciando' | 'progredindo' | 'duvidas' | 'avancado';
+  criadoEm?: string;
 }
 
 export interface Revisita {
@@ -38,11 +38,22 @@ export interface Revisita {
   ultimaVisita?: string;
   proximaVisita?: string;
   quantidadeVisitas: number;
-  status: 'nova' | 'quente' | 'fria' | 'descanso';
+  status: 'nova' | 'interessado' | 'quente' | 'descanso';
   primeiraConversa: string;
   publicacoesEntregues: string[];
   interesseEstudo: boolean;
   observacoes?: string;
+  disponibilidade?: string;
+  historicoVisitas?: HistoricoVisita[];
+}
+
+export interface HistoricoVisita {
+  id: string;
+  data: string; // ISO date
+  encontrou: boolean;
+  observacoes?: string;
+  publicacoesDeixadas?: string[];
+  proximaVisita?: string;
 }
 
 export interface Sessao {
@@ -138,6 +149,10 @@ export interface Perfil {
   telefone?: string;
   tipoPublicador: TipoPublicador;
   avatar?: string;
+  textoAno?: {
+    texto: string;
+    referencia: string;
+  };
 }
 
 // ===== DATA SERVICE =====
@@ -233,14 +248,45 @@ class DataServiceClass {
     return novoEstudo;
   }
 
+  atualizarEstudo(id: string, estudoAtualizado: Estudo): void {
+    const estudos = this.getEstudos();
+    const index = estudos.findIndex(e => e.id === id);
+    if (index === -1) throw new Error('Estudo não encontrado');
+    estudos[index] = estudoAtualizado;
+    this.saveEstudos(estudos);
+  }
+
+  removerEstudo(id: string): void {
+    const estudos = this.getEstudos();
+    const estudosFiltrados = estudos.filter(e => e.id !== id);
+    this.saveEstudos(estudosFiltrados);
+  }
+
   // ===== REVISITAS =====
   
   getRevisitas(): Revisita[] {
     const data = localStorage.getItem('revisitas');
     const revisitas = data ? JSON.parse(data) : [];
+    
+    // Migração: Preencher dataAdicao para revisitas antigas
+    let precisaSalvar = false;
+    const revisitasMigradas = revisitas.map((r: any) => {
+      if (!r.dataAdicao) {
+        precisaSalvar = true;
+        // Se não tem dataAdicao, usar ultimaVisita ou data atual
+        return {
+          ...r,
+          dataAdicao: r.ultimaVisita || new Date().toISOString().split('T')[0]
+        };
+      }
+      return r;
+    });
+    
     // Corrigir IDs duplicados automaticamente
-    const revisitasCorrigidas = this.corrigirIdsDuplicados(revisitas);
-    if (revisitasCorrigidas.length !== revisitas.length || 
+    const revisitasCorrigidas = this.corrigirIdsDuplicados(revisitasMigradas);
+    
+    if (precisaSalvar || 
+        revisitasCorrigidas.length !== revisitas.length || 
         revisitasCorrigidas.some((r, i) => r.id !== revisitas[i]?.id)) {
       // Se houve correções, salvar
       localStorage.setItem('revisitas', JSON.stringify(revisitasCorrigidas));
@@ -280,6 +326,59 @@ class DataServiceClass {
     revisitas.push(novaRevisita);
     this.saveRevisitas(revisitas);
     return novaRevisita;
+  }
+
+  atualizarRevisita(id: string, revisitaAtualizada: Revisita): void {
+    const revisitas = this.getRevisitas();
+    const index = revisitas.findIndex(r => r.id === id);
+    if (index === -1) throw new Error('Revisita não encontrada');
+    revisitas[index] = revisitaAtualizada;
+    this.saveRevisitas(revisitas);
+  }
+
+  removerRevisita(id: string): void {
+    const revisitas = this.getRevisitas();
+    const revisitasFiltradas = revisitas.filter(r => r.id !== id);
+    this.saveRevisitas(revisitasFiltradas);
+  }
+
+  registrarVisita(
+    revisitaId: string, 
+    visita: { 
+      encontrou: boolean; 
+      observacoes?: string; 
+      publicacoesDeixadas?: string[];
+      proximaVisita?: string;
+    }
+  ): void {
+    const revisitas = this.getRevisitas();
+    const index = revisitas.findIndex(r => r.id === revisitaId);
+    
+    if (index === -1) throw new Error('Revisita não encontrada');
+    
+    const revisita = revisitas[index];
+    const hoje = new Date().toISOString().split('T')[0];
+    
+    // Criar registro de visita
+    const novaVisita: HistoricoVisita = {
+      id: this.gerarIdUnico(),
+      data: hoje,
+      encontrou: visita.encontrou,
+      observacoes: visita.observacoes,
+      publicacoesDeixadas: visita.publicacoesDeixadas,
+      proximaVisita: visita.proximaVisita,
+    };
+    
+    // Atualizar revisita
+    revisitas[index] = {
+      ...revisita,
+      ultimaVisita: hoje,
+      quantidadeVisitas: revisita.quantidadeVisitas + 1,
+      proximaVisita: visita.proximaVisita || revisita.proximaVisita,
+      historicoVisitas: [...(revisita.historicoVisitas || []), novaVisita],
+    };
+    
+    this.saveRevisitas(revisitas);
   }
 
   converterRevisitaEmEstudo(revisitaId: string, estudo: Omit<Estudo, 'id' | 'criadoEm'>): Estudo {
@@ -341,6 +440,16 @@ class DataServiceClass {
       .reduce((total, s) => total + (s.duracaoMinutos || 0), 0) / 60;
   }
 
+  getTotalHorasAno(ano: number): number {
+    const sessoes = this.getSessoes();
+    return sessoes
+      .filter(s => {
+        const data = new Date(s.data);
+        return data.getFullYear() === ano;
+      })
+      .reduce((total, s) => total + (s.duracaoMinutos || 0), 0) / 60;
+  }
+
   adicionarSessao(sessao: Omit<Sessao, 'id'>): Sessao {
     const sessoes = this.getSessoes();
     const novaSessao: Sessao = {
@@ -350,6 +459,31 @@ class DataServiceClass {
     sessoes.push(novaSessao);
     this.saveSessoes(sessoes);
     return novaSessao;
+  }
+
+  atualizarSessao(id: string, sessaoAtualizada: Partial<Sessao>): void {
+    const sessoes = this.getSessoes();
+    const index = sessoes.findIndex(s => s.id === id);
+    if (index !== -1) {
+      sessoes[index] = { ...sessoes[index], ...sessaoAtualizada };
+      this.saveSessoes(sessoes);
+    }
+  }
+
+  excluirSessao(id: string): void {
+    const sessoes = this.getSessoes();
+    const novasSessoes = sessoes.filter(s => s.id !== id);
+    this.saveSessoes(novasSessoes);
+  }
+
+  getSessaoPorId(id: string): Sessao | undefined {
+    const sessoes = this.getSessoes();
+    return sessoes.find(s => s.id === id);
+  }
+
+  getSessoesPorMes(mesCompleto: string): Sessao[] {
+    const sessoes = this.getSessoes();
+    return sessoes.filter(s => s.data.startsWith(mesCompleto));
   }
 
   // ===== SESSÃO ATIVA =====
@@ -542,6 +676,38 @@ class DataServiceClass {
     return this.getAlvos().filter(a => !a.concluido);
   }
 
+  adicionarAlvo(alvo: Omit<Alvo, 'id' | 'dataCriacao'>): Alvo {
+    const alvos = this.getAlvos();
+    const novoAlvo: Alvo = {
+      ...alvo,
+      id: this.gerarIdUnico(),
+      dataCriacao: new Date().toISOString(),
+      progresso: alvo.progresso || 0,
+      concluido: false,
+    };
+    alvos.push(novoAlvo);
+    this.saveAlvos(alvos);
+    return novoAlvo;
+  }
+
+  atualizarAlvo(id: string, alvoAtualizado: Partial<Alvo>): void {
+    const alvos = this.getAlvos();
+    const index = alvos.findIndex(a => a.id === id);
+    if (index !== -1) {
+      alvos[index] = { ...alvos[index], ...alvoAtualizado };
+      if (alvoAtualizado.concluido) {
+        alvos[index].dataConclusao = new Date().toISOString();
+      }
+      this.saveAlvos(alvos);
+    }
+  }
+
+  excluirAlvo(id: string): void {
+    const alvos = this.getAlvos();
+    const novosAlvos = alvos.filter(a => a.id !== id);
+    this.saveAlvos(novosAlvos);
+  }
+
   // ===== TEMA DO MÊS =====
 
   getTemaExperiencias(): TemaExperiencia[] {
@@ -661,6 +827,11 @@ class DataServiceClass {
     }
   }
 
+  getMetaAnual(): number {
+    // Meta anual = meta mensal * 12
+    return this.getMetaMensal() * 12;
+  }
+
   getTipoPublicadorLabel(tipo: TipoPublicador): string {
     switch (tipo) {
       case 'publicador-regular':
@@ -731,14 +902,183 @@ class DataServiceClass {
 
   importarDados(json: string): void {
     const data = JSON.parse(json);
-    if (data.estudos) this.saveEstudos(data.estudos);
-    if (data.revisitas) this.saveRevisitas(data.revisitas);
-    if (data.sessoes) this.saveSessoes(data.sessoes);
-    if (data.diario) this.saveDiario(data.diario);
-    if (data.alvos) this.saveAlvos(data.alvos);
     if (data.temaExperiencias) this.saveTemaExperiencias(data.temaExperiencias);
     if (data.atividades) this.saveAtividades(data.atividades);
     this.emitChange('all');
+  }
+
+  // ===== BACKUP E RESTAURAÇÃO =====
+
+  /**
+   * Exporta todos os dados do app em formato JSON
+   * Retorna uma string JSON com todos os dados + metadados
+   */
+  exportarBackup(): string {
+    const backup = {
+      versao: '1.0.0',
+      dataExportacao: new Date().toISOString(),
+      appName: 'Mynis',
+      dados: {
+        perfil: this.getPerfil(),
+        metaMensal: this.getMetaMensal(),
+        estudos: this.getEstudos(),
+        revisitas: this.getRevisitas(),
+        sessoes: this.getSessoes(),
+        diario: this.getDiario(),
+        alvos: this.getAlvos(),
+        temaExperiencias: this.getTemaExperiencias(),
+        atividades: this.getAtividades(),
+        leituraBiblica: {
+          planoAtual: localStorage.getItem('planoLeituraAtual') || null,
+          leituras: JSON.parse(localStorage.getItem('leiturasBiblicas') || '[]'),
+          configuracoes: JSON.parse(localStorage.getItem('configuracoesLeitura') || '{}'),
+        }
+      }
+    };
+
+    return JSON.stringify(backup, null, 2);
+  }
+
+  /**
+   * Baixa o backup como arquivo JSON
+   */
+  baixarBackup(): void {
+    try {
+      const backupJson = this.exportarBackup();
+      const blob = new Blob([backupJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      const dataFormatada = new Date().toISOString().split('T')[0];
+      link.download = `mynis-backup-${dataFormatada}.json`;
+      link.href = url;
+      link.click();
+      
+      URL.revokeObjectURL(url);
+      
+      // Salvar timestamp da última sincronização
+      localStorage.setItem('ultimaSync', new Date().toISOString());
+      
+      this.emitChange('backup');
+    } catch (error) {
+      console.error('Erro ao baixar backup:', error);
+      throw new Error('Falha ao criar arquivo de backup');
+    }
+  }
+
+  /**
+   * Importa dados de um arquivo de backup
+   * Valida a estrutura antes de restaurar
+   */
+  async importarBackup(arquivo: File): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const conteudo = e.target?.result as string;
+          const backup = JSON.parse(conteudo);
+          
+          // Validação básica
+          if (!backup.appName || backup.appName !== 'Mynis') {
+            throw new Error('Arquivo de backup inválido');
+          }
+          
+          if (!backup.dados) {
+            throw new Error('Dados de backup não encontrados');
+          }
+          
+          // Confirmar antes de restaurar
+          const confirmar = window.confirm(
+            `Restaurar backup de ${new Date(backup.dataExportacao).toLocaleDateString('pt-BR')}?\n\n` +
+            `⚠️ ATENÇÃO: Todos os dados atuais serão substituídos!\n\n` +
+            `Dados no backup:\n` +
+            `• ${backup.dados.estudos?.length || 0} estudos\n` +
+            `• ${backup.dados.revisitas?.length || 0} revisitas\n` +
+            `• ${backup.dados.sessoes?.length || 0} sessões de campo\n` +
+            `• ${backup.dados.diario?.length || 0} entradas de gratidão\n` +
+            `• ${backup.dados.alvos?.length || 0} alvos espirituais`
+          );
+          
+          if (!confirmar) {
+            reject(new Error('Restauração cancelada pelo usuário'));
+            return;
+          }
+          
+          // Restaurar dados
+          const dados = backup.dados;
+          
+          if (dados.perfil) localStorage.setItem('perfil', JSON.stringify(dados.perfil));
+          if (dados.metaMensal) localStorage.setItem('metaMensal', JSON.stringify(dados.metaMensal));
+          if (dados.estudos) localStorage.setItem('estudos', JSON.stringify(dados.estudos));
+          if (dados.revisitas) localStorage.setItem('revisitas', JSON.stringify(dados.revisitas));
+          if (dados.sessoes) localStorage.setItem('sessoes', JSON.stringify(dados.sessoes));
+          if (dados.diario) localStorage.setItem('diario', JSON.stringify(dados.diario));
+          if (dados.alvos) localStorage.setItem('alvos', JSON.stringify(dados.alvos));
+          if (dados.temaExperiencias) localStorage.setItem('temaExperiencias', JSON.stringify(dados.temaExperiencias));
+          if (dados.atividades) localStorage.setItem('atividades', JSON.stringify(dados.atividades));
+          
+          // Restaurar dados de leitura bíblica
+          if (dados.leituraBiblica) {
+            if (dados.leituraBiblica.planoAtual) {
+              localStorage.setItem('planoLeituraAtual', dados.leituraBiblica.planoAtual);
+            }
+            if (dados.leituraBiblica.leituras) {
+              localStorage.setItem('leiturasBiblicas', JSON.stringify(dados.leituraBiblica.leituras));
+            }
+            if (dados.leituraBiblica.configuracoes) {
+              localStorage.setItem('configuracoesLeitura', JSON.stringify(dados.leituraBiblica.configuracoes));
+            }
+          }
+          
+          // Salvar timestamp da restauração
+          localStorage.setItem('ultimaSync', new Date().toISOString());
+          
+          this.emitChange('all');
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+      reader.readAsText(arquivo);
+    });
+  }
+
+  /**
+   * Retorna a data da última sincronização
+   */
+  getUltimaSync(): Date | null {
+    const timestamp = localStorage.getItem('ultimaSync');
+    return timestamp ? new Date(timestamp) : null;
+  }
+
+  /**
+   * Retorna texto amigável da última sincronização
+   */
+  getTextoUltimaSync(): string {
+    const ultimaSync = this.getUltimaSync();
+    
+    if (!ultimaSync) {
+      return 'Nunca sincronizado';
+    }
+    
+    const agora = new Date();
+    const diffMs = agora.getTime() - ultimaSync.getTime();
+    const diffMinutos = Math.floor(diffMs / 60000);
+    const diffHoras = Math.floor(diffMs / 3600000);
+    const diffDias = Math.floor(diffMs / 86400000);
+    
+    if (diffMinutos < 1) return 'Agora mesmo';
+    if (diffMinutos === 1) return 'Há 1 minuto';
+    if (diffMinutos < 60) return `Há ${diffMinutos} minutos`;
+    if (diffHoras === 1) return 'Há 1 hora';
+    if (diffHoras < 24) return `Há ${diffHoras} horas`;
+    if (diffDias === 1) return 'Ontem';
+    if (diffDias < 7) return `Há ${diffDias} dias`;
+    
+    return ultimaSync.toLocaleDateString('pt-BR');
   }
 }
 

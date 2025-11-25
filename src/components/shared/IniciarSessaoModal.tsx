@@ -31,8 +31,9 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
       emoji: '🏢',
       icon: Building2,
       descricao: 'Carrinho ou banca pública',
-      cor: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
-      corSelecionada: 'bg-blue-500 text-white border-blue-500',
+      cor: 'border-gray-200 hover:bg-gray-50',
+      corSelecionada: 'border text-white',
+      corSelecionadaStyle: { backgroundColor: '#4A2C60', borderColor: '#4A2C60' },
     },
     {
       id: 'telefone',

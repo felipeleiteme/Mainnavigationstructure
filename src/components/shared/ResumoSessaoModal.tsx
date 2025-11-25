@@ -159,10 +159,10 @@ export default function ResumoSessaoModal({ sessao, onClose, onSalvarResumo }: R
             </label>
             <Textarea
               placeholder="Escreva suas reflexões sobre a sessão..."
-              rows={4}
+              rows={5}
               value={observacoes}
               onChange={(e) => setObservacoes(e.target.value)}
-              className="resize-none"
+              className="resize-none min-h-[120px] bg-white"
             />
           </div>
 

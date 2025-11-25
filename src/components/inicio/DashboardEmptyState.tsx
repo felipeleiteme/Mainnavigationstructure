@@ -18,14 +18,14 @@ export default function DashboardEmptyState({
   return (
     <div className="px-4 py-8 space-y-6">
       {/* Welcome Card */}
-      <Card className="p-8 text-center bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
-        <div className="w-24 h-24 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
-          <Sprout className="w-12 h-12 text-green-600" />
+      <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-blue-50" style={{ borderColor: '#E6DFF0' }}>
+        <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E6DFF0' }}>
+          <Sprout className="w-12 h-12" style={{ color: '#4A2C60' }} />
         </div>
         
         <h2 className="text-2xl mb-3">Bem-vindo ao Mynis, {userName}!</h2>
         <p className="text-gray-700 mb-6 max-w-md mx-auto">
-          Vamos começar sua jornada ministerial juntos. Este é seu espaço para crescer e servir com propósito 💚
+          Vamos começar sua jornada ministerial juntos. Este é seu espaço para crescer e servir com propósito
         </p>
       </Card>
 
@@ -38,11 +38,11 @@ export default function DashboardEmptyState({
           onClick={onAddRevisita}
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Sprout className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6DFF0' }}>
+              <Sprout className="w-6 h-6" style={{ color: '#4A2C60' }} />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm">🌱 Adicione suas primeiras revisitas</h4>
+              <h4 className="text-sm">Adicione suas primeiras revisitas</h4>
               <p className="text-xs text-gray-600">Comece a acompanhar as pessoas que você conhece</p>
             </div>
           </div>
@@ -53,11 +53,11 @@ export default function DashboardEmptyState({
           onClick={onConfigureAlvos}
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Heart className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
+              <Heart className="w-6 h-6" style={{ color: '#4A2C60' }} />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm">🙏 Configure seus alvos espirituais</h4>
+              <h4 className="text-sm">Configure seus alvos espirituais</h4>
               <p className="text-xs text-gray-600">Defina metas para seu crescimento pessoal</p>
             </div>
           </div>
@@ -68,11 +68,11 @@ export default function DashboardEmptyState({
           onClick={onIniciarSessao}
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Play className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
+              <Play className="w-6 h-6" style={{ color: '#4A2C60' }} />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm">▶ Inicie uma sessão de campo</h4>
+              <h4 className="text-sm">Inicie uma sessão de campo</h4>
               <p className="text-xs text-gray-600">Comece a registrar suas horas de ministério</p>
             </div>
           </div>

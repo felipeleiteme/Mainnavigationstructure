@@ -1,13 +1,12 @@
-import { Bell } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { MynisNotifications } from '../../utils/notifications';
+import { MynisNotifications } from '../../utils/notifications/notifications';
 
 export default function NotificationDemo() {
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Bell className="w-5 h-5 text-blue-600" />
+        <Bell className="w-5 h-5" style={{ color: '#4A2C60' }} />
         <h3>Testar Notificações</h3>
       </div>
       

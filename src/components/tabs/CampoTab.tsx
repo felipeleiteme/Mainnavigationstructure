@@ -1,22 +1,25 @@
 import { 
-  Sprout, 
   Plus, 
-  MapPin, 
-  Calendar, 
-  User, 
-  Phone, 
-  MessageSquare, 
-  MoreVertical, 
-  Filter, 
   Search, 
-  List, 
-  Map as MapIcon,
+  Filter, 
   Home,
   Building2,
   Store,
-  Navigation,
   Clock,
-  BookOpen
+  BookOpen,
+  Phone,
+  ChevronRight,
+  MapPin,
+  Calendar,
+  Sparkles,
+  Zap,
+  ShoppingBag,
+  Moon,
+  Star,
+  AlertTriangle,
+  Lightbulb,
+  Sprout,
+  CheckCircle2
 } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -24,23 +27,29 @@ import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { useState, useEffect } from 'react';
 import { DataService, Revisita as RevisitaType } from '../../services/dataService';
-import FormularioRevisita from '../campo/FormularioRevisita';
 import FormularioEstudo from '../estudos/FormularioEstudo';
+import DetalhesRevisitaPage from '../pages/DetalhesRevisitaPage';
+import NovaRevisitaPage from '../pages/NovaRevisitaPage';
+import NovoEstudoPage from '../pages/NovoEstudoPage';
+import RegistrarVisitaPage from '../pages/RegistrarVisitaPage';
 import FAB from '../shared/FAB';
-import BarraSessao from '../shared/BarraSessao';
 
 interface CampoTabProps {
   filtro?: string;
   onNavigateToTab?: (tab: string) => void;
+  revisitaId?: string;
+  abrirDetalhes?: boolean;
 }
 
-export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
+type PaginaCampo = 'home' | 'detalhes' | 'nova-revisita' | 'editar-revisita' | 'novo-estudo' | 'registrar-visita';
+
+export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDetalhes }: CampoTabProps) {
+  const [paginaAtual, setPaginaAtual] = useState<PaginaCampo>('home');
+  const [revisitaSelecionada, setRevisitaSelecionada] = useState<string>('');
+  const [revisitaEditando, setRevisitaEditando] = useState<RevisitaType | undefined>();
   const [filtroAtivo, setFiltroAtivo] = useState('todos');
   const [busca, setBusca] = useState('');
-  const [viewMode, setViewMode] = useState<'lista' | 'mapa'>('lista');
-  const [showFormularioRevisita, setShowFormularioRevisita] = useState(false);
   const [showFormularioEstudo, setShowFormularioEstudo] = useState(false);
-  const [revisitaEditando, setRevisitaEditando] = useState<RevisitaType | undefined>();
   const [revisitaParaEstudo, setRevisitaParaEstudo] = useState<RevisitaType | undefined>();
   const [revisitas, setRevisitas] = useState<RevisitaType[]>([]);
 
@@ -62,12 +71,19 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
     
     // Escutar mudanças nos dados
     const handleDataChange = () => carregarRevisitas();
-    DataService.on('mynis-data-change', handleDataChange);
+    window.addEventListener('mynis-data-change', handleDataChange);
     
     return () => {
-      DataService.off('mynis-data-change', handleDataChange);
+      window.removeEventListener('mynis-data-change', handleDataChange);
     };
   }, []);
+
+  // Abrir detalhes automaticamente se revisitaId e abrirDetalhes forem passados
+  useEffect(() => {
+    if (revisitaId && abrirDetalhes) {
+      handleAbrirDetalhes(revisitaId);
+    }
+  }, [revisitaId, abrirDetalhes]);
 
   // Processar revisitas para exibição
   const revisitasProcessadas = revisitas.map(r => {
@@ -104,11 +120,13 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
     }
     
     return true;
+  }).sort((a, b) => {
+    // Ordenar do mais recente para o mais antigo
+    // Extrai timestamp do ID (formato: "timestamp-random")
+    const timestampA = parseInt(a.id.split('-')[0]);
+    const timestampB = parseInt(b.id.split('-')[0]);
+    return timestampB - timestampA; // Decrescente (mais recente primeiro)
   });
-
-  // Estatísticas
-  const revisitasQuentes = revisitasProcessadas.filter(r => r.status === 'quente').length;
-  const revisitasComInteresse = revisitasProcessadas.filter(r => r.interesseEstudo).length;
 
   // Helper: calcular tempo atrás
   function calcularTempoAtras(data: string) {
@@ -127,22 +145,53 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
     return Math.floor((agora.getTime() - dataVisita.getTime()) / (1000 * 60 * 60 * 24));
   }
 
-  // Abrir formulário de edição
+  // Handlers de navegação
+  const handleAbrirDetalhes = (revisitaId: string) => {
+    setRevisitaSelecionada(revisitaId);
+    setPaginaAtual('detalhes');
+  };
+
+  const handleAbrirNovaRevisita = () => {
+    setRevisitaEditando(undefined);
+    setPaginaAtual('nova-revisita');
+  };
+
   const handleEditarRevisita = (revisita: RevisitaType) => {
     setRevisitaEditando(revisita);
-    setShowFormularioRevisita(true);
+    setPaginaAtual('editar-revisita');
   };
 
-  // Iniciar estudo a partir da revisita
   const handleIniciarEstudo = (revisita: RevisitaType) => {
-    setRevisitaParaEstudo(revisita);
-    setShowFormularioEstudo(true);
-  };
+    // Converter revisita em estudo
+    const novoEstudo = {
+      estudanteNome: revisita.nome,
+      estudanteTelefone: revisita.telefone || '',
+      estudanteEndereco: revisita.endereco,
+      publicacao: 'O Que a Bíblia Realmente Ensina?',
+      status: 'iniciando' as const,
+      data: new Date().toISOString().split('T')[0],
+      horario: '19:00',
+      observacoes: revisita.primeiraConversa || '',
+      sessoes: []
+    };
 
-  // Handlers para fechar formulários
-  const handleFecharFormularioRevisita = () => {
-    setShowFormularioRevisita(false);
-    setRevisitaEditando(undefined);
+    // Adicionar o novo estudo
+    DataService.adicionarEstudo(novoEstudo);
+    
+    // Remover a revisita
+    DataService.removerRevisita(revisita.id);
+    
+    // Mostrar mensagem de sucesso
+    import('sonner@2.0.3').then(({ toast }) => {
+      toast.success('Estudo Bíblico Iniciado! 📖', {
+        description: `${revisita.nome} agora está na lista de Estudos Bíblicos`,
+      });
+    });
+    
+    // Navegar para a aba de Estudos
+    if (onNavigateToTab) {
+      onNavigateToTab('estudos');
+    }
   };
 
   const handleFecharFormularioEstudo = () => {
@@ -150,29 +199,54 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
     setRevisitaParaEstudo(undefined);
   };
 
-  // Handler para quando estudo é criado
   const handleEstudoCriado = () => {
     handleFecharFormularioEstudo();
-    // Navegar para EstudosTab
     onNavigateToTab?.('estudos');
+  };
+
+  const handleVoltarParaLista = () => {
+    setPaginaAtual('home');
+    setRevisitaSelecionada('');
+    setRevisitaEditando(undefined);
+    carregarRevisitas(); // Recarregar lista
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'nova': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'quente': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'comercio': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'descanso': return 'bg-gray-100 text-gray-700 border-gray-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'nova': return 'bg-green-50 text-green-600 border-green-100';
+      case 'quente': return 'bg-orange-50 text-orange-600 border-orange-100';
+      case 'comercio': return 'border'; // Será estilizado inline com roxo primário
+      case 'descanso': return 'bg-gray-50 text-gray-600 border-gray-100';
+      default: return 'bg-gray-50 text-gray-600 border-gray-100';
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'nova': return '🆕 Nova';
-      case 'quente': return '⚡ Quente';
-      case 'comercio': return '🏪 Comércio';
-      case 'descanso': return '💤 Descanso';
+      case 'nova': return (
+        <span className="flex items-center gap-1">
+          <Sparkles className="w-3 h-3" />
+          Nova
+        </span>
+      );
+      case 'quente': return (
+        <span className="flex items-center gap-1">
+          <Zap className="w-3 h-3" />
+          Quente
+        </span>
+      );
+      case 'comercio': return (
+        <span className="flex items-center gap-1">
+          <ShoppingBag className="w-3 h-3" />
+          Comércio
+        </span>
+      );
+      case 'descanso': return (
+        <span className="flex items-center gap-1">
+          <Moon className="w-3 h-3" />
+          Descanso
+        </span>
+      );
       default: return status;
     }
   };
@@ -186,23 +260,79 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
     }
   };
 
+  // Renderizar páginas
+  if (paginaAtual === 'detalhes') {
+    return (
+      <DetalhesRevisitaPage 
+        revisitaId={revisitaSelecionada}
+        onVoltar={handleVoltarParaLista}
+        onEditar={handleEditarRevisita}
+        onIniciarEstudo={handleIniciarEstudo}
+        onRegistrarVisita={(id) => {
+          setRevisitaSelecionada(id);
+          setPaginaAtual('registrar-visita');
+        }}
+      />
+    );
+  }
+
+  if (paginaAtual === 'nova-revisita' || paginaAtual === 'editar-revisita') {
+    return (
+      <NovaRevisitaPage 
+        onVoltar={handleVoltarParaLista}
+        revisitaEditar={revisitaEditando}
+      />
+    );
+  }
+
+  if (paginaAtual === 'novo-estudo') {
+    return (
+      <NovoEstudoPage 
+        onVoltar={handleVoltarParaLista}
+        revisitaConversao={revisitaParaEstudo ? {
+          nome: revisitaParaEstudo.nome,
+          telefone: revisitaParaEstudo.telefone,
+          endereco: revisitaParaEstudo.endereco
+        } : undefined}
+      />
+    );
+  }
+
+  if (paginaAtual === 'registrar-visita') {
+    return (
+      <RegistrarVisitaPage 
+        onVoltar={handleVoltarParaLista}
+        revisitaId={revisitaSelecionada}
+      />
+    );
+  }
+
+  // Página Home (Lista)
   return (
-    <div className="min-h-full bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-green-600 to-green-700 text-white px-6 pt-12 pb-8 rounded-b-3xl">
-        <h1 className="text-2xl mb-1">Campo</h1>
-        <p className="text-sm opacity-90">
-          {revisitas.length} {revisitas.length === 1 ? 'revisita' : 'revisitas'}
-        </p>
+    <div className="min-h-full" style={{ backgroundColor: '#FDF8EE' }}>
+      {/* Header fixo */}
+      <div style={{ backgroundColor: '#4A2C60' }} className="sticky top-0 z-50 text-white">
+        <div className="px-6 pt-12 pb-4">
+          <div className="flex items-center gap-3">
+            <MapPin className="w-7 h-7" />
+            <div>
+              <h2 className="text-xl">Campo</h2>
+              <p className="text-xs opacity-90">
+                {revisitas.length} {revisitas.length === 1 ? 'revisita' : 'revisitas'}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="px-4 py-6 space-y-4">
         {/* Busca */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <Input 
             placeholder="Buscar por nome, endereço..." 
-            className="pl-10 pr-12"
+            className="h-14 pl-12 pr-16 bg-white border-2"
+            style={{ borderColor: '#D8CEE8' }}
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
@@ -215,34 +345,14 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
           </Button>
         </div>
 
-        {/* Toggle Lista/Mapa */}
-        <div className="flex gap-2">
-          <Button
-            variant={viewMode === 'lista' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('lista')}
-            className="flex-1"
-          >
-            <List className="w-4 h-4 mr-2" />
-            Lista
-          </Button>
-          <Button
-            variant={viewMode === 'mapa' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('mapa')}
-            className="flex-1"
-          >
-            <MapIcon className="w-4 h-4 mr-2" />
-            Mapa
-          </Button>
-        </div>
-
-        {/* Filtros */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        {/* Filtros - Scroll Horizontal */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           <Button
             size="sm"
             variant={filtroAtivo === 'todos' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('todos')}
+            className={`whitespace-nowrap ${filtroAtivo === 'todos' ? '' : 'bg-white border-gray-200'}`}
+            style={filtroAtivo === 'todos' ? { backgroundColor: '#4A2C60' } : {}}
           >
             Todas
           </Button>
@@ -250,7 +360,8 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
             size="sm"
             variant={filtroAtivo === 'disponiveis' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('disponiveis')}
-            className={filtroAtivo === 'disponiveis' ? 'bg-green-600 hover:bg-green-700' : ''}
+            className="whitespace-nowrap bg-white border-gray-200"
+            style={filtroAtivo === 'disponiveis' ? { backgroundColor: '#4A2C60' } : {}}
           >
             Disponíveis Agora
           </Button>
@@ -258,6 +369,8 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
             size="sm"
             variant={filtroAtivo === 'quentes' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('quentes')}
+            className={`whitespace-nowrap ${filtroAtivo === 'quentes' ? '' : 'bg-white border-gray-200'}`}
+            style={filtroAtivo === 'quentes' ? { backgroundColor: '#4A2C60' } : {}}
           >
             Quentes
           </Button>
@@ -265,6 +378,8 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
             size="sm"
             variant={filtroAtivo === 'revisitar' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('revisitar')}
+            className={`whitespace-nowrap ${filtroAtivo === 'revisitar' ? '' : 'bg-white border-gray-200'}`}
+            style={filtroAtivo === 'revisitar' ? { backgroundColor: '#4A2C60' } : {}}
           >
             Para Revisitar
           </Button>
@@ -274,7 +389,7 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
         {filtroAtivo === 'disponiveis' && (
           <Card className="p-4 bg-green-50 border-green-200">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">💡</span>
+              <Lightbulb className="w-5 h-5 text-green-600 flex-shrink-0" />
               <div>
                 <p className="text-sm text-gray-700">
                   Estas pessoas estão <strong>disponíveis agora</strong> segundo a disponibilidade cadastrada. 
@@ -286,143 +401,152 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
         )}
       </div>
 
-      {/* Conteúdo */}
-      {viewMode === 'lista' ? (
-        <div className="px-4 py-4 space-y-3">
-          {revisitasFiltradas.length === 0 ? (
-            <Card className="p-8 text-center">
-              <div className="text-5xl mb-4">🌱</div>
-              <h3 className="text-lg mb-2">Vamos começar sua jornada!</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Ainda não há revisitas aqui. Que tal adicionar as primeiras pessoas que você conheceu no ministério?
+      {/* Lista de Revisitas */}
+      <div className="px-4 pb-24 space-y-3">
+        {revisitasFiltradas.length === 0 ? (
+          <Card className="p-8 text-center bg-white border-0 shadow-sm">
+            <div className="flex justify-center mb-4">
+              <Sprout className="w-16 h-16" style={{ color: '#4A2C60' }} />
+            </div>
+            <h3 className="text-lg mb-2">Vamos começar sua jornada!</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              {busca 
+                ? 'Nenhuma revisita encontrada com esses critérios.'
+                : 'Ainda não há revisitas aqui. Que tal adicionar as primeiras pessoas que você conheceu no ministério?'}
+            </p>
+            {!busca && (
+              <p className="text-sm text-gray-500 mb-4">
+                Clique no botão + abaixo para adicionar sua primeira revisita
               </p>
-              <Button 
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => setShowFormularioRevisita(true)}
+            )}
+          </Card>
+        ) : (
+          <>
+            {revisitasFiltradas.map((revisita) => (
+              <Card 
+                key={revisita.id} 
+                className="p-4 bg-white border-0 shadow-sm"
               >
-                + Adicionar Primeira Revisita
-              </Button>
-            </Card>
-          ) : (
-            <>
-              {revisitasFiltradas.map((revisita) => (
-                <Card 
-                  key={revisita.id} 
-                  className="p-3 hover:shadow-md transition-shadow"
+                {/* Conteúdo clicável */}
+                <div 
+                  className="hover:opacity-80 transition-opacity cursor-pointer"
+                  onClick={() => handleAbrirDetalhes(revisita.id)}
                 >
-                  <div className="flex items-start justify-between mb-2">
+                  {/* Cabeçalho do Card */}
+                  <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-base">{revisita.nome}</h3>
                         {revisita.interesseEstudo && (
-                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 text-xs">
-                            ⭐ Interesse
+                          <Badge variant="secondary" className="bg-yellow-50 text-yellow-600 border border-yellow-100 text-xs px-2 py-0.5 flex items-center gap-1">
+                            <Star className="w-3 h-3" />
+                            Interesse
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                      <div className="flex items-center gap-1.5 text-sm text-gray-600 mb-2">
                         {getTipoIcon(revisita.origem)}
                         <span className="line-clamp-1">{revisita.endereco}</span>
                       </div>
+                      <Badge 
+                        className={`text-xs border ${getStatusColor(revisita.status)}`}
+                        style={revisita.status === 'comercio' ? { 
+                          backgroundColor: '#F5F2F7',
+                          color: '#4A2C60',
+                          borderColor: '#D8CEE8'
+                        } : {}}
+                      >
+                        {getStatusLabel(revisita.status)}
+                      </Badge>
                     </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   </div>
 
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className={`text-xs border ${getStatusColor(revisita.status)}`}>
-                      {getStatusLabel(revisita.status)}
-                    </Badge>
-                    <span className="text-xs text-gray-600">
-                      {revisita.quantidadeVisitas} {revisita.quantidadeVisitas === 1 ? 'visita' : 'visitas'}
-                    </span>
-                  </div>
+                  {/* Corpo do Card */}
+                  <div className="space-y-2">
+                    {/* Primeira conversa */}
+                    <p className="text-sm text-gray-600 line-clamp-2 italic">
+                      "{revisita.primeiraConversa}"
+                    </p>
 
-                  {/* Primeira Conversa */}
-                  <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                    {revisita.primeiraConversa}
-                  </p>
-
-                  <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span className={revisita.precisaRevisitar ? 'text-orange-600' : ''}>
-                        {revisita.ultimaVisitaTexto}
+                    {/* Informações de tempo e visitas */}
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-1.5 text-gray-600">
+                        <Clock className="w-4 h-4" />
+                        <span className={revisita.precisaRevisitar ? 'text-orange-600' : ''}>
+                          {revisita.ultimaVisitaTexto}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {revisita.quantidadeVisitas} {revisita.quantidadeVisitas === 1 ? 'visita' : 'visitas'}
                       </span>
                     </div>
+
+                    {/* Alerta de revisita necessária */}
                     {revisita.precisaRevisitar && (
-                      <span className="text-xs text-orange-600">⚠️ Precisa revisitar</span>
+                      <div className="flex items-center gap-1.5 text-xs text-orange-600 bg-orange-50 px-2 py-1.5 rounded">
+                        <AlertTriangle className="w-3 h-3" />
+                        <span>Precisa revisitar</span>
+                      </div>
+                    )}
+
+                    {/* Próxima visita agendada */}
+                    {revisita.proximaVisita && (
+                      <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Calendar className="w-4 h-4 text-green-600" />
+                          <p className="text-xs text-green-700">Próxima Visita Agendada</p>
+                        </div>
+                        <p className="text-sm text-green-900 ml-6">
+                          {new Date(revisita.proximaVisita).toLocaleDateString('pt-BR', { 
+                            weekday: 'long',
+                            day: 'numeric', 
+                            month: 'long',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
                     )}
                   </div>
+                </div>
 
-                  {/* Ações */}
-                  <div className="flex gap-2">
-                    {revisita.telefone && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="flex-1 h-8 text-xs"
-                        onClick={() => window.open(`https://wa.me/${revisita.telefone?.replace(/\D/g, '')}`, '_blank')}
-                      >
-                        <Phone className="w-3.5 h-3.5 mr-1" />
-                        WhatsApp
-                      </Button>
-                    )}
-                    {revisita.interesseEstudo && (
-                      <Button 
-                        size="sm" 
-                        className="flex-1 h-8 text-xs bg-blue-600 hover:bg-blue-700"
-                        onClick={() => handleIniciarEstudo(revisita)}
-                      >
-                        <BookOpen className="w-3.5 h-3.5 mr-1" />
-                        Iniciar Estudo
-                      </Button>
-                    )}
-                    {!revisita.interesseEstudo && (
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="flex-1 h-8 text-xs"
-                        onClick={() => handleEditarRevisita(revisita)}
-                      >
-                        Ver Detalhes
-                      </Button>
-                    )}
-                  </div>
-                </Card>
-              ))}
-            </>
-          )}
-        </div>
-      ) : (
-        <div className="h-[calc(100vh-320px)] bg-gray-200 flex items-center justify-center p-6">
-          <div className="text-center text-gray-500">
-            <MapIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p className="text-lg mb-2">Visualização em Mapa</p>
-            <p className="text-sm">(Em breve você poderá ver suas revisitas no mapa 🗺️)</p>
-          </div>
-        </div>
-      )}
+                {/* Botão de Registrar Visita */}
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRevisitaSelecionada(revisita.id);
+                    setPaginaAtual('registrar-visita');
+                  }}
+                  className="w-full mt-3 text-white h-12 hover:opacity-90"
+                  style={{ backgroundColor: '#4A2C60' }}
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Registrar Visita
+                </Button>
+              </Card>
+            ))}
+          </>
+        )}
+      </div>
 
-      {/* Botão Flutuante */}
-      <Button 
+      {/* FAB - Botão de Ação Flutuante */}
+      <Button
         size="lg"
-        className="fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg bg-green-600 hover:bg-green-700 z-40 transition-all duration-300 hover:scale-110"
-        onClick={() => setShowFormularioRevisita(true)}
+        onClick={handleAbrirNovaRevisita}
+        className="fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 hover:scale-110 border-0"
+        style={{ backgroundColor: '#4A2C60', color: 'white' }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#3D234D';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = '#4A2C60';
+        }}
       >
         <Plus className="w-5 h-5 mr-2" />
         Nova Revisita
       </Button>
 
-      {/* Formulários */}
-      {showFormularioRevisita && (
-        <FormularioRevisita
-          revisita={revisitaEditando}
-          onClose={handleFecharFormularioRevisita}
-          onSave={() => {
-            handleFecharFormularioRevisita();
-            carregarRevisitas();
-          }}
-        />
-      )}
+      {/* Formulário de Estudo (Modal) */}
       {showFormularioEstudo && (
         <FormularioEstudo
           revisitaConversao={revisitaParaEstudo ? {
@@ -434,6 +558,17 @@ export default function CampoTab({ filtro, onNavigateToTab }: CampoTabProps) {
           onSave={handleEstudoCriado}
         />
       )}
+
+      {/* CSS para esconder scrollbar */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

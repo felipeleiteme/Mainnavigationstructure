@@ -101,7 +101,7 @@ export default function EditarTipoPublicadorModal({ onClose, onSave }: EditarTip
             </button>
           ))}
 
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 mt-4">
+          <div className="p-4 rounded-lg border mt-4" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
             <p className="text-sm text-gray-700">
               💡 <strong>Dica:</strong> A meta mensal é ajustada automaticamente de acordo com o tipo selecionado.
               Você pode acompanhar seu progresso na tela Início.

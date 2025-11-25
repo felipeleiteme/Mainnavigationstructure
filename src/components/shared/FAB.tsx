@@ -49,7 +49,10 @@ export default function FAB({
       <Button
         size="lg"
         onClick={onNovoEstudo}
-        className="fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg bg-blue-600 hover:bg-blue-700 z-40 transition-all duration-300 hover:scale-110"
+        className="fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 hover:scale-110"
+        style={{ backgroundColor: '#4A2C60', color: 'white' }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3D234D'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4A2C60'}
       >
         <Plus className="w-5 h-5 mr-2" />
         Novo Estudo
@@ -63,24 +66,32 @@ export default function FAB({
       <Button
         size="lg"
         onClick={onIniciarMinisterio}
-        className="fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg bg-purple-600 hover:bg-purple-700 z-40 transition-all duration-300 hover:scale-110"
+        className="fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 hover:scale-110"
+        style={{ backgroundColor: '#4A2C60', color: 'white' }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3D234D'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4A2C60'}
       >
         <Plus className="w-5 h-5 mr-2" />
-        Cadastrar Tempo
+        Nova Atividade
       </Button>
     );
   }
 
   // FAB para Sessão Ativa
-  const corSessao = sessaoAtiva.pausada ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-orange-500 hover:bg-orange-600';
+  const corSessao = sessaoAtiva.pausada 
+    ? { backgroundColor: '#FF9800', hoverColor: '#F57C00' } // Warning laranja
+    : { backgroundColor: '#C8E046', hoverColor: '#A0B638' }; // Verde lima ativo
   
   return (
     <Button
       size="lg"
       onClick={onAbrirControles}
-      className={`fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 ${corSessao} ${
+      className={`fixed bottom-20 right-4 rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 ${
         pulseAnimation && !sessaoAtiva.pausada ? 'animate-pulse' : ''
       }`}
+      style={{ backgroundColor: corSessao.backgroundColor, color: sessaoAtiva.pausada ? 'white' : '#4A2C60' }}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = corSessao.hoverColor}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = corSessao.backgroundColor}
     >
       {sessaoAtiva.pausada ? (
         <Pause className="w-5 h-5 mr-2" />
