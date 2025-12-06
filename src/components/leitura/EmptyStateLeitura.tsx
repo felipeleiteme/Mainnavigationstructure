@@ -1,6 +1,9 @@
 import { BookOpen, Sparkles, Target, Calendar, ArrowLeft, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
+import { useTranslations } from '../../utils/i18n/translations';
+import { ThemeService } from '../../services/themeService';
 
 interface EmptyStateLeituraProps {
   onIniciarConfiguracao: () => void;
@@ -8,6 +11,17 @@ interface EmptyStateLeituraProps {
 }
 
 export default function EmptyStateLeitura({ onIniciarConfiguracao, onVoltar }: EmptyStateLeituraProps) {
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+  const t = useTranslations();
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleThemeChange);
+    return () => ThemeService.off('mynis-theme-change', handleThemeChange);
+  }, []);
+
   return (
     <div className="min-h-screen bg-neutral pb-20">
       {/* Header */}
@@ -22,8 +36,8 @@ export default function EmptyStateLeitura({ onIniciarConfiguracao, onVoltar }: E
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h2 className="text-xl">Comece sua jornada</h2>
-            <p className="text-sm opacity-90">Configure sua leitura</p>
+            <h2 className="text-xl">{t.emptyStateBible.headerTitle}</h2>
+            <p className="text-sm opacity-90">{t.emptyStateBible.headerSubtitle}</p>
           </div>
         </div>
       </div>
@@ -35,23 +49,42 @@ export default function EmptyStateLeitura({ onIniciarConfiguracao, onVoltar }: E
           <div className="w-20 h-20 rounded-full bg-purple-100 mx-auto mb-4 flex items-center justify-center">
             <BookOpen className="w-10 h-10 text-purple-600" />
           </div>
-          <h3 className="mb-2">Configure sua leitura</h3>
+          <h3 className="mb-2">{t.emptyStateBible.ctaTitle}</h3>
           <p className="text-sm text-gray-700 mb-6">
-            Para começar, configure suas preferências de leitura da Bíblia
+            {t.emptyStateBible.ctaDescription}
           </p>
-          <Button
-            className="w-full bg-primary-500 hover:bg-primary-600 text-white shadow-lg border-0"
-            size="lg"
+          <button
+            className="w-full shadow-lg h-14 text-lg rounded-md transition-all flex items-center justify-center cursor-pointer border-0"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+              color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF',
+              border: 'none',
+              outline: 'none'
+            }}
+            onMouseEnter={(e) => {
+              if (temaAtual === 'escuro') {
+                e.currentTarget.style.backgroundColor = '#B5CC3D';
+              } else {
+                e.currentTarget.style.backgroundColor = '#5A3C70';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (temaAtual === 'escuro') {
+                e.currentTarget.style.backgroundColor = '#C8E046';
+              } else {
+                e.currentTarget.style.backgroundColor = '#4A2C60';
+              }
+            }}
             onClick={onIniciarConfiguracao}
           >
             <Settings className="w-5 h-5 mr-2" />
-            Ir para Configurações
-          </Button>
+            {t.emptyStateBible.ctaButton}
+          </button>
         </Card>
 
         {/* Benefícios */}
         <div className="space-y-4">
-          <h3 className="text-primary-700 px-2">O que você vai conseguir:</h3>
+          <h3 className="text-primary-700 px-2">{t.emptyStateBible.benefitsTitle}</h3>
           
           <Card className="p-5 border-primary-100">
             <div className="flex items-start gap-4">
@@ -59,9 +92,9 @@ export default function EmptyStateLeitura({ onIniciarConfiguracao, onVoltar }: E
                 <Target className="w-6 h-6 text-secondary-700" />
               </div>
               <div className="flex-1">
-                <h4 className="text-primary-700 mb-1">Metas Personalizadas</h4>
+                <h4 className="text-primary-700 mb-1">{t.emptyStateBible.benefit1Title}</h4>
                 <p className="text-sm text-gray-600">
-                  Escolha quantos capítulos ler por dia de acordo com sua rotina
+                  {t.emptyStateBible.benefit1Description}
                 </p>
               </div>
             </div>
@@ -73,9 +106,9 @@ export default function EmptyStateLeitura({ onIniciarConfiguracao, onVoltar }: E
                 <Calendar className="w-6 h-6 text-secondary-700" />
               </div>
               <div className="flex-1">
-                <h4 className="text-primary-700 mb-1">Acompanhamento Diário</h4>
+                <h4 className="text-primary-700 mb-1">{t.emptyStateBible.benefit2Title}</h4>
                 <p className="text-sm text-gray-600">
-                  Registre suas leituras e mantenha uma ofensiva de dias seguidos
+                  {t.emptyStateBible.benefit2Description}
                 </p>
               </div>
             </div>
@@ -87,9 +120,9 @@ export default function EmptyStateLeitura({ onIniciarConfiguracao, onVoltar }: E
                 <Sparkles className="w-6 h-6 text-secondary-700" />
               </div>
               <div className="flex-1">
-                <h4 className="text-primary-700 mb-1">Conquistas e Reflexões</h4>
+                <h4 className="text-primary-700 mb-1">{t.emptyStateBible.benefit3Title}</h4>
                 <p className="text-sm text-gray-600">
-                  Desbloqueie conquistas e registre suas reflexões espirituais
+                  {t.emptyStateBible.benefit3Description}
                 </p>
               </div>
             </div>

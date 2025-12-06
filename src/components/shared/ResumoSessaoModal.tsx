@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Clock, Users, BookOpen, FileText, Video, Plus, Minus } from 'lucide-react';
+import { X, Clock, Users, BookOpen, FileText, Video, Plus, Minus, PartyPopper, BarChart3 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Textarea } from '../ui/textarea';
@@ -57,7 +57,10 @@ export default function ResumoSessaoModal({ sessao, onClose, onSalvarResumo }: R
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl mb-1">Resumo da Sessão</h2>
-              <p className="text-sm opacity-90">Parabéns pelo esforço! 🎉</p>
+              <p className="text-sm opacity-90 flex items-center gap-1">
+                Parabéns pelo esforço!
+                <PartyPopper className="w-4 h-4" />
+              </p>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
               <X className="w-5 h-5" />
@@ -76,7 +79,10 @@ export default function ResumoSessaoModal({ sessao, onClose, onSalvarResumo }: R
         <div className="p-6 space-y-6">
           {/* Estatísticas Automáticas */}
           <div>
-            <h3 className="text-sm mb-3">📊 Atividades registradas:</h3>
+            <h3 className="text-sm mb-3 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Atividades registradas:
+            </h3>
             <div className="grid grid-cols-2 gap-3">
               <Card className="p-4 bg-green-50 border-green-200">
                 <Users className="w-6 h-6 text-green-600 mb-2" />

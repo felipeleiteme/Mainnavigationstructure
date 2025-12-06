@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, FileText, Heart, ChevronRight } from 'lucide-react';
+import { ArrowLeft, FileText, Heart, ChevronRight, Lightbulb, Bird, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner@2.0.3';
+import { ThemeService } from '../../services/themeService';
+import { useState, useEffect } from 'react';
 
 interface EnviarRelatorioPageProps {
   onVoltar: () => void;
@@ -19,6 +21,15 @@ interface EnviarRelatorioPageProps {
 }
 
 export default function EnviarRelatorioPage({ onVoltar, relatorio, temaMes }: EnviarRelatorioPageProps) {
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleThemeChange);
+    return () => ThemeService.off('mynis-theme-change', handleThemeChange);
+  }, []);
   const [step, setStep] = useState<'revisao' | 'reflexao'>('revisao');
   const [reflexao, setReflexao] = useState({
     alegria: '',
@@ -43,7 +54,7 @@ export default function EnviarRelatorioPage({ onVoltar, relatorio, temaMes }: En
     relatorios.push(novoRelatorio);
     localStorage.setItem('relatorios', JSON.stringify(relatorios));
 
-    toast.success('Relatório enviado! Parabéns pelo mês 🌟', {
+    toast.success('Relatório enviado! Parabéns pelo mês', {
       description: `${totalHoras} horas de dedicação registradas`,
       duration: 3000,
     });
@@ -82,8 +93,8 @@ export default function EnviarRelatorioPage({ onVoltar, relatorio, temaMes }: En
       localStorage.setItem('diarioGratidao', JSON.stringify(diarioGratidao));
     }
 
-    toast.success('Relatório enviado! Parabéns pelo mês 🌟', {
-      description: 'Sua reflexão foi salva no Diário de Gratidão ✨',
+    toast.success('Relatório enviado! Parabéns pelo mês', {
+      description: 'Sua reflexão foi salva no Diário de Gratidão',
       duration: 3000,
     });
     onVoltar();
@@ -94,7 +105,10 @@ export default function EnviarRelatorioPage({ onVoltar, relatorio, temaMes }: En
     return (
       <div className="fixed inset-0 bg-white z-50 overflow-y-auto pb-20">
         {/* Header fixo */}
-        <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+        <div 
+          className="sticky top-0 z-10 text-white" 
+          style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
+        >
           <div className="flex items-center gap-4 px-6 pt-12 pb-4">
             <Button
               variant="ghost"
@@ -152,7 +166,7 @@ export default function EnviarRelatorioPage({ onVoltar, relatorio, temaMes }: En
             backgroundColor: 'rgba(200, 224, 70, 0.1)', 
             borderColor: 'rgba(200, 224, 70, 0.3)' 
           }}>
-            <span className="text-2xl">💡</span>
+            <Lightbulb className="w-6 h-6 flex-shrink-0" style={{ color: '#C8E046' }} />
             <div className="flex-1 text-sm">
               <p className="mb-1" style={{ color: '#4A2C60' }}>
                 Além dos números, o que realmente importa é como você cresceu.
@@ -196,7 +210,10 @@ export default function EnviarRelatorioPage({ onVoltar, relatorio, temaMes }: En
     return (
       <div className="fixed inset-0 bg-white z-50 overflow-y-auto pb-20">
         {/* Header fixo */}
-        <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+        <div 
+          className="sticky top-0 z-10 text-white" 
+          style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
+        >
           <div className="flex items-center gap-4 px-6 pt-12 pb-4">
             <Button
               variant="ghost"
@@ -221,7 +238,7 @@ export default function EnviarRelatorioPage({ onVoltar, relatorio, temaMes }: En
             borderColor: 'rgba(74, 44, 96, 0.2)'
           }}>
             <div className="flex items-center gap-3">
-              <span className="text-3xl">🕊️</span>
+              <Bird className="w-8 h-8" style={{ color: '#4A2C60' }} />
               <div>
                 <p className="text-sm text-gray-600">Tema do mês:</p>
                 <p className="text-lg" style={{ color: '#4A2C60' }}>{temaMes}</p>
@@ -230,10 +247,11 @@ export default function EnviarRelatorioPage({ onVoltar, relatorio, temaMes }: En
           </Card>
 
           {/* Mensagem Inspiradora */}
-          <div className="text-center py-4">
+          <div className="text-center py-4 flex items-center justify-center gap-2">
             <p className="text-gray-700 italic">
-              "O que realmente importa é a pessoa que você está se tornando 💚"
+              "O que realmente importa é a pessoa que você está se tornando"
             </p>
+            <Heart className="w-4 h-4 text-green-600" />
           </div>
 
           {/* Perguntas */}
@@ -277,8 +295,9 @@ export default function EnviarRelatorioPage({ onVoltar, relatorio, temaMes }: En
           </div>
 
           {/* Opcional */}
-          <p className="text-xs text-center text-gray-500">
-            Estas perguntas são opcionais. Não há pressão — apenas reflexão 💭
+          <p className="text-xs text-center text-gray-500 flex items-center justify-center gap-1">
+            Estas perguntas são opcionais. Não há pressão — apenas reflexão
+            <MessageSquare className="w-3 h-3" />
           </p>
 
           {/* Botões */}

@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
+import { useTranslations } from '../../utils/i18n/translations';
 
 interface MarcarLeituraDialogProps {
   livro: string;
@@ -18,6 +19,7 @@ export default function MarcarLeituraDialog({
   onConfirmar, 
   onCancelar 
 }: MarcarLeituraDialogProps) {
+  const t = useTranslations();
   const [mostrarReflexao, setMostrarReflexao] = useState(false);
   const [aprendizado, setAprendizado] = useState('');
   const [aplicacao, setAplicacao] = useState('');
@@ -36,7 +38,7 @@ export default function MarcarLeituraDialog({
       <Card className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl max-h-[85vh] overflow-y-auto pb-safe">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between rounded-t-3xl z-10">
-          <h2 className="text-xl text-primary-700">Marcar Leitura</h2>
+          <h2 className="text-xl text-primary-700">{t.markReadingDialog.title}</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -56,7 +58,7 @@ export default function MarcarLeituraDialog({
                 <CheckCircle2 className="w-6 h-6 text-primary-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Você leu:</p>
+                <p className="text-sm text-gray-600">{t.markReadingDialog.youRead}</p>
                 <p className="text-xl text-primary-700">{livro} {capitulo}</p>
               </div>
             </div>
@@ -70,7 +72,7 @@ export default function MarcarLeituraDialog({
               onClick={() => setMostrarReflexao(true)}
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Adicionar Reflexão (opcional)
+              {t.markReadingDialog.addReflection}
             </Button>
           )}
 
@@ -80,7 +82,7 @@ export default function MarcarLeituraDialog({
               <div className="flex items-center justify-between">
                 <h3 className="text-primary-700 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-secondary-600" />
-                  Sua Reflexão
+                  {t.markReadingDialog.yourReflection}
                 </h3>
                 <Button
                   variant="ghost"
@@ -88,17 +90,17 @@ export default function MarcarLeituraDialog({
                   onClick={() => setMostrarReflexao(false)}
                   className="text-xs text-gray-500"
                 >
-                  Remover
+                  {t.markReadingDialog.remove}
                 </Button>
               </div>
 
               <div>
                 <Label htmlFor="aprendizado" className="text-sm text-gray-700 mb-2 block">
-                  O que você aprendeu?
+                  {t.markReadingDialog.whatDidYouLearn}
                 </Label>
                 <Textarea
                   id="aprendizado"
-                  placeholder="Digite aqui seu aprendizado..."
+                  placeholder={t.markReadingDialog.whatDidYouLearnPlaceholder}
                   value={aprendizado}
                   onChange={(e) => setAprendizado(e.target.value)}
                   className="min-h-[100px] bg-white"
@@ -108,11 +110,11 @@ export default function MarcarLeituraDialog({
 
               <div>
                 <Label htmlFor="aplicacao" className="text-sm text-gray-700 mb-2 block">
-                  Como pode aplicar?
+                  {t.markReadingDialog.howCanYouApply}
                 </Label>
                 <Textarea
                   id="aplicacao"
-                  placeholder="Digite como pode aplicar na sua vida..."
+                  placeholder={t.markReadingDialog.howCanYouApplyPlaceholder}
                   value={aplicacao}
                   onChange={(e) => setAplicacao(e.target.value)}
                   className="min-h-[100px] bg-white"
@@ -122,12 +124,12 @@ export default function MarcarLeituraDialog({
 
               <div>
                 <Label htmlFor="palavra" className="text-sm text-gray-700 mb-2 block">
-                  Palavra-chave do dia
+                  {t.markReadingDialog.keywordOfTheDay}
                 </Label>
                 <input
                   id="palavra"
                   type="text"
-                  placeholder="Ex: Amor, Fé, Perseverança..."
+                  placeholder={t.markReadingDialog.keywordPlaceholder}
                   value={palavra}
                   onChange={(e) => setPalavra(e.target.value)}
                   className="w-full h-14 px-4 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
@@ -148,14 +150,14 @@ export default function MarcarLeituraDialog({
               onClick={onCancelar}
               className="flex-1"
             >
-              Cancelar
+              {t.markReadingDialog.cancel}
             </Button>
             <Button
               className="flex-1 bg-primary-500 hover:bg-primary-600 text-white"
               onClick={handleMarcarConcluido}
             >
               <CheckCircle2 className="w-4 h-4 mr-2" />
-              Marcar como Lido
+              {t.markReadingDialog.markAsRead}
             </Button>
           </div>
         </div>

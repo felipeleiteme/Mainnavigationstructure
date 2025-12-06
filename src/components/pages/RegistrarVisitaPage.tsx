@@ -8,6 +8,7 @@ import { Card } from '../ui/card';
 import { DataService, Revisita } from '../../services/dataService';
 import { toast } from 'sonner@2.0.3';
 import { SmartNotificationManager } from '../../utils/notifications/smartNotifications';
+import { ThemeService } from '../../services/themeService';
 
 interface RegistrarVisitaPageProps {
   revisitaId: string;
@@ -15,6 +16,7 @@ interface RegistrarVisitaPageProps {
 }
 
 export default function RegistrarVisitaPage({ revisitaId, onVoltar }: RegistrarVisitaPageProps) {
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
   const [revisita, setRevisita] = useState<Revisita | null>(null);
   const [formData, setFormData] = useState({
     encontrou: true,
@@ -29,6 +31,14 @@ export default function RegistrarVisitaPage({ revisitaId, onVoltar }: RegistrarV
   }, []);
 
   useEffect(() => {
+    const handleThemeChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleThemeChange);
+    return () => ThemeService.off('mynis-theme-change', handleThemeChange);
+  }, []);
+
+  useEffect(() => {
     const revisitas = DataService.getRevisitas();
     const revisitaEncontrada = revisitas.find(r => r.id === revisitaId);
     if (revisitaEncontrada) {
@@ -38,6 +48,16 @@ export default function RegistrarVisitaPage({ revisitaId, onVoltar }: RegistrarV
 
   const handleSalvar = () => {
     if (!revisita) return;
+
+    if (!formData.proximaVisita) {
+      toast.error('Precisamos da data da visita');
+      return;
+    }
+
+    if (!formData.observacoes.trim()) {
+      toast.error('Como foi a conversa?');
+      return;
+    }
 
     try {
       DataService.registrarVisita(revisita.id, {
@@ -80,16 +100,25 @@ export default function RegistrarVisitaPage({ revisitaId, onVoltar }: RegistrarV
 
   if (!revisita) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FDF8EE' }}>
+      <div 
+        className="min-h-screen flex items-center justify-center" 
+        style={{ backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE' }}
+      >
         <p className="text-gray-600">Carregando...</p>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto pb-20" style={{ backgroundColor: '#FDF8EE' }}>
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto pb-20" 
+      style={{ backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE' }}
+    >
       {/* Header fixo */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+      <div 
+        className="sticky top-0 z-10 text-white" 
+        style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
+      >
         <div className="flex items-center gap-4 px-6 pt-12 pb-4">
           <Button
             variant="ghost"
@@ -247,8 +276,25 @@ export default function RegistrarVisitaPage({ revisitaId, onVoltar }: RegistrarV
 
         {/* Botão Salvar */}
         <Button 
-          className="w-full h-14 text-white hover:opacity-90 border-0"
-          style={{ backgroundColor: '#4A2C60' }}
+          className="w-full h-14 border-0"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+            color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+          }}
+          onMouseEnter={(e) => {
+            if (temaAtual === 'escuro') {
+              e.currentTarget.style.backgroundColor = '#B5CC3D';
+            } else {
+              e.currentTarget.style.opacity = '0.9';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (temaAtual === 'escuro') {
+              e.currentTarget.style.backgroundColor = '#C8E046';
+            } else {
+              e.currentTarget.style.opacity = '1';
+            }
+          }}
           onClick={handleSalvar}
         >
           Salvar Registro

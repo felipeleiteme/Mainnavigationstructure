@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Home, Heart, Sprout, BookOpen, User } from 'lucide-react';
 import { Toaster, toast } from 'sonner@2.0.3';
 import './styles/globals.css';
@@ -10,10 +10,10 @@ import PerfilTab from './components/tabs/PerfilTab';
 import OnboardingFlow, { OnboardingData } from './components/onboarding/OnboardingFlow';
 import TrocarPerfilModal from './components/shared/TrocarPerfilModal';
 import { NotificationScheduler } from './utils/notifications/notifications';
+import { ThemeService } from './services/themeService';
+import { LanguageService } from './services/languageService';
+import { useTranslations } from './utils/i18n/translations';
 import { DataService } from './services/dataService';
-import IniciarSessaoModal from './components/shared/IniciarSessaoModal';
-import ControlesSessaoModal from './components/shared/ControlesSessaoModal';
-import ResumoSessaoModal from './components/shared/ResumoSessaoModal';
 
 type TabId = 'inicio' | 'espiritual' | 'campo' | 'estudos' | 'perfil';
 
@@ -43,6 +43,47 @@ export default function App() {
   const [showTrocarPerfil, setShowTrocarPerfil] = useState(false);
   const [perfilAtual, setPerfilAtual] = useState('1');
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+  const [language, setLanguage] = useState(LanguageService.getLanguage());
+  const translations = useTranslations(language);
+
+  // Escutar mudanças de tema
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
+  }, []);
+
+  // Aplicar classe dark no documento quando o tema mudar
+  useEffect(() => {
+    if (temaAtual === 'escuro') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [temaAtual]);
+
+  // Escutar mudanças de idioma
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setLanguage(LanguageService.getLanguage());
+    };
+
+    LanguageService.on('mynis-language-change', handleLanguageChange);
+    return () => LanguageService.off('mynis-language-change', handleLanguageChange);
+  }, []);
+
+  // Memoizar tabs para reagir às mudanças de tradução
+  const tabs = useMemo(() => [
+    { id: 'inicio' as TabId, label: translations.inicio, icon: Home },
+    { id: 'espiritual' as TabId, label: translations.espiritual, icon: Heart },
+    { id: 'campo' as TabId, label: translations.campo, icon: Sprout },
+    { id: 'estudos' as TabId, label: translations.estudos, icon: BookOpen },
+    { id: 'perfil' as TabId, label: translations.perfil, icon: User },
+  ], [translations]);
 
   // Perfis da família (exemplo)
   const perfis: Perfil[] = [
@@ -103,6 +144,55 @@ export default function App() {
     // Save to localStorage
     localStorage.setItem('onboardingComplete', 'true');
     localStorage.setItem('userData', JSON.stringify(data));
+    
+    // Converter tipo de publicador para o formato do DataService
+    let tipoPublicador: 'publicador-regular' | 'pioneiro-auxiliar' | 'pioneiro-regular';
+    switch (data.tipoPublicador) {
+      case 'auxiliar':
+        tipoPublicador = 'pioneiro-auxiliar';
+        break;
+      case 'regular':
+        tipoPublicador = 'pioneiro-regular';
+        break;
+      case 'publicador':
+      default:
+        tipoPublicador = 'publicador-regular';
+        break;
+    }
+    
+    // Atualizar o perfil com o tipo de publicador e meta de horas
+    DataService.updatePerfil({
+      tipoPublicador,
+      metaHoras: data.metaHoras
+    });
+    
+    // Processar e salvar o texto do ano no perfil do DataService
+    if (data.versiculoAno && data.versiculoAno.trim()) {
+      // Tenta separar o texto da referência
+      // Formato esperado: "Texto do versículo — Referência" ou "Texto do versículo - Referência"
+      const partes = data.versiculoAno.split(/[—-]/);
+      
+      if (partes.length >= 2) {
+        // Tem separador, dividir em texto e referência
+        const texto = partes[0].trim();
+        const referencia = partes.slice(1).join(' ').trim();
+        
+        DataService.updatePerfil({
+          textoAno: {
+            texto,
+            referencia
+          }
+        });
+      } else {
+        // Não tem separador, usar tudo como texto e referência vazia
+        DataService.updatePerfil({
+          textoAno: {
+            texto: data.versiculoAno.trim(),
+            referencia: ''
+          }
+        });
+      }
+    }
   };
 
   const handleTrocarPerfil = (perfilId: string) => {
@@ -136,14 +226,6 @@ export default function App() {
     );
   }
 
-  const tabs = [
-    { id: 'inicio' as TabId, label: 'Início', icon: Home },
-    { id: 'espiritual' as TabId, label: 'Espiritual', icon: Heart },
-    { id: 'campo' as TabId, label: 'Campo', icon: Sprout },
-    { id: 'estudos' as TabId, label: 'Estudos', icon: BookOpen },
-    { id: 'perfil' as TabId, label: 'Perfil', icon: User },
-  ];
-
   return (
     <div className="flex flex-col h-screen" style={{ backgroundColor: '#FDF8EE' }}>
       {/* Toast Notifications */}
@@ -176,7 +258,13 @@ export default function App() {
       </div>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t z-50" style={{ borderColor: 'rgba(74, 44, 96, 0.1)' }}>
+      <nav 
+        className="fixed bottom-0 left-0 right-0 border-t z-50"
+        style={{ 
+          backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF',
+          borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.1)'
+        }}
+      >
         <div className="flex items-center justify-around h-16">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -189,15 +277,37 @@ export default function App() {
                 className="flex flex-col items-center justify-center flex-1 h-full relative"
               >
                 {/* Ícone e label */}
-                <div className={`relative z-10 flex flex-col items-center transition-colors duration-200 ${
-                  isActive ? 'text-primary-500' : 'text-gray-400'
-                }`}>
-                  <Icon className={`w-6 h-6 mb-1 transition-all duration-200 ${
-                    isActive ? 'stroke-[2.5] scale-110' : 'stroke-2'
-                  }`} />
-                  <span className={`text-xs transition-all duration-200 ${
-                    isActive ? 'font-medium' : ''
-                  }`}>{tab.label}</span>
+                <div className="relative z-10 flex flex-col items-center">
+                  {/* Container do ícone com fundo roxo/verde quando ativo */}
+                  <div 
+                    className="w-8 h-8 mb-1 rounded-lg flex items-center justify-center transition-all duration-200"
+                    style={isActive ? { 
+                      backgroundColor: temaAtual === 'escuro' 
+                        ? 'rgba(200, 224, 70, 0.12)' 
+                        : 'rgba(74, 44, 96, 0.08)' 
+                    } : {}}
+                  >
+                    <Icon 
+                      className="w-6 h-6 transition-all duration-200"
+                      style={{ 
+                        color: temaAtual === 'escuro' 
+                          ? (isActive ? '#C8E046' : '#9CA3AF')
+                          : '#4A2C60', 
+                        strokeWidth: isActive ? 2.5 : 2 
+                      }}
+                    />
+                  </div>
+                  <span 
+                    className="text-xs transition-all duration-200"
+                    style={{ 
+                      color: temaAtual === 'escuro' 
+                        ? (isActive ? '#C8E046' : '#9CA3AF')
+                        : '#4A2C60',
+                      fontWeight: isActive ? 500 : 400
+                    }}
+                  >
+                    {tab.label}
+                  </span>
                 </div>
               </button>
             );

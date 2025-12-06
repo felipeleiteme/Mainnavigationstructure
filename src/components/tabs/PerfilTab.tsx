@@ -1,11 +1,36 @@
-import { User, Users, Calendar, FileText, AlertCircle, Palette, Bell, Cloud, Info, LogOut, Edit, TrendingUp, X, ChevronRight, Database, Trash2, Download, AlertTriangle } from 'lucide-react';
+import { 
+  BookOpen, 
+  Sprout, 
+  Home, 
+  User, 
+  Calendar, 
+  Heart, 
+  TrendingUp, 
+  Target, 
+  Clock, 
+  FileText, 
+  Edit, 
+  Settings, 
+  AlertCircle, 
+  LogOut,
+  FileHeart,
+  ChevronRight,
+  Palette,
+  Bell,
+  Cloud,
+  Database,
+  Download,
+  Trash2,
+  Info,
+  AlertTriangle
+} from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
 import { Switch } from '../ui/switch';
 import { Separator } from '../ui/separator';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import NotificationDemo from '../notifications/NotificationDemo';
 import NotificationSettings from '../shared/NotificationSettings';
 import EditarTipoPublicadorModal from '../perfil/EditarTipoPublicadorModal';
@@ -16,9 +41,13 @@ import EditarFotoPerfilPage from '../pages/EditarFotoPerfilPage';
 import EditarTipoPublicadorPage from '../pages/EditarTipoPublicadorPage';
 import RelatorioCompletoPage from '../pages/RelatorioCompletoPage';
 import EnviarRelatorioPage from '../pages/EnviarRelatorioPage';
+import ConfiguracoesPage from '../pages/ConfiguracoesPage';
 import { toast } from 'sonner@2.0.3';
 import { DataService } from '../../services/dataService';
 import BackupCard from '../backup/BackupCard';
+import { ThemeService } from '@/services/themeService';
+import { LanguageService, LanguageCode } from '../../services/languageService';
+import { useTranslations } from '../../utils/i18n/translations';
 
 interface PerfilTabProps {
   scrollTo?: string;
@@ -29,6 +58,7 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
   const [showEnviarRelatorio, setShowEnviarRelatorio] = useState(false);
   const [showNotificationDemo, setShowNotificationDemo] = useState(false);
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+  const [showConfiguracoes, setShowConfiguracoes] = useState(false);
   const cronogramaRef = useRef<HTMLDivElement>(null);
   const relatorioRef = useRef<HTMLDivElement>(null);
   const [showEditarPerfil, setShowEditarPerfil] = useState(false);
@@ -39,6 +69,29 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
   const [showEditarFoto, setShowEditarFoto] = useState(false);
   const [showEditarTipoPublicador, setShowEditarTipoPublicador] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0); // Para forçar re-render quando perfil mudar
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+  const [languageCode, setLanguageCode] = useState(LanguageService.getLanguage());
+  const t = useTranslations(languageCode);
+
+  // Escutar mudanças de tema
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
+  }, []);
+
+  // Escutar mudanças de idioma
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setLanguageCode(LanguageService.getLanguage());
+    };
+
+    LanguageService.on('mynis-language-change', handleLanguageChange);
+    return () => LanguageService.off('mynis-language-change', handleLanguageChange);
+  }, []);
 
   // Buscar perfil do DataService
   const perfil = DataService.getPerfil();
@@ -98,92 +151,199 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
     }
   }, [scrollTo]);
 
-  const temaMes = 'Brandura';
-
   return (
-    <div className="min-h-full" style={{ backgroundColor: '#FDF8EE' }}>
+    <div 
+      className="min-h-full" 
+      style={{ 
+        backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE' 
+      }}
+    >
       {/* Header fixo */}
-      <div style={{ backgroundColor: '#4A2C60' }} className="sticky top-0 z-50 text-white">
-        <div className="px-6 pt-12 pb-4">
+      <div 
+        className="sticky top-0 z-50 text-white" 
+        style={{ 
+          backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' 
+        }}
+      >
+        <div className="px-6 pt-12 pb-6">
           <div className="flex items-center gap-3">
             {perfil.avatar ? (
               <img 
                 src={perfil.avatar} 
-                alt={perfil.nome}
+                alt={perfil.nome} 
                 className="w-16 h-16 rounded-full object-cover border-2 border-white/30"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                 <User className="w-8 h-8" />
               </div>
             )}
             <div className="flex-1">
-              <h2 className="text-xl">{perfil.nome}</h2>
-              <p className="text-xs opacity-90 mt-0.5">Membro da Congregação Central</p>
+              <h1 className="text-2xl">{perfil.nome}</h1>
+              <p className="text-sm opacity-90 mt-0.5">{t.profile.memberOf} {perfil.congregacao}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-6 space-y-4">
+      <div className="px-6 py-6 space-y-6">
         {/* Informações de Contato */}
-        <Card className="p-6 bg-white">
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2">
-              <User className="w-5 h-5" style={{ color: '#4A2C60' }} />
-              Informações de Contato
+            <h3 
+              className="flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+              }}
+            >
+              <User 
+                className="w-5 h-5" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+                }} 
+              />
+              {t.profile.contactInfo}
             </h3>
             <Button size="sm" variant="ghost" onClick={() => setShowEditarInfo(true)}>
-              <Edit className="w-4 h-4" style={{ color: '#4A2C60' }} />
+              <Edit 
+                className="w-4 h-4" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#D4E969' : '#4A2C60'
+                }} 
+              />
             </Button>
           </div>
           
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Congregação</span>
-              <span>Congregação Central</span>
+              <span 
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.profile.congregation}
+              </span>
+              <span
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                }}
+              >
+                {perfil.congregacao}
+              </span>
             </div>
             <Separator />
             <div className="flex justify-between">
-              <span className="text-gray-600">Email</span>
-              <span className="text-xs">felipe.silva@email.com</span>
+              <span 
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.profile.email}
+              </span>
+              <span 
+                className="text-xs"
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                }}
+              >
+                {perfil.email || 'felipe.silva@email.com'}
+              </span>
             </div>
             <Separator />
             <div className="flex justify-between">
-              <span className="text-gray-600">Telefone</span>
-              <span>(11) 98765-4321</span>
+              <span 
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.profile.phone}
+              </span>
+              <span
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                }}
+              >
+                {perfil.telefone || '(11) 98765-4321'}
+              </span>
             </div>
           </div>
         </Card>
 
         {/* Tipo de Publicador */}
         <Card 
-          className="p-6 cursor-pointer transition-all active:scale-[0.98] bg-white"
-          style={{ transition: 'all 0.2s ease' }}
+          className="p-6 cursor-pointer transition-all active:scale-[0.98]"
+          style={{ 
+            transition: 'all 0.2s ease',
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+          }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(74, 44, 96, 0.03)';
+            if (temaAtual === 'escuro') {
+              e.currentTarget.style.backgroundColor = 'rgba(200, 224, 70, 0.1)';
+            } else {
+              e.currentTarget.style.backgroundColor = 'rgba(74, 44, 96, 0.05)';
+            }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'white';
+            if (temaAtual === 'escuro') {
+              e.currentTarget.style.backgroundColor = '#2A2A2A';
+            } else {
+              e.currentTarget.style.backgroundColor = '#FFFFFF';
+            }
           }}
           onClick={() => setShowEditarTipoPublicador(true)}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
-                <TrendingUp className="w-6 h-6" style={{ color: '#4A2C60' }} />
+              <div 
+                className="w-12 h-12 rounded-xl flex items-center justify-center" 
+                style={{ 
+                  backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.15)' : 'rgba(74, 44, 96, 0.1)'
+                }}
+              >
+                <TrendingUp 
+                  className="w-6 h-6" 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#D4E969' : '#4A2C60'
+                  }} 
+                />
               </div>
               <div className="flex-1">
-                <h3 className="mb-1">Tipo de Publicador</h3>
-                <p className="text-sm text-gray-600">{DataService.getTipoPublicadorLabel(perfil.tipoPublicador)}</p>
+                <h3 
+                  className="mb-1"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                  }}
+                >
+                  {t.profile.publisherType}
+                </h3>
+                <p 
+                  className="text-sm"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {DataService.getTipoPublicadorLabel(perfil.tipoPublicador)}
+                </p>
                 <div className="flex items-center gap-2 mt-2">
-                  <Badge className="text-xs" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60', border: '1px solid rgba(200, 224, 70, 0.4)' }}>
-                    Meta: {metaMensal}h/mês
+                  <Badge 
+                    className="text-xs" 
+                    style={{ 
+                      backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.2)' : 'rgba(200, 224, 70, 0.2)', 
+                      color: temaAtual === 'escuro' ? '#D4E969' : '#4A2C60',
+                      border: `1px solid ${temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.5)' : 'rgba(200, 224, 70, 0.4)'}`
+                    }}
+                  >
+                    {t.profile.goal}: {metaMensal}h/mês
                   </Badge>
                 </div>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            <ChevronRight 
+              className="w-5 h-5 flex-shrink-0" 
+              style={{
+                color: temaAtual === 'escuro' ? '#9CA3AF' : '#9CA3AF'
+              }}
+            />
           </div>
         </Card>
 
@@ -191,117 +351,266 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
         {/* ... remove this code ... */}
 
         {/* Informações de Emergência */}
-        <Card className="p-6 bg-white">
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" style={{ color: '#DC2626' }} />
-              Informações de Emergência
+            <h3 
+              className="flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+              }}
+            >
+              <AlertCircle 
+                className="w-5 h-5" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#F87171' : '#DC2626'
+                }} 
+              />
+              {t.profile.emergencyInfo}
             </h3>
             <Button size="sm" variant="ghost" onClick={() => setShowEditarEmergencia(true)}>
-              <Edit className="w-4 h-4" style={{ color: '#4A2C60' }} />
+              <Edit 
+                className="w-4 h-4" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#D4E969' : '#4A2C60'
+                }} 
+              />
             </Button>
           </div>
           
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Validade do DPA</span>
-              <span>15/12/2025</span>
+              <span 
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.profile.dpaValidity}
+              </span>
+              <span
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                }}
+              >
+                15/12/2025
+              </span>
             </div>
             <Separator />
             <div className="flex justify-between">
-              <span className="text-gray-600">Contato de emergência</span>
-              <span>Ana Silva</span>
+              <span 
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.profile.emergencyContact}
+              </span>
+              <span
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                }}
+              >
+                Ana Silva
+              </span>
             </div>
           </div>
         </Card>
 
-        {/* Preferências do App */}
-        <Card className="p-6 bg-white">
+        {/* Configurações */}
+        <Card 
+          className="p-6 cursor-pointer hover:shadow-xl transition-all active:scale-[0.98]"
+          onClick={() => setShowConfiguracoes(true)}
+        >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2 font-normal text-[16px]">
-              <Palette className="w-5 h-5" style={{ color: '#4A2C60' }} />
-              Preferências do App
-            </h3>
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-12 h-12 rounded-xl flex items-center justify-center" 
+                style={{ 
+                  backgroundColor: temaAtual === 'escuro' ? '#D4E969' : '#4A2C60'
+                }}
+              >
+                <Settings 
+                  className="w-6 h-6" 
+                  style={{
+                    color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+                  }}
+                />
+              </div>
+              <div>
+                <h3 
+                  className="font-normal text-[16px] mb-0.5"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                  }}
+                >
+                  {t.profile.settings}
+                </h3>
+                <p 
+                  className="text-xs"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.profile.settingsSubtitle}
+                </p>
+              </div>
+            </div>
+            <ChevronRight 
+              className="w-5 h-5" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#D4E969' : '#4A2C60'
+              }} 
+            />
           </div>
-          
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Modo escuro</span>
-              <Switch />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Lembretes de gratidão</span>
-              <Switch defaultChecked />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Lembretes espirituais</span>
-              <Switch defaultChecked />
-            </div>
-          </div>
-        </Card>
 
-        {/* Notificações Inteligentes - NOVO */}
-        <Card className="p-6 bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2 font-normal text-[16px]">
-              <Bell className="w-5 h-5" style={{ color: '#4A2C60' }} />
-              Notificações Inteligentes
-            </h3>
-            <Button 
-              size="sm" 
-              variant="ghost"
-              onClick={() => setShowNotificationSettings(!showNotificationSettings)}
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <div 
+              className="p-3 rounded-lg border-2 transition-all" 
+              style={{ 
+                backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+                borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : '#D8CEE8'
+              }}
             >
-              <ChevronRight 
-                className={`w-5 h-5 transition-transform ${showNotificationSettings ? 'rotate-90' : ''}`}
-                style={{ color: '#4A2C60' }}
+              <Palette 
+                className="w-5 h-5 mb-2" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#D4E969' : '#4A2C60'
+                }} 
+              />
+              <p 
+                className="text-xs font-medium"
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#374151'
+                }}
+              >
+                {t.profile.appearance}
+              </p>
+              <p 
+                className="text-[10px] mt-0.5"
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.profile.appearanceDesc}
+              </p>
+            </div>
+            <div 
+              className="p-3 rounded-lg border-2 transition-all" 
+              style={{ 
+                backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+                borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : '#D8CEE8'
+              }}
+            >
+              <Bell 
+                className="w-5 h-5 mb-2" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#D4E969' : '#4A2C60'
+                }} 
+              />
+              <p 
+                className="text-xs font-medium"
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#374151'
+                }}
+              >
+                {t.profile.notifications}
+              </p>
+              <p 
+                className="text-[10px] mt-0.5"
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.profile.notificationsDesc}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Texto do Ano */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 
+              className="flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+              }}
+            >
+              <FileText 
+                className="w-5 h-5" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+                }} 
+              />
+              {t.profile.yearText}
+            </h3>
+            <Button size="sm" variant="ghost" onClick={() => setShowEditarTextoAno(true)}>
+              <Edit 
+                className="w-4 h-4" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#D4E969' : '#4A2C60'
+                }} 
               />
             </Button>
           </div>
           
-          <p className="text-sm text-gray-600 mb-4">
-            Receba lembretes 24h e 1h antes dos seus estudos e revisitas agendados
-          </p>
-
-          {showNotificationSettings && <NotificationSettings />}
-        </Card>
-
-        {/* Texto do Ano */}
-        <Card className="p-6 bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2">
-              <FileText className="w-5 h-5" style={{ color: '#4A2C60' }} />
-              Texto do Ano
-            </h3>
-            <Button size="sm" variant="outline" onClick={() => setShowEditarTextoAno(true)} className="bg-[rgba(0,0,0,0)]">
-              <Edit className="w-4 h-4" />
-            </Button>
-          </div>
-          
-          <div className="rounded-lg p-4 border" style={{ 
-            background: 'linear-gradient(to bottom right, rgba(200, 224, 70, 0.15), rgba(200, 224, 70, 0.05))',
-            borderColor: 'rgba(200, 224, 70, 0.3)'
-          }}>
-            <p className="text-xs text-gray-600 mb-2">Texto atual:</p>
-            <p className="text-sm text-gray-800 italic mb-1">
+          <div 
+            className="rounded-lg p-4 border" 
+            style={{ 
+              background: temaAtual === 'escuro' 
+                ? 'linear-gradient(to bottom right, rgba(200, 224, 70, 0.1), rgba(200, 224, 70, 0.05))'
+                : 'linear-gradient(to bottom right, rgba(200, 224, 70, 0.15), rgba(200, 224, 70, 0.05))',
+              borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : 'rgba(200, 224, 70, 0.3)'
+            }}
+          >
+            <p 
+              className="text-xs mb-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+              }}
+            >
+              {t.profile.currentText}
+            </p>
+            <p 
+              className="text-sm italic mb-1"
+              style={{
+                color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+              }}
+            >
               "{perfil.textoAno?.texto || 'Dêem a Jeová a glória que o seu nome merece.'}"
             </p>
-            <p className="text-xs text-gray-600">
+            <p 
+              className="text-xs"
+              style={{
+                color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+              }}
+            >
               — {perfil.textoAno?.referencia || 'Sal. 96:8'}
             </p>
           </div>
           
-          <p className="text-xs text-gray-500 mt-3">
-            Este texto é exibido na tela de Início
+          <p 
+            className="text-xs mt-3"
+            style={{
+              color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+            }}
+          >
+            {t.profile.yearTextNote}
           </p>
         </Card>
 
         {/* Backup e Sincronização */}
-        <Card className="p-6 bg-white">
-          <h3 className="flex items-center gap-2 mb-4">
-            <Cloud className="w-5 h-5" style={{ color: '#4A2C60' }} />
+        <Card className="p-6">
+          <h3 
+            className="flex items-center gap-2 mb-4"
+            style={{
+              color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+            }}
+          >
+            <Cloud 
+              className="w-5 h-5" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+              }} 
+            />
             Backup e Sincronização
           </h3>
           
@@ -309,20 +618,45 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
         </Card>
 
         {/* Ferramentas de Desenvolvimento - NOVO */}
-        <Card className="p-6 bg-white border-2" style={{ borderColor: 'rgba(255, 140, 0, 0.3)', backgroundColor: 'rgba(255, 140, 0, 0.05)' }}>
-          <h3 className="flex items-center gap-2 mb-4">
-            <Database className="w-5 h-5" style={{ color: '#FF8C00' }} />
+        <Card 
+          className="p-6 border-2" 
+          style={{ 
+            borderColor: 'rgba(255, 140, 0, 0.3)', 
+            backgroundColor: temaAtual === 'escuro' ? 'rgba(255, 140, 0, 0.08)' : 'rgba(255, 140, 0, 0.05)'
+          }}
+        >
+          <h3 
+            className="flex items-center gap-2 mb-4"
+            style={{
+              color: temaAtual === 'escuro' ? '#FFA726' : '#FF8C00'
+            }}
+          >
+            <Database 
+              className="w-5 h-5" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#FFA726' : '#FF8C00'
+              }} 
+            />
             Ferramentas de Desenvolvimento
           </h3>
           
-          <p className="text-sm text-gray-600 mb-4">
+          <p 
+            className="text-sm mb-4"
+            style={{
+              color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+            }}
+          >
             Ferramentas para testar e validar todas as funcionalidades do aplicativo
           </p>
 
           <div className="space-y-3">
             <Button
               variant="outline"
-              className="w-full justify-start border-secondary-500 text-primary-500"
+              className="w-full justify-start"
+              style={{
+                borderColor: temaAtual === 'escuro' ? 'rgba(167, 139, 202, 0.5)' : '#D8CEE8',
+                color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+              }}
               onClick={() => {
                 try {
                   console.log('🚀 Iniciando população de dados...');
@@ -394,6 +728,28 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
               <Trash2 className="w-4 h-4 mr-2" />
               Limpar Todos os Dados
             </Button>
+
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              style={{
+                borderColor: temaAtual === 'escuro' ? 'rgba(167, 139, 202, 0.5)' : '#D8CEE8',
+                color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+              }}
+              onClick={() => {
+                if (confirm('Tem certeza que deseja refazer o onboarding? Você voltará para as telas de boas-vindas.')) {
+                  localStorage.removeItem('onboardingComplete');
+                  localStorage.removeItem('userData');
+                  toast.success('Redirecionando para o onboarding...');
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 500);
+                }
+              }}
+            >
+              <ChevronRight className="w-4 h-4 mr-2" />
+              Refazer Onboarding
+            </Button>
           </div>
 
           <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
@@ -407,13 +763,28 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
         </Card>
 
         {/* Sobre o App */}
-        <Card className="p-6 bg-white">
-          <h3 className="flex items-center gap-2 mb-4">
-            <Info className="w-5 h-5 text-gray-600" />
+        <Card className="p-6">
+          <h3 
+            className="flex items-center gap-2 mb-4"
+            style={{
+              color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+            }}
+          >
+            <Info 
+              className="w-5 h-5" 
+              style={{
+                color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+              }}
+            />
             Sobre o App
           </h3>
           
-          <div className="space-y-3 text-sm text-gray-600">
+          <div 
+            className="space-y-3 text-sm"
+            style={{
+              color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+            }}
+          >
             <p>Versão: 1.0.0</p>
             <p className="text-xs">
               Mynis é uma ferramenta pessoal, não oficial da organização.
@@ -479,7 +850,7 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
         <EnviarRelatorioPage
           onVoltar={() => setShowEnviarRelatorio(false)}
           relatorio={relatorioAtual}
-          temaMes={temaMes}
+          temaMes={temaAtual}
         />
       )}
 
@@ -545,6 +916,13 @@ export default function PerfilTab({ scrollTo, acao }: PerfilTabProps) {
             setShowEditarTipoPublicador(false);
             handlePerfilAtualizado();
           }}
+        />
+      )}
+
+      {/* Modal: Configurações Completas */}
+      {showConfiguracoes && (
+        <ConfiguracoesPage
+          onVoltar={() => setShowConfiguracoes(false)}
         />
       )}
     </div>

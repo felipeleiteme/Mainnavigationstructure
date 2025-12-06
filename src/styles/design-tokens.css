@@ -1,44 +1,51 @@
 /**
- * MYNIS DESIGN TOKENS (CORRIGIDO)
- * Baseado no Brandbook oficial
- * Sistema centralizado para manutenção e consistência
- * Versão: 2.1 - Sincronizado com Design System
+ * MYNIS DESIGN TOKENS - BRANDBOOK OFICIAL
+ * Fonte Única de Verdade para Cores, Espaçamentos e Tipografia
+ * Versão: 3.0 - Integrado com Tailwind CSS v4.0
+ * 
+ * BRANDBOOK MYNIS:
+ * - Primary (Roxo Profundo): #4A2C60
+ * - Secondary (Verde Lima): #C8E046
+ * - Background (Creme): #FDF8EE
  */
 
 @layer base {
   :root {
     /* ==========================================
-       CORES PRIMÁRIAS (Roxo Profundo)
+       CORES PRIMÁRIAS (Roxo Profundo) - BRANDBOOK
+       Base: #4A2C60
        ========================================== */
-    --color-primary-50: 245 242 247;   /* #F5F2F7 */
+    --color-primary-50: 245 242 247;   /* #F5F2F7 - Mais claro */
     --color-primary-100: 230 223 240;  /* #E6DFF0 */
     --color-primary-200: 212 200 224;  /* #D4C8E0 */
     --color-primary-300: 184 163 202;  /* #B8A3CA */
     --color-primary-400: 142 104 160;  /* #8E68A0 */
-    --color-primary-500: 74 44 96;     /* #4A2C60 - BASE */
-    --color-primary-600: 61 35 77;     /* #3D234D */
+    --color-primary-500: 74 44 96;     /* #4A2C60 - BASE BRANDBOOK */
+    --color-primary-600: 61 35 77;     /* #3D234D - Mais escuro */
     --color-primary-700: 48 27 59;     /* #301B3B */
     --color-primary-800: 35 20 41;     /* #231429 */
-    --color-primary-900: 22 13 24;     /* #160D18 */
+    --color-primary-900: 22 13 24;     /* #160D18 - Mais escuro */
 
     /* ==========================================
-       CORES SECUNDÁRIAS (Verde Lima)
+       CORES SECUNDÁRIAS (Verde Lima) - BRANDBOOK
+       Base: #C8E046
        ========================================== */
-    --color-secondary-50: 249 252 233;  /* #F9FCE9 */
+    --color-secondary-50: 249 252 233;  /* #F9FCE9 - Mais claro */
     --color-secondary-100: 241 248 207; /* #F1F8CF */
     --color-secondary-200: 232 244 166; /* #E8F4A6 */
     --color-secondary-300: 220 236 109; /* #DCEC6D */
     --color-secondary-400: 210 232 90;  /* #D2E85A */
-    --color-secondary-500: 200 224 70;  /* #C8E046 - BASE */
-    --color-secondary-600: 160 182 56;  /* #A0B638 */
+    --color-secondary-500: 200 224 70;  /* #C8E046 - BASE BRANDBOOK */
+    --color-secondary-600: 160 182 56;  /* #A0B638 - Mais escuro */
     --color-secondary-700: 122 140 42;  /* #7A8C2A */
     --color-secondary-800: 84 98 29;    /* #54621D */
-    --color-secondary-900: 46 56 16;    /* #2E3810 */
+    --color-secondary-900: 46 56 16;    /* #2E3810 - Mais escuro */
 
     /* ==========================================
-       CORES NEUTRAS (Creme/Bege)
+       CORES NEUTRAS (Creme/Bege) - BRANDBOOK
+       Base: #FDF8EE
        ========================================== */
-    --color-neutral: 253 248 238;       /* #FDF8EE - BASE Neutra */
+    --color-neutral: 253 248 238;       /* #FDF8EE - BASE BRANDBOOK */
     --color-neutral-light: 254 251 244; /* #FEFBF4 */
     --color-neutral-dark: 250 244 230;  /* #FAF4E6 */
 
@@ -46,7 +53,7 @@
        CORES FUNCIONAIS
        ========================================== */
     --color-success: 76 175 80;    /* #4CAF50 */
-    --color-error: 244 67 54;      /* #F44336 */
+    --color-error: 244 67 54;      /* #F44336 - Brandbook */
     --color-warning: 255 152 0;    /* #FF9800 */
     --color-info: 33 150 243;      /* #2196F3 */
 
@@ -65,7 +72,7 @@
     --color-gray-900: 33 33 33;     /* #212121 */
 
     /* ==========================================
-       ESPAÇAMENTOS (Grid 8pt)
+       ESPAÇAMENTOS (Grid 8pt) - BRANDBOOK
        ========================================== */
     --spacing-xxs: 0.25rem;  /* 4px */
     --spacing-xs: 0.5rem;    /* 8px */
@@ -76,7 +83,7 @@
     --spacing-xxl: 4rem;     /* 64px */
 
     /* ==========================================
-       RAIOS DE BORDA
+       RAIOS DE BORDA - BRANDBOOK
        ========================================== */
     --radius-sm: 0.5rem;   /* 8px - botões, inputs */
     --radius-md: 0.75rem;  /* 12px - cards padrão */
@@ -84,7 +91,7 @@
     --radius-full: 9999px; /* círculos */
 
     /* ==========================================
-       TIPOGRAFIA - TAMANHOS
+       TIPOGRAFIA - TAMANHOS (Brandbook: Inter ÚNICA fonte)
        ========================================== */
     --font-size-display: 2.5rem;    /* 40px */
     --font-size-h1: 1.75rem;        /* 28px */
@@ -112,7 +119,7 @@
     --font-weight-bold: 700;
 
     /* ==========================================
-       SOMBRAS
+       SOMBRAS (Roxo para consistência)
        ========================================== */
     --shadow-sm: 0 1px 2px rgba(74, 44, 96, 0.05);
     --shadow-md: 0 2px 8px rgba(74, 44, 96, 0.08);
@@ -120,7 +127,7 @@
     --shadow-xl: 0 8px 24px rgba(74, 44, 96, 0.16);
 
     /* ==========================================
-       TAMANHOS DE ÍCONES
+       TAMANHOS DE ÍCONES - BRANDBOOK
        ========================================== */
     --icon-xs: 1rem;      /* 16px - inline */
     --icon-sm: 1.25rem;   /* 20px - badges */
@@ -129,10 +136,10 @@
     --icon-xl: 3rem;      /* 48px - empty states */
 
     /* ==========================================
-       COMPONENTES - ALTURA (CORRIGIDO)
+       COMPONENTES - ALTURA (Brandbook: 56px)
        ========================================== */
-    --button-height: 3.5rem;    /* 56px - CORRIGIDO (era 48px) */
-    --input-height: 3.5rem;     /* 56px - CORRIGIDO (era 48px) */
+    --button-height: 3.5rem;    /* 56px - Brandbook h-14 */
+    --input-height: 3.5rem;     /* 56px - Brandbook h-14 */
     --fab-height: 3.5rem;       /* 56px */
 
     /* ==========================================
@@ -150,153 +157,78 @@
 }
 
 /* ==========================================
-   CLASSES UTILITÁRIAS CUSTOMIZADAS
+   INTEGRAÇÃO COM TAILWIND V4.0
+   Define cores no formato que o Tailwind espera
    ========================================== */
 
-/* ==========================================
-   CORES - BACKGROUNDS
-   ========================================== */
-/* Roxo (Primary) */
-.bg-primary-50 { background-color: rgb(var(--color-primary-50)); }
-.bg-primary-100 { background-color: rgb(var(--color-primary-100)); }
-.bg-primary-200 { background-color: rgb(var(--color-primary-200)); }
-.bg-primary-300 { background-color: rgb(var(--color-primary-300)); }
-.bg-primary-400 { background-color: rgb(var(--color-primary-400)); }
-.bg-primary-500 { background-color: rgb(var(--color-primary-500)); }
-.bg-primary-600 { background-color: rgb(var(--color-primary-600)); }
-.bg-primary-700 { background-color: rgb(var(--color-primary-700)); }
-.bg-primary-800 { background-color: rgb(var(--color-primary-800)); }
-.bg-primary-900 { background-color: rgb(var(--color-primary-900)); }
+@theme {
+  /* ==========================================
+     CORES PRIMÁRIAS (Roxo) - Expostas ao Tailwind
+     Uso: bg-primary-500, text-primary-700, border-primary-200
+     ========================================== */
+  --color-primary-50: rgb(var(--color-primary-50));
+  --color-primary-100: rgb(var(--color-primary-100));
+  --color-primary-200: rgb(var(--color-primary-200));
+  --color-primary-300: rgb(var(--color-primary-300));
+  --color-primary-400: rgb(var(--color-primary-400));
+  --color-primary-500: rgb(var(--color-primary-500));
+  --color-primary-600: rgb(var(--color-primary-600));
+  --color-primary-700: rgb(var(--color-primary-700));
+  --color-primary-800: rgb(var(--color-primary-800));
+  --color-primary-900: rgb(var(--color-primary-900));
 
-/* Verde Lima (Secondary) */
-.bg-secondary-50 { background-color: rgb(var(--color-secondary-50)); }
-.bg-secondary-100 { background-color: rgb(var(--color-secondary-100)); }
-.bg-secondary-200 { background-color: rgb(var(--color-secondary-200)); }
-.bg-secondary-300 { background-color: rgb(var(--color-secondary-300)); }
-.bg-secondary-400 { background-color: rgb(var(--color-secondary-400)); }
-.bg-secondary-500 { background-color: rgb(var(--color-secondary-500)); }
-.bg-secondary-600 { background-color: rgb(var(--color-secondary-600)); }
-.bg-secondary-700 { background-color: rgb(var(--color-secondary-700)); }
-.bg-secondary-800 { background-color: rgb(var(--color-secondary-800)); }
-.bg-secondary-900 { background-color: rgb(var(--color-secondary-900)); }
+  /* ==========================================
+     CORES SECUNDÁRIAS (Verde Lima) - Expostas ao Tailwind
+     Uso: bg-secondary-500, text-secondary-700, border-secondary-200
+     ========================================== */
+  --color-secondary-50: rgb(var(--color-secondary-50));
+  --color-secondary-100: rgb(var(--color-secondary-100));
+  --color-secondary-200: rgb(var(--color-secondary-200));
+  --color-secondary-300: rgb(var(--color-secondary-300));
+  --color-secondary-400: rgb(var(--color-secondary-400));
+  --color-secondary-500: rgb(var(--color-secondary-500));
+  --color-secondary-600: rgb(var(--color-secondary-600));
+  --color-secondary-700: rgb(var(--color-secondary-700));
+  --color-secondary-800: rgb(var(--color-secondary-800));
+  --color-secondary-900: rgb(var(--color-secondary-900));
 
-/* Neutro (Creme) */
-.bg-neutral { background-color: rgb(var(--color-neutral)); }
-.bg-neutral-light { background-color: rgb(var(--color-neutral-light)); }
-.bg-neutral-dark { background-color: rgb(var(--color-neutral-dark)); }
+  /* ==========================================
+     CORES NEUTRAS (Creme) - Expostas ao Tailwind
+     Uso: bg-neutral, bg-neutral-light
+     ========================================== */
+  --color-neutral: rgb(var(--color-neutral));
+  --color-neutral-light: rgb(var(--color-neutral-light));
+  --color-neutral-dark: rgb(var(--color-neutral-dark));
 
-/* ==========================================
-   CORES - TEXTOS
-   ========================================== */
-/* Roxo (Primary) */
-.text-primary-50 { color: rgb(var(--color-primary-50)); }
-.text-primary-100 { color: rgb(var(--color-primary-100)); }
-.text-primary-200 { color: rgb(var(--color-primary-200)); }
-.text-primary-300 { color: rgb(var(--color-primary-300)); }
-.text-primary-400 { color: rgb(var(--color-primary-400)); }
-.text-primary-500 { color: rgb(var(--color-primary-500)); }
-.text-primary-600 { color: rgb(var(--color-primary-600)); }
-.text-primary-700 { color: rgb(var(--color-primary-700)); }
-.text-primary-800 { color: rgb(var(--color-primary-800)); }
-.text-primary-900 { color: rgb(var(--color-primary-900)); }
+  /* ==========================================
+     CORES FUNCIONAIS - Expostas ao Tailwind
+     ========================================== */
+  --color-success: rgb(var(--color-success));
+  --color-error: rgb(var(--color-error));
+  --color-warning: rgb(var(--color-warning));
+  --color-info: rgb(var(--color-info));
 
-/* Verde Lima (Secondary) */
-.text-secondary-50 { color: rgb(var(--color-secondary-50)); }
-.text-secondary-100 { color: rgb(var(--color-secondary-100)); }
-.text-secondary-200 { color: rgb(var(--color-secondary-200)); }
-.text-secondary-300 { color: rgb(var(--color-secondary-300)); }
-.text-secondary-400 { color: rgb(var(--color-secondary-400)); }
-.text-secondary-500 { color: rgb(var(--color-secondary-500)); }
-.text-secondary-600 { color: rgb(var(--color-secondary-600)); }
-.text-secondary-700 { color: rgb(var(--color-secondary-700)); }
-.text-secondary-800 { color: rgb(var(--color-secondary-800)); }
-.text-secondary-900 { color: rgb(var(--color-secondary-900)); }
+  /* ==========================================
+     ESCALA DE CINZAS - Expostas ao Tailwind
+     Uso: bg-gray-100, text-gray-600, border-gray-200
+     ========================================== */
+  --color-gray-50: rgb(var(--color-gray-50));
+  --color-gray-100: rgb(var(--color-gray-100));
+  --color-gray-200: rgb(var(--color-gray-200));
+  --color-gray-300: rgb(var(--color-gray-300));
+  --color-gray-400: rgb(var(--color-gray-400));
+  --color-gray-500: rgb(var(--color-gray-500));
+  --color-gray-600: rgb(var(--color-gray-600));
+  --color-gray-700: rgb(var(--color-gray-700));
+  --color-gray-800: rgb(var(--color-gray-800));
+  --color-gray-900: rgb(var(--color-gray-900));
 
-/* ==========================================
-   CORES - BORDAS
-   ========================================== */
-/* Roxo (Primary) */
-.border-primary-50 { border-color: rgb(var(--color-primary-50)); }
-.border-primary-100 { border-color: rgb(var(--color-primary-100)); }
-.border-primary-200 { border-color: rgb(var(--color-primary-200)); }
-.border-primary-300 { border-color: rgb(var(--color-primary-300)); }
-.border-primary-400 { border-color: rgb(var(--color-primary-400)); }
-.border-primary-500 { border-color: rgb(var(--color-primary-500)); }
-.border-primary-600 { border-color: rgb(var(--color-primary-600)); }
-.border-primary-700 { border-color: rgb(var(--color-primary-700)); }
-.border-primary-800 { border-color: rgb(var(--color-primary-800)); }
-.border-primary-900 { border-color: rgb(var(--color-primary-900)); }
-
-/* Verde Lima (Secondary) */
-.border-secondary-50 { border-color: rgb(var(--color-secondary-50)); }
-.border-secondary-100 { border-color: rgb(var(--color-secondary-100)); }
-.border-secondary-200 { border-color: rgb(var(--color-secondary-200)); }
-.border-secondary-300 { border-color: rgb(var(--color-secondary-300)); }
-.border-secondary-400 { border-color: rgb(var(--color-secondary-400)); }
-.border-secondary-500 { border-color: rgb(var(--color-secondary-500)); }
-.border-secondary-600 { border-color: rgb(var(--color-secondary-600)); }
-.border-secondary-700 { border-color: rgb(var(--color-secondary-700)); }
-.border-secondary-800 { border-color: rgb(var(--color-secondary-800)); }
-.border-secondary-900 { border-color: rgb(var(--color-secondary-900)); }
-
-/* ==========================================
-   TIPOGRAFIA DO BRANDBOOK (CORRIGIDO)
-   ========================================== */
-
-/* TODAS as classes agora usam Inter (fonte única) */
-
-.text-display {
-  font-family: 'Inter', sans-serif; /* CORRIGIDO: Era Young Serif */
-  font-size: var(--font-size-display);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-display);
-}
-
-.text-h1 {
-  font-family: 'Inter', sans-serif; /* CORRIGIDO: Era Young Serif */
-  font-size: var(--font-size-h1);
-  font-weight: var(--font-weight-bold); /* CORRIGIDO: Era regular */
-  line-height: var(--line-height-heading);
-}
-
-.text-h2 {
-  font-family: 'Inter', sans-serif; /* CORRIGIDO: Era Young Serif */
-  font-size: var(--font-size-h2);
-  font-weight: var(--font-weight-bold); /* CORRIGIDO: Era regular */
-  line-height: var(--line-height-heading);
-}
-
-.text-h3 {
-  font-family: 'Inter', sans-serif;
-  font-size: var(--font-size-h3);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-body);
-}
-
-.text-body {
-  font-family: 'Inter', sans-serif;
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-regular);
-  line-height: var(--line-height-body);
-}
-
-.text-body-sm {
-  font-family: 'Inter', sans-serif;
-  font-size: var(--font-size-body-sm);
-  font-weight: var(--font-weight-regular);
-  line-height: var(--line-height-body);
-}
-
-.text-caption {
-  font-family: 'Inter', sans-serif;
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-regular);
-  line-height: var(--line-height-caption);
-}
-
-.text-button {
-  font-family: 'Inter', sans-serif;
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-button);
+  /* ==========================================
+     RAIOS DE BORDA - Expostos ao Tailwind
+     Uso: rounded-sm, rounded-md, rounded-lg
+     ========================================== */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-full: var(--radius-full);
 }

@@ -1,165 +1,326 @@
-import { ArrowLeft, TrendingUp, Sprout, Leaf, TreeDeciduous, Sparkles, Lightbulb } from 'lucide-react';
-import { Button } from '../ui/button';
 import { useState, useEffect } from 'react';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { ArrowLeft, Sprout, Leaf, TreeDeciduous, Sparkles, Info, BookOpen } from 'lucide-react';
 import { DataService, TipoPublicador } from '../../services/dataService';
 import { toast } from 'sonner@2.0.3';
+import { ThemeService } from '../../services/themeService';
+import { LanguageService } from '../../services/languageService';
+import { useTranslations } from '../../utils/i18n/translations';
 
-interface EditarTipoPublicadorPageProps {
+interface Props {
   onVoltar: () => void;
 }
 
-export default function EditarTipoPublicadorPage({ onVoltar }: EditarTipoPublicadorPageProps) {
-  // Scroll para o topo quando o componente montar
+export default function EditarTipoPublicadorPage({ onVoltar }: Props) {
+  const [tipoSelecionado, setTipoSelecionado] = useState<TipoPublicador>('publicador-regular');
+  const [metaPersonalizada, setMetaPersonalizada] = useState(15);
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+  const [language, setLanguage] = useState(LanguageService.getLanguage());
+  const t = useTranslations(language);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+    const perfil = DataService.getPerfil();
+    setTipoSelecionado(perfil.tipoPublicador);
+    setMetaPersonalizada(perfil.metaHoras || 15);
   }, []);
 
-  const perfil = DataService.getPerfil();
-  const [tipoSelecionado, setTipoSelecionado] = useState<TipoPublicador>(perfil.tipoPublicador);
+  useEffect(() => {
+    const handleTemaChange = () => setTemaAtual(ThemeService.getEffectiveTheme());
+    const handleLanguageChange = () => setLanguage(LanguageService.getLanguage());
 
-  const opcoes: { valor: TipoPublicador; label: string; meta: number; descricao: string; icone: any }[] = [
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    LanguageService.on('mynis-language-change', handleLanguageChange);
+
+    return () => {
+      ThemeService.off('mynis-theme-change', handleTemaChange);
+      LanguageService.off('mynis-language-change', handleLanguageChange);
+    };
+  }, []);
+
+  const handleSalvar = () => {
+    try {
+      // Salvar tipo de publicador e meta (se for pioneiro auxiliar)
+      DataService.updatePerfil({
+        tipoPublicador: tipoSelecionado,
+        metaHoras: tipoSelecionado === 'pioneiro-auxiliar' ? metaPersonalizada : undefined
+      });
+      toast.success(t.editPublisherType.saveChanges + ' ✅');
+      onVoltar();
+    } catch (error) {
+      toast.error('Erro ao atualizar tipo de publicador');
+    }
+  };
+
+  const opcoes: { 
+    valor: TipoPublicador; 
+    label: string; 
+    meta: string; 
+    descricao: string; 
+    icone: any 
+  }[] = [
     {
       valor: 'publicador-regular',
-      label: 'Publicador Regular',
-      meta: 10,
-      descricao: 'Meta sugerida de 10 horas mensais',
+      label: t.editPublisherType.regularPublisher,
+      meta: '10h',
+      descricao: t.editPublisherType.regularPublisherDesc,
+      icone: BookOpen
+    },
+    {
+      valor: 'pioneiro-auxiliar',
+      label: t.editPublisherType.auxiliaryPioneer15,
+      meta: `${metaPersonalizada}h`,
+      descricao: 'Meta configurável (15h, 30h ou personalizada)',
       icone: Sprout
     },
     {
-      valor: 'pioneiro-auxiliar-30',
-      label: 'Pioneiro Auxiliar (30h)',
-      meta: 30,
-      descricao: 'Compromisso de 30 horas mensais',
-      icone: Leaf
-    },
-    {
-      valor: 'pioneiro-auxiliar-50',
-      label: 'Pioneiro Auxiliar (50h)',
-      meta: 50,
-      descricao: 'Compromisso de 50 horas mensais',
-      icone: TreeDeciduous
-    },
-    {
       valor: 'pioneiro-regular',
-      label: 'Pioneiro Regular',
-      meta: 70,
-      descricao: 'Compromisso de 70 horas mensais',
+      label: t.editPublisherType.regularPioneer,
+      meta: '50h',
+      descricao: t.editPublisherType.regularPioneerDesc,
       icone: Sparkles
     },
   ];
 
-  const handleSalvar = () => {
-    DataService.updatePerfil({ tipoPublicador: tipoSelecionado });
-    toast.success('Tipo de publicador atualizado!', {
-      description: `Meta mensal: ${DataService.getMetaMensal()}h`,
-    });
-    onVoltar();
-  };
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" style={{ backgroundColor: '#FDF8EE' }}>
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto pb-20" 
+      style={{ backgroundColor: temaAtual === 'escuro' ? '#1A1A1A' : '#FDF8EE' }}
+    >
       {/* Header fixo */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
-        <div className="px-6 pt-12 pb-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onVoltar}
-              className="p-2 text-white hover:bg-white/20"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="flex-1">
-              <h2 className="text-xl">Tipo de Publicador</h2>
-              <p className="text-sm opacity-90">Escolha seu tipo de serviço</p>
-            </div>
+      <div 
+        className="sticky top-0 z-10 text-white" 
+        style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
+      >
+        <div className="flex items-center gap-4 px-6 pt-12 pb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onVoltar}
+            className="p-2 text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1">
+            <h2 className="text-xl">{t.editPublisherType.title}</h2>
+            <p className="text-sm opacity-90">{t.editPublisherType.subtitle}</p>
           </div>
         </div>
       </div>
 
       {/* Conteúdo */}
-      <div className="px-6 py-6 space-y-4 pb-32">
-        {opcoes.map((opcao) => {
-          const IconeComponente = opcao.icone;
-          return (
-            <button
-              key={opcao.valor}
-              onClick={() => setTipoSelecionado(opcao.valor)}
-              className="w-full text-left p-5 rounded-xl border-2 transition-all bg-white"
-              style={{
-                borderColor: tipoSelecionado === opcao.valor ? '#4A2C60' : 'rgba(0, 0, 0, 0.1)',
-                backgroundColor: tipoSelecionado === opcao.valor ? 'rgba(74, 44, 96, 0.04)' : '#FFFFFF'
-              }}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3 flex-1">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
-                    <IconeComponente className="w-6 h-6" style={{ color: '#4A2C60' }} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="mb-1">{opcao.label}</p>
-                    <p className="text-sm text-gray-600 mb-3">{opcao.descricao}</p>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="text-xs px-3 py-1.5 rounded-lg flex items-center gap-1"
-                        style={{
-                          backgroundColor: tipoSelecionado === opcao.valor ? '#4A2C60' : 'rgba(74, 44, 96, 0.1)',
-                          color: tipoSelecionado === opcao.valor ? '#FFFFFF' : '#4A2C60'
+      <div className="px-6 py-6 space-y-6">
+        {/* Opções de Tipo */}
+        <Card 
+          className="p-6"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#1A1A1F' : '#FFFFFF'
+          }}
+        >
+          <div className="space-y-4">
+            {opcoes.map((opcao) => {
+              const Icone = opcao.icone;
+              const selecionado = tipoSelecionado === opcao.valor;
+              
+              return (
+                <div
+                  key={opcao.valor}
+                  onClick={() => setTipoSelecionado(opcao.valor)}
+                  className="rounded-2xl p-4 cursor-pointer transition-all border-2"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+                    borderColor: selecionado 
+                      ? (temaAtual === 'escuro' ? '#C8E046' : '#4A2C60')
+                      : (temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.1)' : '#E5E7EB')
+                  }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div 
+                      className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ 
+                        backgroundColor: temaAtual === 'escuro' ? '#5A5F3A' : 'rgba(74, 44, 96, 0.08)'
+                      }}
+                    >
+                      <Icone 
+                        className="w-6 h-6" 
+                        style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }} 
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 
+                          className="font-medium text-base"
+                          style={{ 
+                            color: temaAtual === 'escuro' ? '#F3F4F6' : '#1F2937' 
+                          }}
+                        >
+                          {opcao.label}
+                        </h3>
+                        <span 
+                          className="text-sm px-2 py-0.5 rounded font-medium"
+                          style={{
+                            backgroundColor: temaAtual === 'escuro' ? '#5A5F3A' : 'rgba(74, 44, 96, 0.08)',
+                            color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                          }}
+                        >
+                          {opcao.meta}
+                        </span>
+                      </div>
+                      <p 
+                        className="text-sm"
+                        style={{ 
+                          color: temaAtual === 'escuro' ? '#C9C9D6' : '#6B7280' 
                         }}
                       >
-                        <TrendingUp className="w-3 h-3" />
-                        Meta: {opcao.meta}h/mês
-                      </div>
+                        {opcao.descricao}
+                      </p>
                     </div>
                   </div>
                 </div>
-                {tipoSelecionado === opcao.valor && (
-                  <div className="ml-3 w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A2C60' }}>
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-            </button>
-          );
-        })}
+              );
+            })}
+          </div>
+        </Card>
 
-        {/* Informação adicional */}
-        <div className="p-5 rounded-xl border-2 mt-6" style={{ backgroundColor: 'rgba(74, 44, 96, 0.04)', borderColor: 'rgba(74, 44, 96, 0.15)' }}>
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
-              <Lightbulb className="w-5 h-5" style={{ color: '#4A2C60' }} />
+        {/* Configurar Meta (apenas para Pioneiro Auxiliar) */}
+        {tipoSelecionado === 'pioneiro-auxiliar' && (
+          <Card 
+            className="p-6"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? '#1A1A1F' : '#FFFFFF'
+            }}
+          >
+            <Label 
+              htmlFor="meta" 
+              className="flex items-center gap-2 mb-3"
+              style={{ color: temaAtual === 'escuro' ? '#F3F4F6' : '#374151' }}
+            >
+              <TreeDeciduous 
+                className="w-4 h-4" 
+                style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }} 
+              />
+              Meta de Horas Mensal
+            </Label>
+            
+            <div className="space-y-4">
+              {/* Opções rápidas */}
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-12"
+                  style={{
+                    backgroundColor: metaPersonalizada === 15 
+                      ? (temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.2)' : 'rgba(74, 44, 96, 0.1)')
+                      : (temaAtual === 'escuro' ? '#3A3050' : '#FFFFFF'),
+                    borderColor: metaPersonalizada === 15
+                      ? (temaAtual === 'escuro' ? '#C8E046' : '#4A2C60')
+                      : (temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.1)' : '#D8CEE8'),
+                    color: temaAtual === 'escuro' ? '#F3F4F6' : '#1F2937'
+                  }}
+                  onClick={() => setMetaPersonalizada(15)}
+                >
+                  15 horas
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-12"
+                  style={{
+                    backgroundColor: metaPersonalizada === 30 
+                      ? (temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.2)' : 'rgba(74, 44, 96, 0.1)')
+                      : (temaAtual === 'escuro' ? '#3A3050' : '#FFFFFF'),
+                    borderColor: metaPersonalizada === 30
+                      ? (temaAtual === 'escuro' ? '#C8E046' : '#4A2C60')
+                      : (temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.1)' : '#D8CEE8'),
+                    color: temaAtual === 'escuro' ? '#F3F4F6' : '#1F2937'
+                  }}
+                  onClick={() => setMetaPersonalizada(30)}
+                >
+                  30 horas
+                </Button>
+              </div>
+
+              {/* Input personalizado */}
+              <div>
+                <Label htmlFor="metaCustom" className="text-sm mb-2 block" style={{ color: temaAtual === 'escuro' ? '#C9C9D6' : '#6B7280' }}>
+                  Ou defina uma meta personalizada:
+                </Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="metaCustom"
+                    type="number"
+                    value={metaPersonalizada}
+                    onChange={(e) => setMetaPersonalizada(parseInt(e.target.value) || 15)}
+                    className="h-14 border-2 bg-white text-center text-xl focus:ring-2 focus:ring-opacity-50"
+                    style={{ 
+                      borderColor: temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.1)' : '#D8CEE8', 
+                      outline: 'none',
+                      backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+                      color: temaAtual === 'escuro' ? '#F3F4F6' : '#1F2937'
+                    }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.1)' : '#D8CEE8'}
+                    min="1"
+                    max="100"
+                  />
+                  <span 
+                    className="text-lg whitespace-nowrap"
+                    style={{ color: temaAtual === 'escuro' ? '#C9C9D6' : '#6B7280' }}
+                  >
+                    horas/mês
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-700 mb-2">
-                <strong>Dica:</strong> A meta mensal é ajustada automaticamente de acordo com o tipo selecionado.
-              </p>
-              <p className="text-sm text-gray-600">
-                Você pode acompanhar seu progresso na tela Início e no card de Relatório do Mês.
+          </Card>
+        )}
+
+        {/* Dica */}
+        <Card 
+          className="p-4" 
+          style={{ 
+            backgroundColor: temaAtual === 'escuro' ? '#1F1A2E' : 'rgba(74, 44, 96, 0.05)' 
+          }}
+        >
+          <div className="flex gap-3">
+            <Info 
+              className="w-5 h-5 flex-shrink-0 mt-0.5" 
+              style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }} 
+            />
+            <div>
+              <h4 className="mb-1" style={{ color: temaAtual === 'escuro' ? '#F3F4F6' : '#1F2937' }}>
+                {t.editPublisherType.tipTitle}
+              </h4>
+              <p className="text-sm" style={{ color: temaAtual === 'escuro' ? '#C9C9D6' : '#6B7280' }}>
+                {t.editPublisherType.tipDesc}
               </p>
             </div>
           </div>
-        </div>
-      </div>
+        </Card>
 
-      {/* Botão fixo na parte inferior */}
-      <div className="fixed bottom-0 left-0 right-0 border-t px-6 py-4 flex gap-3" style={{ backgroundColor: '#FDF8EE' }}>
-        <Button 
-          variant="outline" 
-          onClick={onVoltar}
-          className="flex-1 h-14"
-        >
-          Cancelar
-        </Button>
-        <Button 
-          className="flex-1 h-14 text-white hover:opacity-90"
-          style={{ backgroundColor: '#4A2C60' }}
+        {/* Botão Salvar */}
+        <button 
+          className="w-full h-14 rounded-md transition-all flex items-center justify-center cursor-pointer"
+          style={{ 
+            backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+            color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF',
+            border: 'none',
+            outline: 'none'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? '#B5CC3D' : '#5A3C70';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? '#C8E046' : '#4A2C60';
+          }}
           onClick={handleSalvar}
         >
-          Salvar Alterações
-        </Button>
+          {t.editPublisherType.saveChanges}
+        </button>
       </div>
     </div>
   );

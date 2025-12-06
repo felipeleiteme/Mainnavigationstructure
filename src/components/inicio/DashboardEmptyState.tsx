@@ -26,7 +26,7 @@ export default function DashboardEmptyState({
         
         <h2 className="text-2xl mb-3 text-primary-700">Bem-vindo ao Mynis, {userName}!</h2>
         <p className="text-gray-700 mb-6 max-w-md mx-auto leading-relaxed">
-          Vamos começar sua jornada ministerial juntos. Este é seu espaço para crescer e servir com propósito ✨
+          Vamos começar sua jornada ministerial juntos. Este é seu espaço para crescer e servir com propósito
         </p>
       </Card>
 

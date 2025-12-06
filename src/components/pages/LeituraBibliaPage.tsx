@@ -4,6 +4,8 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { toast } from 'sonner@2.0.3';
+import { ThemeService } from '../../services/themeService';
+import { useTranslations } from '../../utils/i18n/translations';
 import ConfettiEffect from '../ConfettiEffect';
 import EmptyStateLeitura from '../leitura/EmptyStateLeitura';
 import OnboardingLeitura from '../leitura/OnboardingLeitura';
@@ -25,23 +27,35 @@ interface LeituraBibliaPageProps {
 
 // Definição das conquistas/badges
 const CONQUISTAS = [
-  { id: 'primeira-semana', nome: 'Início\nHumilde', dias: 3, icon: Medal },
-  { id: 'semana-completa', nome: 'Semana\nCompleta', dias: 7, icon: Trophy },
-  { id: 'duas-semanas', nome: 'Leitor\nDedicado', dias: 14, icon: Star },
-  { id: 'mes-completo', nome: 'Leitor\nVoraz', dias: 30, icon: Sparkles },
+  { id: 'primeira-semana', dias: 3, icon: Medal },
+  { id: 'semana-completa', dias: 7, icon: Trophy },
+  { id: 'duas-semanas', dias: 14, icon: Star },
+  { id: 'mes-completo', dias: 30, icon: Sparkles },
 ];
 
-const getNomeConquista = (id: string): string => {
-  const nomes: Record<string, string> = {
-    'primeira-semana': '3 Dias Seguidos',
-    'semana-completa': 'Semana Completa',
-    'duas-semanas': '14 Dias Seguidos',
-    'mes-completo': 'Mês Completo',
-  };
-  return nomes[id] || 'Conquista';
-};
-
 export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: LeituraBibliaPageProps) {
+  const t = useTranslations();
+
+  const getNomeConquista = (id: string): string => {
+    const nomes: Record<string, string> = {
+      'primeira-semana': t.biblePage.achievement3Days,
+      'semana-completa': t.biblePage.achievement7Days,
+      'duas-semanas': t.biblePage.achievement14Days,
+      'mes-completo': t.biblePage.achievement30Days,
+    };
+    return nomes[id] || 'Conquista';
+  };
+
+  const getNomeConquistaCard = (id: string): string => {
+    const nomes: Record<string, string> = {
+      'primeira-semana': t.biblePage.achievementFirstWeek,
+      'semana-completa': t.biblePage.achievementWeekComplete,
+      'duas-semanas': t.biblePage.achievementTwoWeeks,
+      'mes-completo': t.biblePage.achievementMonthComplete,
+    };
+    return nomes[id] || 'Conquista';
+  };
+
   // Scroll para o topo quando o componente montar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -51,6 +65,16 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
   const [mostrarDialogLeitura, setMostrarDialogLeitura] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+
+  // Escutar mudanças de tema
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
+  }, []);
 
   // Recarregar dados sempre que o componente for montado (detecta mudanças após reset)
   useEffect(() => {
@@ -73,8 +97,8 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
     salvarConfiguracao(config);
     setDados(carregarDados());
     setMostrarOnboarding(false);
-    toast.success('Plano configurado com sucesso!', {
-      description: 'Comece sua jornada de leitura agora',
+    toast.success(t.biblePage.toastConfigured, {
+      description: t.biblePage.toastConfiguredDesc,
     });
   };
 
@@ -84,8 +108,8 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
 
   const handleMarcarLeitura = () => {
     if (jaLeu) {
-      toast.info('Você já registrou sua leitura hoje!', {
-        description: 'Continue amanhã para manter sua ofensiva',
+      toast.info(t.biblePage.toastAlreadyRead, {
+        description: t.biblePage.toastAlreadyReadDesc,
       });
       return;
     }
@@ -106,8 +130,8 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
     setMostrarDialogLeitura(false);
 
     // Feedback de sucesso
-    toast.success('Leitura registrada!', {
-      description: `${proximaLeitura.livro} ${proximaLeitura.capitulo} concluído`,
+    toast.success(t.biblePage.toastReadingRegistered, {
+      description: t.biblePage.toastReadingRegisteredDesc(proximaLeitura.livro, proximaLeitura.capitulo.toString()),
     });
 
     // Se desbloqueou conquistas, mostrar notificações
@@ -117,7 +141,7 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
 
       resultado.novasConquistas.forEach((conquistaId, index) => {
         setTimeout(() => {
-          toast.success(`🏆 Nova Conquista Desbloqueada!`, {
+          toast.success(t.biblePage.toastNewAchievement, {
             description: getNomeConquista(conquistaId),
             duration: 5000,
           });
@@ -147,11 +171,21 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
 
   // Página principal com dados
   return (
-    <div className="min-h-screen bg-neutral pb-20">
+    <div 
+      className="min-h-screen pb-20"
+      style={{
+        backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE'
+      }}
+    >
       {showConfetti && <ConfettiEffect />}
 
       {/* Header fixo */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+      <div 
+        className="sticky top-0 z-10 text-white" 
+        style={{ 
+          backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60'
+        }}
+      >
         <div className="flex items-center gap-4 px-6 pt-12 pb-4">
           <Button
             variant="ghost"
@@ -162,8 +196,8 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h2 className="text-xl">Leitura da Bíblia</h2>
-            <p className="text-sm opacity-90">Sua base espiritual para jogar sementes</p>
+            <h2 className="text-xl">{t.biblePage.headerTitle}</h2>
+            <p className="text-sm opacity-90">{t.biblePage.headerSubtitle}</p>
           </div>
           <Button
             variant="ghost"
@@ -180,25 +214,67 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
       <div className="px-6 py-6 space-y-6">
         {/* Card: Próxima Leitura */}
         {proximaLeitura && (
-          <Card className="p-6 bg-white border-2 border-primary-200">
+          <Card 
+            className="p-6 border-2"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+              borderColor: temaAtual === 'escuro' ? '#3A3A3A' : 'rgba(74, 44, 96, 0.2)'
+            }}
+          >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Próxima leitura:</p>
-                <h2 className="text-2xl text-primary-700">
+                <p 
+                  className="text-sm mb-1"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.biblePage.nextReading}
+                </p>
+                <h2 
+                  className="text-2xl"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                  }}
+                >
                   {proximaLeitura.livro} {proximaLeitura.capitulo}
                 </h2>
               </div>
               {jaLeu && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary-50 rounded-full border-2 border-secondary-400">
-                  <CheckCircle className="w-4 h-4 text-secondary-700" />
-                  <span className="text-sm text-secondary-700">Concluído</span>
+                <div 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full border-2"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' 
+                      ? 'rgba(200, 224, 70, 0.15)' 
+                      : 'rgba(200, 224, 70, 0.1)',
+                    borderColor: temaAtual === 'escuro'
+                      ? 'rgba(200, 224, 70, 0.5)'
+                      : '#C8E046'
+                  }}
+                >
+                  <CheckCircle 
+                    className="w-4 h-4" 
+                    style={{ color: '#C8E046' }}
+                  />
+                  <span 
+                    className="text-sm"
+                    style={{ color: '#C8E046' }}
+                  >
+                    {t.biblePage.completed}
+                  </span>
                 </div>
               )}
             </div>
 
             <Button
-              className="w-full"
-              style={{ backgroundColor: jaLeu ? '#9CA3AF' : '#4A2C60', color: 'white' }}
+              className="w-full border-0"
+              style={{ 
+                backgroundColor: jaLeu 
+                  ? (temaAtual === 'escuro' ? '#3A3A3A' : '#9CA3AF')
+                  : (temaAtual === 'escuro' ? '#2A2040' : '#4A2C60'), 
+                color: 'white',
+                opacity: jaLeu ? 0.6 : 1
+              }}
               size="lg"
               onClick={handleMarcarLeitura}
               disabled={jaLeu}
@@ -206,12 +282,12 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
               {jaLeu ? (
                 <>
                   <CheckCircle className="w-5 h-5 mr-2" />
-                  Já li hoje
+                  {t.biblePage.alreadyRead}
                 </>
               ) : (
                 <>
                   <BookOpen className="w-5 h-5 mr-2" />
-                  Marcar como Lido
+                  {t.biblePage.markAsRead}
                 </>
               )}
             </Button>
@@ -219,17 +295,49 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
         )}
 
         {/* Card: Ofensiva */}
-        <Card className="p-6 border-2" style={{ backgroundColor: '#FFFCF8', borderColor: '#C8E046' }}>
+        <Card 
+          className="p-6 border-2" 
+          style={{ 
+            backgroundColor: temaAtual === 'escuro' 
+              ? 'rgba(200, 224, 70, 0.1)' 
+              : '#FFFCF8', 
+            borderColor: '#C8E046' 
+          }}
+        >
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-white rounded-2xl shadow-sm">
+            <div 
+              className="p-4 rounded-2xl shadow-sm"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+              }}
+            >
               <Flame className="w-10 h-10" style={{ color: '#C8E046' }} />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-gray-600">Dias de ofensiva</p>
-              <p className="text-4xl text-primary-700">{dados.ofensiva.atual}</p>
+              <p 
+                className="text-sm"
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.biblePage.streakDays}
+              </p>
+              <p 
+                className="text-4xl"
+                style={{
+                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                }}
+              >
+                {dados.ofensiva.atual}
+              </p>
               {dados.ofensiva.melhor > dados.ofensiva.atual && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Recorde: {dados.ofensiva.melhor} dias
+                <p 
+                  className="text-xs mt-1"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#6B7280' : '#9CA3AF'
+                  }}
+                >
+                  {t.biblePage.record}: {dados.ofensiva.melhor} dias
                 </p>
               )}
             </div>
@@ -237,41 +345,155 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
         </Card>
 
         {/* Card: Progresso do Plano */}
-        <Card className="p-6 bg-white border-primary-100">
-          <h3 className="flex items-center gap-2 mb-4 text-primary-700">
-            <TrendingUp className="w-5 h-5" style={{ color: '#4A2C60' }} />
-            Seu Progresso
+        <Card 
+          className="p-6"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+            borderColor: temaAtual === 'escuro' ? '#3A3A3A' : 'rgba(74, 44, 96, 0.1)'
+          }}
+        >
+          <h3 
+            className="flex items-center gap-2 mb-4"
+            style={{
+              color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+            }}
+          >
+            <TrendingUp 
+              className="w-5 h-5" 
+              style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }} 
+            />
+            {t.biblePage.yourProgress}
           </h3>
           <div className="space-y-4">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Plano de Leitura 2025</span>
-                <span className="text-sm" style={{ color: '#4A2C60' }}>{progresso}%</span>
+                <span 
+                  className="text-sm"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.biblePage.readingPlan2025}
+                </span>
+                <span 
+                  className="text-sm"
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                  }}
+                >
+                  {progresso}%
+                </span>
               </div>
               <Progress value={progresso} className="h-3" />
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="p-3 rounded-lg bg-primary-50 border border-primary-200">
-                <p className="text-2xl text-primary-700">{dados.capitulosLidos}</p>
-                <p className="text-xs text-gray-600">Capítulos</p>
+              <div 
+                className="p-3 rounded-lg border"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' 
+                    ? 'rgba(200, 224, 70, 0.1)' 
+                    : 'rgba(74, 44, 96, 0.05)',
+                  borderColor: temaAtual === 'escuro'
+                    ? 'rgba(200, 224, 70, 0.3)'
+                    : 'rgba(74, 44, 96, 0.2)'
+                }}
+              >
+                <p 
+                  className="text-2xl"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                  }}
+                >
+                  {dados.capitulosLidos}
+                </p>
+                <p 
+                  className="text-xs"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.biblePage.chapters}
+                </p>
               </div>
-              <div className="p-3 rounded-lg bg-primary-50 border border-primary-200">
-                <p className="text-2xl text-primary-700">{dados.livrosLidos.length}</p>
-                <p className="text-xs text-gray-600">Livros</p>
+              <div 
+                className="p-3 rounded-lg border"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' 
+                    ? 'rgba(200, 224, 70, 0.1)' 
+                    : 'rgba(74, 44, 96, 0.05)',
+                  borderColor: temaAtual === 'escuro'
+                    ? 'rgba(200, 224, 70, 0.3)'
+                    : 'rgba(74, 44, 96, 0.2)'
+                }}
+              >
+                <p 
+                  className="text-2xl"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                  }}
+                >
+                  {dados.livrosLidos.length}
+                </p>
+                <p 
+                  className="text-xs"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.biblePage.books}
+                </p>
               </div>
-              <div className="p-3 rounded-lg bg-primary-50 border border-primary-200">
-                <p className="text-2xl text-primary-700">{dados.ofensiva.atual}</p>
-                <p className="text-xs text-gray-600">Dias seguidos</p>
+              <div 
+                className="p-3 rounded-lg border"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' 
+                    ? 'rgba(200, 224, 70, 0.1)' 
+                    : 'rgba(74, 44, 96, 0.05)',
+                  borderColor: temaAtual === 'escuro'
+                    ? 'rgba(200, 224, 70, 0.3)'
+                    : 'rgba(74, 44, 96, 0.2)'
+                }}
+              >
+                <p 
+                  className="text-2xl"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                  }}
+                >
+                  {dados.ofensiva.atual}
+                </p>
+                <p 
+                  className="text-xs"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.biblePage.consecutiveDays}
+                </p>
               </div>
             </div>
           </div>
         </Card>
 
         {/* Card: Conquistas */}
-        <Card className="p-6 bg-white border-primary-100">
-          <h3 className="flex items-center gap-2 mb-6 text-primary-700">
-            <Award className="w-5 h-5" style={{ color: '#4A2C60' }} />
-            Conquistas
+        <Card 
+          className="p-6"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+            borderColor: temaAtual === 'escuro' ? '#3A3A3A' : 'rgba(74, 44, 96, 0.1)'
+          }}
+        >
+          <h3 
+            className="flex items-center gap-2 mb-6"
+            style={{
+              color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+            }}
+          >
+            <Award 
+              className="w-5 h-5" 
+              style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }} 
+            />
+            {t.biblePage.achievements}
           </h3>
 
           {/* Grid de Badges em formato pill */}
@@ -283,39 +505,52 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
               return (
                 <div 
                   key={conquista.id}
-                  className={`flex flex-col items-center justify-center py-6 px-3 rounded-full border-2 transition-all ${
-                    desbloqueada 
-                      ? 'bg-secondary-500 border-secondary-600' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
+                  className="flex flex-col items-center justify-center py-6 px-3 rounded-full border-2 transition-all"
                   style={{
                     minHeight: '160px',
+                    backgroundColor: desbloqueada 
+                      ? '#C8E046' 
+                      : (temaAtual === 'escuro' ? '#1C1C1C' : '#F9FAFB'),
+                    borderColor: desbloqueada
+                      ? '#B5CC3D'
+                      : (temaAtual === 'escuro' ? '#3A3A3A' : '#E5E7EB')
                   }}
                 >
                   {/* Ícone */}
                   <div className="mb-3">
                     <IconeConquista 
-                      className={`w-10 h-10 ${
-                        desbloqueada ? 'text-primary-700' : 'text-gray-300'
-                      }`}
+                      className="w-10 h-10"
+                      style={{
+                        color: desbloqueada 
+                          ? '#4A2C60' 
+                          : (temaAtual === 'escuro' ? '#3A3A3A' : '#D1D5DB')
+                      }}
                       strokeWidth={desbloqueada ? 2 : 1.5}
                     />
                   </div>
                   
                   {/* Nome da conquista */}
                   <p 
-                    className={`text-xs text-center leading-tight mb-2 whitespace-pre-line px-1 ${
-                      desbloqueada ? 'text-primary-700 font-medium' : 'text-gray-300'
-                    }`}
+                    className="text-xs text-center leading-tight mb-2 whitespace-pre-line px-1"
+                    style={{
+                      color: desbloqueada 
+                        ? '#4A2C60' 
+                        : (temaAtual === 'escuro' ? '#4A4A4A' : '#D1D5DB'),
+                      fontWeight: desbloqueada ? 500 : 400
+                    }}
                   >
-                    {conquista.nome}
+                    {getNomeConquistaCard(conquista.id)}
                   </p>
                   
                   {/* Dias */}
                   <p 
-                    className={`text-sm ${
-                      desbloqueada ? 'text-primary-700 font-semibold' : 'text-gray-300'
-                    }`}
+                    className="text-sm"
+                    style={{
+                      color: desbloqueada 
+                        ? '#4A2C60' 
+                        : (temaAtual === 'escuro' ? '#4A4A4A' : '#D1D5DB'),
+                      fontWeight: desbloqueada ? 600 : 400
+                    }}
                   >
                     {conquista.dias}d
                   </p>
@@ -325,23 +560,49 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
           </div>
 
           {/* Texto motivacional */}
-          <div className="p-5 rounded-2xl text-center" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)' }}>
-            <p className="text-sm text-primary-700">
-              {dados.conquistasDesbloqueadas.length === 0 && 'Continue lendo para desbloquear conquistas!'}
+          <div 
+            className="p-5 rounded-2xl text-center" 
+            style={{ 
+              backgroundColor: temaAtual === 'escuro'
+                ? 'rgba(200, 224, 70, 0.1)'
+                : 'rgba(74, 44, 96, 0.05)' 
+            }}
+          >
+            <p 
+              className="text-sm"
+              style={{
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+              }}
+            >
+              {dados.conquistasDesbloqueadas.length === 0 && t.biblePage.motivationalNoAchievements}
               {dados.conquistasDesbloqueadas.length > 0 && dados.conquistasDesbloqueadas.length < 4 && 
-                `Você desbloqueou ${dados.conquistasDesbloqueadas.length} de 4 conquistas! Continue assim!`}
+                t.biblePage.motivationalSomeAchievements(dados.conquistasDesbloqueadas.length)}
               {dados.conquistasDesbloqueadas.length === 4 && 
-                '🎉 Parabéns! Você desbloqueou todas as conquistas!'}
+                t.biblePage.motivationalAllAchievements}
             </p>
           </div>
         </Card>
 
         {/* Histórico de Reflexões */}
         {dados.registros.filter(r => r.reflexao).length > 0 && (
-          <Card className="p-6 bg-white border-primary-100">
-            <h3 className="flex items-center gap-2 mb-4 text-primary-700">
-              <Sparkles className="w-5 h-5" style={{ color: '#4A2C60' }} />
-              Reflexões Recentes
+          <Card 
+            className="p-6"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+              borderColor: temaAtual === 'escuro' ? '#3A3A3A' : 'rgba(74, 44, 96, 0.1)'
+            }}
+          >
+            <h3 
+              className="flex items-center gap-2 mb-4"
+              style={{
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+              }}
+            >
+              <Sparkles 
+                className="w-5 h-5" 
+                style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }} 
+              />
+              {t.biblePage.recentReflections}
             </h3>
             <div className="space-y-3">
               {dados.registros
@@ -351,18 +612,47 @@ export default function LeituraBibliaPage({ onVoltar, onAbrirConfiguracoes }: Le
                 .map((registro, index) => (
                   <div 
                     key={index}
-                    className="p-4 rounded-lg border-2 border-secondary-100 bg-secondary-50/30"
+                    className="p-4 rounded-lg border-2"
+                    style={{
+                      backgroundColor: temaAtual === 'escuro'
+                        ? 'rgba(200, 224, 70, 0.08)'
+                        : 'rgba(200, 224, 70, 0.1)',
+                      borderColor: temaAtual === 'escuro'
+                        ? 'rgba(200, 224, 70, 0.2)'
+                        : 'rgba(200, 224, 70, 0.3)'
+                    }}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm text-primary-700">
+                      <p 
+                        className="text-sm"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                        }}
+                      >
                         {registro.livro} {registro.capitulo}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p 
+                        className="text-xs"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#6B7280' : '#9CA3AF'
+                        }}
+                      >
                         {new Date(registro.data).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                     {registro.reflexao?.palavra && (
-                      <div className="inline-block px-3 py-1 rounded-full bg-secondary-100 border border-secondary-300 text-sm text-secondary-700">
+                      <div 
+                        className="inline-block px-3 py-1 rounded-full border text-sm"
+                        style={{
+                          backgroundColor: temaAtual === 'escuro'
+                            ? 'rgba(200, 224, 70, 0.15)'
+                            : 'rgba(200, 224, 70, 0.2)',
+                          borderColor: temaAtual === 'escuro'
+                            ? 'rgba(200, 224, 70, 0.4)'
+                            : '#C8E046',
+                          color: '#C8E046'
+                        }}
+                      >
                         {registro.reflexao.palavra}
                       </div>
                     )}

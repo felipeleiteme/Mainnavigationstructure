@@ -1,10 +1,12 @@
-import { ArrowLeft, Clock, MapPin, Building2, Phone, Mail, Briefcase, Users, BookOpen, Plus, Trash2, CheckCircle2, UserCircle, Home, Sprout, Timer, ClipboardList } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Building2, Phone, Mail, Briefcase, Users, BookOpen, Plus, Trash2, CheckCircle2, UserCircle, Home, Sprout, Timer, ClipboardList, Pencil, AlertCircle, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { DataService, Sessao } from '../../services/dataService';
 import { toast } from 'sonner@2.0.3';
+import { ThemeService } from '../../services/themeService';
+import { useTranslations } from '../../utils/i18n/translations';
 
 interface CadastrarTempoPageProps {
   onVoltar: () => void;
@@ -26,12 +28,86 @@ interface AtividadeTemp {
 }
 
 export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: CadastrarTempoPageProps) {
+  const t = useTranslations();
+  
   const [passo, setPasso] = useState<Passo>('escolher-tipo');
   const [atividadeSelecionada, setAtividadeSelecionada] = useState<string | null>(null);
   const [pessoaSelecionada, setPessoaSelecionada] = useState<{ id: string; nome: string } | null>(null);
   const [atividades, setAtividades] = useState<AtividadeTemp[]>([]);
   const [horas, setHoras] = useState(0);
-  const [minutos, setMinutos] = useState(30);
+  const [minutos, setMinutos] = useState(0);
+  const [atividadeEditando, setAtividadeEditando] = useState<string | null>(null);
+
+  // Hook para monitorar tema
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
+  }, []);
+
+  // Definir tipos de atividade ANTES dos useEffects
+  const tiposAtividade = [
+    {
+      id: 'casa-em-casa',
+      nome: t.registerTime.houseToHouseTitle,
+      descricao: t.registerTime.houseToHouseDesc,
+      tipo: 'campo' as 'campo' | 'credito',
+      requerPessoa: false,
+    },
+    {
+      id: 'revisita',
+      nome: t.registerTime.returnVisitTitle,
+      descricao: t.registerTime.returnVisitDesc,
+      tipo: 'campo' as 'campo' | 'credito',
+      requerPessoa: true,
+    },
+    {
+      id: 'estudo-biblico',
+      nome: t.registerTime.bibleStudyTitle,
+      descricao: t.registerTime.bibleStudyDesc,
+      tipo: 'campo' as 'campo' | 'credito',
+      requerPessoa: true,
+    },
+    {
+      id: 'testemunho-publico',
+      nome: t.registerTime.publicWitnessingTitle,
+      descricao: t.registerTime.publicWitnessingDesc,
+      tipo: 'campo' as 'campo' | 'credito',
+      requerPessoa: false,
+    },
+    {
+      id: 'telefone',
+      nome: t.registerTime.byPhoneTitle,
+      descricao: t.registerTime.byPhoneDesc,
+      tipo: 'campo' as 'campo' | 'credito',
+      requerPessoa: false,
+    },
+    {
+      id: 'carta',
+      nome: t.registerTime.byLetterTitle,
+      descricao: t.registerTime.byLetterDesc,
+      tipo: 'campo' as 'campo' | 'credito',
+      requerPessoa: false,
+    },
+    {
+      id: 'informal',
+      nome: t.registerTime.informalTitle,
+      descricao: t.registerTime.informalDesc,
+      tipo: 'campo' as 'campo' | 'credito',
+      requerPessoa: false,
+    },
+    {
+      id: 'credito',
+      nome: t.registerTime.creditTitle,
+      descricao: t.registerTime.creditDesc,
+      tipo: 'credito' as 'campo' | 'credito',
+      requerPessoa: false,
+    },
+  ];
 
   // Helper para obter ícone por tipo de atividade
   const getIconForTipo = (tipoId: string) => {
@@ -55,25 +131,38 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
       // Converter as atividades da sessão para o formato temporário
       const atividadesTemp: AtividadeTemp[] = (sessaoParaEditar.atividades || []).map((ativ, idx) => {
         const tipoInfo = tiposAtividade.find(t => t.id === ativ.tipo);
-        // Parse do tempo dos detalhes
-        let horas = 0;
-        let minutos = 0;
-        let pessoaNome: string | undefined;
         
-        if (ativ.detalhes) {
-          const parts = ativ.detalhes.split(' - ');
-          const tempoStr = parts[parts.length - 1]; // Última parte é sempre o tempo
-          const tempoMatch = tempoStr.match(/(\d+)h\s*(\d+)min|(\d+)h|(\d+)min/);
+        // Tentar obter duração de várias formas (migração de dados antigos)
+        let duracaoTotal = ativ.duracaoMinutos || 0;
+        
+        // Se duracaoMinutos não existe, tentar extrair dos detalhes (dados antigos)
+        if (duracaoTotal === 0 && ativ.detalhes) {
+          // Regex para extrair tempo no formato "1h 45min", "1h", "45min"
+          const regexHoras = /(\d+)h/;
+          const regexMinutos = /(\d+)min/;
+          const matchHoras = ativ.detalhes.match(regexHoras);
+          const matchMinutos = ativ.detalhes.match(regexMinutos);
           
-          if (tempoMatch) {
-            horas = parseInt(tempoMatch[1] || tempoMatch[3] || '0');
-            minutos = parseInt(tempoMatch[2] || tempoMatch[4] || '0');
-          }
+          const horas = matchHoras ? parseInt(matchHoras[1]) : 0;
+          const minutos = matchMinutos ? parseInt(matchMinutos[1]) : 0;
+          duracaoTotal = horas * 60 + minutos;
           
-          // Se tem mais de uma parte, a primeira é o nome da pessoa
-          if (parts.length > 1) {
-            pessoaNome = parts[0];
+          // Se ainda for 0, tentar dividir tempo total igualmente
+          if (duracaoTotal === 0 && sessaoParaEditar.duracaoMinutos) {
+            duracaoTotal = Math.floor(sessaoParaEditar.duracaoMinutos / sessaoParaEditar.atividades.length);
           }
+        }
+        
+        const horas = Math.floor(duracaoTotal / 60);
+        const minutos = duracaoTotal % 60;
+        
+        // Extrair nome da pessoa dos detalhes (remover informação de tempo se existir)
+        let pessoaNome = ativ.detalhes;
+        if (pessoaNome) {
+          // Remover tempo dos detalhes se existir (ex: "João Silva - 1h 45min" -> "João Silva")
+          pessoaNome = pessoaNome.replace(/\s*-?\s*\d+h(\s+\d+min)?/g, '').replace(/\s*-?\s*\d+min/g, '').trim();
+          // Se ficou vazio ou só com hífen, limpar
+          if (pessoaNome === '-' || pessoaNome === '') pessoaNome = undefined;
         }
         
         return {
@@ -98,65 +187,6 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [passo]);
 
-  const tiposAtividade = [
-    {
-      id: 'casa-em-casa',
-      nome: 'Casa em Casa',
-      descricao: 'Visitação porta a porta',
-      tipo: 'campo' as 'campo' | 'credito',
-      requerPessoa: false,
-    },
-    {
-      id: 'revisita',
-      nome: 'Revisita',
-      descricao: 'Visitar interesse',
-      tipo: 'campo' as 'campo' | 'credito',
-      requerPessoa: true,
-    },
-    {
-      id: 'estudo-biblico',
-      nome: 'Estudo Bíblico',
-      descricao: 'Conduzir estudo',
-      tipo: 'campo' as 'campo' | 'credito',
-      requerPessoa: true,
-    },
-    {
-      id: 'testemunho-publico',
-      nome: 'Testemunho Público',
-      descricao: 'Carrinho ou banca pública',
-      tipo: 'campo' as 'campo' | 'credito',
-      requerPessoa: false,
-    },
-    {
-      id: 'telefone',
-      nome: 'Por Telefone',
-      descricao: 'Chamadas e mensagens',
-      tipo: 'campo' as 'campo' | 'credito',
-      requerPessoa: false,
-    },
-    {
-      id: 'carta',
-      nome: 'Por Carta',
-      descricao: 'Cartas e mensagens escritas',
-      tipo: 'campo' as 'campo' | 'credito',
-      requerPessoa: false,
-    },
-    {
-      id: 'informal',
-      nome: 'Informal',
-      descricao: 'Conversas casuais',
-      tipo: 'campo' as 'campo' | 'credito',
-      requerPessoa: false,
-    },
-    {
-      id: 'credito',
-      nome: 'Crédito',
-      descricao: 'Tempo especial (LDC, hospitalar, etc)',
-      tipo: 'credito' as 'campo' | 'credito',
-      requerPessoa: false,
-    },
-  ];
-
   const handleSelecionarTipo = (tipoId: string) => {
     setAtividadeSelecionada(tipoId);
     const tipo = tiposAtividade.find(t => t.id === tipoId);
@@ -178,7 +208,9 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
     const totalMinutos = horas * 60 + minutos;
     
     if (totalMinutos === 0) {
-      toast.error('Configure um tempo maior que 0');
+      toast.error(t.registerTime.howMuchTimeDidYouDedicate, {
+        icon: <AlertCircle className="w-5 h-5" />
+      });
       return;
     }
 
@@ -203,24 +235,86 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
       ? `${tipoInfo.emoji} ${pessoaSelecionada.nome} - ${formatarTempo(horas, minutos)}`
       : `${tipoInfo.emoji} ${tipoInfo.nome} - ${formatarTempo(horas, minutos)}`;
     
-    toast.success('Atividade adicionada!', { description: descricao });
+    toast.success(t.registerTime.activityAdded, { 
+      description: descricao,
+      icon: <Check className="w-5 h-5" />
+    });
     
     // Resetar para adicionar outra atividade ou ir para revisão
     setAtividadeSelecionada(null);
     setPessoaSelecionada(null);
     setHoras(0);
-    setMinutos(30);
+    setMinutos(0);
     setPasso('revisao');
   };
 
   const handleRemoverAtividade = (id: string) => {
     setAtividades(prev => prev.filter(a => a.id !== id));
-    toast.success('Atividade removida');
+    toast.success(t.registerTime.activityRemoved, {
+      icon: <Trash2 className="w-5 h-5" />
+    });
+  };
+
+  const handleEditarAtividade = (id: string) => {
+    const atividade = atividades.find(a => a.id === id);
+    if (!atividade) return;
+
+    // Carregar dados da atividade para edição
+    setAtividadeEditando(id);
+    setAtividadeSelecionada(atividade.tipo);
+    setHoras(atividade.horas);
+    setMinutos(atividade.minutos);
+    
+    if (atividade.pessoaId && atividade.pessoaNome) {
+      setPessoaSelecionada({ id: atividade.pessoaId, nome: atividade.pessoaNome });
+    }
+    
+    // Ir para a tela de definir tempo
+    setPasso('definir-tempo');
+  };
+
+  const handleSalvarEdicao = () => {
+    if (!atividadeEditando) return;
+
+    const totalMinutos = horas * 60 + minutos;
+    
+    if (totalMinutos === 0) {
+      toast.error(t.registerTime.howMuchTimeDidYouDedicate, {
+        icon: <AlertCircle className="w-5 h-5" />
+      });
+      return;
+    }
+
+    // Atualizar a atividade existente
+    setAtividades(prev => prev.map(a => {
+      if (a.id === atividadeEditando) {
+        return {
+          ...a,
+          horas,
+          minutos,
+        };
+      }
+      return a;
+    }));
+
+    toast.success(t.registerTime.timeUpdated, {
+      icon: <CheckCircle2 className="w-5 h-5" />
+    });
+
+    // Resetar estados
+    setAtividadeEditando(null);
+    setAtividadeSelecionada(null);
+    setPessoaSelecionada(null);
+    setHoras(0);
+    setMinutos(0);
+    setPasso('revisao');
   };
 
   const handleConcluir = () => {
     if (atividades.length === 0) {
-      toast.error('Adicione pelo menos uma atividade');
+      toast.error(t.registerTime.addAtLeastOneActivity, {
+        icon: <AlertCircle className="w-5 h-5" />
+      });
       return;
     }
 
@@ -240,15 +334,14 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
         ).toTimeString().slice(0, 5),
         atividades: atividades.map(a => ({
           tipo: a.tipo as any,
-          detalhes: a.pessoaNome 
-            ? `${a.pessoaNome} - ${a.horas}h ${a.minutos}min` 
-            : `${a.horas}h ${a.minutos}min`,
+          detalhes: a.pessoaNome || undefined,
+          duracaoMinutos: a.horas * 60 + a.minutos,
         })),
         revisitasFeitas: atividades
           .filter(a => a.tipo === 'revisita' && a.pessoaId)
           .map(a => a.pessoaId!),
         estudosRealizados: atividades
-          .filter(a => a.tipo === 'estudo' && a.pessoaId)
+          .filter(a => (a.tipo === 'estudo' || a.tipo === 'estudo-biblico') && a.pessoaId)
           .map(a => a.pessoaId!),
       };
       
@@ -272,8 +365,9 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
       const horasGeral = Math.floor(totalMinutos / 60);
       const minutosGeral = totalMinutos % 60;
       
-      toast.success('Registro atualizado com sucesso! ✏️', {
-        description: `${atividades.length} atividade(s) - Total: ${horasGeral}h ${minutosGeral}min`,
+      toast.success(t.registerTime.recordUpdatedSuccess, {
+        description: `${atividades.length} ${t.registerTime.activities} - ${t.registerTime.totalTime}: ${horasGeral}h ${minutosGeral}min`,
+        icon: <Pencil className="w-5 h-5" />
       });
       
       onVoltar();
@@ -313,15 +407,14 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
         tipo: 'campo' as 'campo' | 'credito',
         atividades: atividadesCampo.map(a => ({
           tipo: a.tipo as any,
-          detalhes: a.pessoaNome 
-            ? `${a.pessoaNome} - ${a.horas}h ${a.minutos}min` 
-            : `${a.horas}h ${a.minutos}min`,
+          detalhes: a.pessoaNome || undefined,
+          duracaoMinutos: a.horas * 60 + a.minutos,
         })),
         revisitasFeitas: atividadesCampo
           .filter(a => a.tipo === 'revisita' && a.pessoaId)
           .map(a => a.pessoaId!),
         estudosRealizados: atividadesCampo
-          .filter(a => a.tipo === 'estudo' && a.pessoaId)
+          .filter(a => (a.tipo === 'estudo' || a.tipo === 'estudo-biblico') && a.pessoaId)
           .map(a => a.pessoaId!),
       };
 
@@ -373,11 +466,12 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
     // Mensagem personalizada se visitou revisitas
     const quantRevisitas = revisitasVisitadas.length;
     const mensagemExtra = quantRevisitas > 0 
-      ? ` • ${quantRevisitas} ${quantRevisitas === 1 ? 'revisita atualizada' : 'revisitas atualizadas'} 🌱`
+      ? ` • ${quantRevisitas} ${quantRevisitas === 1 ? 'revisita atualizada' : 'revisitas atualizadas'}`
       : '';
     
-    toast.success('Tempo cadastrado com sucesso! 🎉', {
-      description: `${atividades.length} atividade(s) - Total: ${horasGeral}h ${minutosGeral}min${mensagemExtra}`,
+    toast.success(t.registerTime.timeSavedSuccess, {
+      description: `${atividades.length} ${t.registerTime.activities} - ${t.registerTime.totalTime}: ${horasGeral}h ${minutosGeral}min${mensagemExtra}`,
+      icon: <CheckCircle2 className="w-5 h-5" />
     });
     
     onVoltar();
@@ -400,7 +494,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
       <div className="min-h-screen bg-gray-50 pb-48">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-primary-500 text-white">
-          <div className="flex items-center gap-4 px-6 py-4">
+          <div className="flex items-center gap-4 px-6 pt-12 pb-4">
             <Button
               variant="ghost"
               size="sm"
@@ -416,8 +510,8 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex-1">
-              <h2 className="text-xl">Cadastrar Tempo</h2>
-              <p className="text-sm opacity-90">Passo 1: Escolha a atividade</p>
+              <h2 className="text-xl">{t.registerTime.title}</h2>
+              <p className="text-sm opacity-90">{t.registerTime.step1Title}</p>
             </div>
           </div>
         </div>
@@ -426,7 +520,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
         <div className="px-6 py-6 space-y-4">
           <Card className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
             <p className="text-sm text-gray-700 flex items-center gap-2">
-              <ClipboardList className="w-5 h-5" /> Selecione o tipo de atividade que você realizou
+              <ClipboardList className="w-5 h-5" /> {t.registerTime.step1Description}
             </p>
           </Card>
 
@@ -438,7 +532,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
                 className="w-full p-4 rounded-lg border-2 border-gray-200 bg-white text-left transition-all hover:border-primary-500 hover:bg-primary-50"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center text-primary-700">
+                  <div className="w-12 h-12 rounded-xl text-white flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C8E046', color: '#4A2C60' }}>
                     {getIconForTipo(tipo.id)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -476,7 +570,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
       <div className="min-h-screen bg-gray-50 pb-24">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-primary-500 text-white">
-          <div className="flex items-center gap-4 px-6 py-4">
+          <div className="flex items-center gap-4 px-6 pt-12 pb-4">
             <Button
               variant="ghost"
               size="sm"
@@ -489,8 +583,8 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex-1">
-              <h2 className="text-xl">Selecione a Pessoa</h2>
-              <p className="text-sm opacity-90">Passo 2: Quem foi visitado?</p>
+              <h2 className="text-xl">{t.registerTime.selectPerson}</h2>
+              <p className="text-sm opacity-90">{t.registerTime.step2Description}</p>
             </div>
           </div>
         </div>
@@ -504,7 +598,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
                 {atividadeSelecionada && getIconForTipo(atividadeSelecionada)}
               </div>
               <div>
-                <p className="text-sm text-gray-600">Atividade selecionada</p>
+                <p className="text-sm text-gray-600">{t.registerTime.selectedActivity}</p>
                 <p style={{ color: '#4A2C60' }}>{tipoAtual?.nome}</p>
               </div>
             </div>
@@ -518,9 +612,9 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
                   <UserCircle className="w-12 h-12 text-gray-400" />
                 </div>
               </div>
-              <h4 className="mb-2">Nenhuma {isRevisita ? 'revisita' : 'estudo'} cadastrado</h4>
+              <h4 className="mb-2">{isRevisita ? t.registerTime.noReturnVisitRegistered : t.registerTime.noStudyRegistered}</h4>
               <p className="text-sm text-gray-600 mb-6">
-                Cadastre {isRevisita ? 'uma revisita' : 'um estudo'} primeiro para continuar
+                {isRevisita ? t.registerTime.registerReturnVisitFirst : t.registerTime.registerStudyFirst}
               </p>
               <Button
                 size="lg"
@@ -530,13 +624,13 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
                   setPasso('definir-tempo');
                 }}
               >
-                Continuar sem selecionar
+                {t.registerTime.continueWithoutSelecting}
               </Button>
             </Card>
           ) : (
             <div className="space-y-3">
               <h3 className="text-sm text-gray-700 px-1">
-                {isRevisita ? 'Selecione a revisita' : 'Selecione o estudante'}
+                {isRevisita ? t.registerTime.selectReturnVisit : t.registerTime.selectStudent}
               </h3>
               {pessoas.map((pessoa) => {
                 const nome = isRevisita 
@@ -611,7 +705,7 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
       <div className="min-h-screen bg-gray-50 pb-24">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-primary-500 text-white">
-          <div className="flex items-center gap-4 px-6 py-4">
+          <div className="flex items-center gap-4 px-6 pt-12 pb-4">
             <Button
               variant="ghost"
               size="sm"
@@ -629,76 +723,127 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex-1">
-              <h2 className="text-xl">Quanto tempo durou?</h2>
+              <h2 className="text-xl">{t.registerTime.howLongDidItTake}</h2>
               <p className="text-sm opacity-90">
-                Passo {tipoAtual?.requerPessoa ? '3' : '2'}: Defina a duração
+                {tipoAtual?.requerPessoa ? t.registerTime.step3DescriptionWithPerson : t.registerTime.step3Description}
               </p>
             </div>
           </div>
         </div>
 
         {/* Conteúdo */}
-        <div className="px-6 py-6 space-y-5">
-          {/* Card da atividade selecionada */}
-          <Card className="p-5" style={{ background: 'linear-gradient(to bottom right, rgba(74, 44, 96, 0.05), rgba(74, 44, 96, 0.1))', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary-700">
+        <div className="px-6 py-6 space-y-6">
+          {/* Card da atividade selecionada - REFINADO */}
+          <Card 
+            className="p-5 border-2" 
+            style={{ 
+              backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : 'white', 
+              borderColor: '#C8E046' 
+            }}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C8E046', color: '#4A2C60' }}>
                 {atividadeSelecionada && getIconForTipo(atividadeSelecionada)}
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Atividade selecionada</p>
-                <p style={{ color: '#4A2C60' }}>{tipoAtual?.nome}</p>
+              <div className="flex-1">
+                <p 
+                  className="text-xs mb-1"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.registerTime.selectedActivity}
+                </p>
+                <p 
+                  className="text-base" 
+                  style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+                >
+                  {tipoAtual?.nome}
+                </p>
+                {pessoaSelecionada && (
+                  <div 
+                    className="flex items-center gap-1.5 mt-2 text-sm" 
+                    style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+                  >
+                    <UserCircle className="w-4 h-4" />
+                    <span>{pessoaSelecionada.nome}</span>
+                  </div>
+                )}
               </div>
             </div>
-            {pessoaSelecionada && (
-              <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: 'rgba(74, 44, 96, 0.2)' }}>
-                <UserCircle className="w-4 h-4" style={{ color: '#4A2C60' }} />
-                <p className="text-sm" style={{ color: '#4A2C60' }}>{pessoaSelecionada.nome}</p>
-              </div>
-            )}
           </Card>
 
-          {/* Seletor de tempo */}
-          <Card className="p-6">
-            <h3 className="mb-6 text-center flex items-center justify-center gap-2">
-              <Timer className="w-5 h-5" /> Defina a duração
-            </h3>
+          {/* Seletor de tempo - REFINADO */}
+          <Card 
+            className="p-6"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+              borderColor: temaAtual === 'escuro' ? '#3A3A3A' : 'rgba(74, 44, 96, 0.1)'
+            }}
+          >
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <Timer 
+                className="w-5 h-5" 
+                style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }} 
+              />
+              <h3 style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}>{t.registerTime.setDuration}</h3>
+            </div>
             
-            <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="flex items-center justify-center gap-6 mb-6">
               {/* Horas */}
               <div className="flex flex-col items-center">
-                <label className="text-xs text-gray-600 mb-2">Horas</label>
-                <div className="flex flex-col items-center gap-2">
+                <label 
+                  className="text-xs mb-3"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.registerTime.hours}
+                </label>
+                <div className="flex flex-col items-center gap-3">
                   <button
                     onClick={() => setHoras(Math.min(23, horas + 1))}
-                    className="w-12 h-12 rounded-lg text-white flex items-center justify-center transition-opacity"
+                    className="w-12 h-12 rounded-xl text-white flex items-center justify-center text-xl transition-all hover:scale-105 active:scale-95"
                     style={{ backgroundColor: '#4A2C60' }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
                     +
                   </button>
-                  <div className="w-20 h-20 rounded-xl border-2 flex items-center justify-center" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)', borderColor: 'rgba(74, 44, 96, 0.3)' }}>
-                    <span className="text-3xl" style={{ color: '#4A2C60' }}>{horas}</span>
+                  <div 
+                    className="w-24 h-24 rounded-2xl border-2 flex items-center justify-center shadow-sm" 
+                    style={{ 
+                      borderColor: '#C8E046',
+                      backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF'
+                    }}
+                  >
+                    <span 
+                      className="text-4xl" 
+                      style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+                    >
+                      {horas}
+                    </span>
                   </div>
                   <button
                     onClick={() => setHoras(Math.max(0, horas - 1))}
-                    className="w-12 h-12 rounded-lg text-white flex items-center justify-center transition-opacity"
+                    className="w-12 h-12 rounded-xl text-white flex items-center justify-center text-xl transition-all hover:scale-105 active:scale-95"
                     style={{ backgroundColor: '#4A2C60' }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
                     −
                   </button>
                 </div>
               </div>
 
-              <span className="text-3xl mt-8" style={{ color: '#4A2C60' }}>:</span>
+              <span 
+                className="text-4xl mt-10" 
+                style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+              >
+                :
+              </span>
 
               {/* Minutos */}
               <div className="flex flex-col items-center">
-                <label className="text-xs text-gray-600 mb-2">Minutos</label>
-                <div className="flex flex-col items-center gap-2">
+                <label 
+                  className="text-xs mb-3"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.registerTime.minutes}
+                </label>
+                <div className="flex flex-col items-center gap-3">
                   <button
                     onClick={() => {
                       const novosMinutos = minutos + 15;
@@ -709,15 +854,24 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
                         setMinutos(novosMinutos);
                       }
                     }}
-                    className="w-12 h-12 rounded-lg text-white flex items-center justify-center transition-opacity"
+                    className="w-12 h-12 rounded-xl text-white flex items-center justify-center text-xl transition-all hover:scale-105 active:scale-95"
                     style={{ backgroundColor: '#4A2C60' }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
                     +
                   </button>
-                  <div className="w-20 h-20 rounded-xl border-2 flex items-center justify-center" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)', borderColor: 'rgba(74, 44, 96, 0.3)' }}>
-                    <span className="text-3xl" style={{ color: '#4A2C60' }}>{minutos.toString().padStart(2, '0')}</span>
+                  <div 
+                    className="w-24 h-24 rounded-2xl border-2 flex items-center justify-center shadow-sm" 
+                    style={{ 
+                      borderColor: '#C8E046',
+                      backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF'
+                    }}
+                  >
+                    <span 
+                      className="text-4xl" 
+                      style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+                    >
+                      {minutos.toString().padStart(2, '0')}
+                    </span>
                   </div>
                   <button
                     onClick={() => {
@@ -733,10 +887,8 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
                         setMinutos(novosMinutos);
                       }
                     }}
-                    className="w-12 h-12 rounded-lg text-white flex items-center justify-center transition-opacity"
+                    className="w-12 h-12 rounded-xl text-white flex items-center justify-center text-xl transition-all hover:scale-105 active:scale-95"
                     style={{ backgroundColor: '#4A2C60' }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
                     −
                   </button>
@@ -744,28 +896,48 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-2 p-4 rounded-lg" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}>
-              <Clock className="w-5 h-5" style={{ color: '#4A2C60' }} />
-              <p style={{ color: '#4A2C60' }}>
-                Tempo: <strong className="text-lg">{tempoFormatado}</strong>
+            {/* Card de tempo total - REFINADO */}
+            <div 
+              className="flex items-center justify-center gap-2 p-4 rounded-xl border-2" 
+              style={{ 
+                backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.15)' : '#F3F9E6', 
+                borderColor: '#C8E046' 
+              }}
+            >
+              <Clock 
+                className="w-5 h-5" 
+                style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }} 
+              />
+              <p style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}>
+                Tempo: <strong className="text-xl">{tempoFormatado}</strong>
               </p>
             </div>
           </Card>
 
           {/* Botões de ação */}
           <div className="space-y-3">
-            <Button
-              size="lg"
-              className="w-full"
-              style={{ backgroundColor: '#4A2C60', color: 'white' }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-              onClick={handleAdicionarAtividade}
+            <button
+              className="w-full h-14 rounded-md transition-all cursor-pointer border-0 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ 
+                backgroundColor: '#C8E046',
+                color: '#1F2937',
+                border: 'none',
+                outline: 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (totalMinutos > 0) {
+                  e.currentTarget.style.backgroundColor = '#B5CC3D';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#C8E046';
+              }}
+              onClick={atividadeEditando ? handleSalvarEdicao : handleAdicionarAtividade}
               disabled={totalMinutos === 0}
             >
               <Plus className="w-5 h-5 mr-2" />
-              Adicionar Atividade
-            </Button>
+              {atividadeEditando ? t.registerTime.saveEdit : t.registerTime.addActivity}
+            </button>
 
             {atividades.length > 0 && (
               <Button
@@ -785,10 +957,20 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
 
   // PASSO 4: Revisão
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div 
+      className="min-h-screen pb-24"
+      style={{
+        backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE'
+      }}
+    >
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-primary-500 text-white">
-        <div className="flex items-center gap-4 px-6 py-4">
+      <div 
+        className="sticky top-0 z-10 text-white"
+        style={{
+          backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60'
+        }}
+      >
+        <div className="flex items-center gap-4 px-6 pt-12 pb-4">
           <Button
             variant="ghost"
             size="sm"
@@ -798,8 +980,8 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h2 className="text-xl">Revisar e Concluir</h2>
-            <p className="text-sm opacity-90">Última etapa: Confirme suas atividades</p>
+            <h2 className="text-xl">{t.registerTime.reviewAndComplete}</h2>
+            <p className="text-sm opacity-90">{t.registerTime.lastStepConfirmActivities}</p>
           </div>
         </div>
       </div>
@@ -807,84 +989,234 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
       {/* Conteúdo */}
       <div className="px-6 py-6 space-y-5">
         {/* Resumo total */}
-        <Card className="p-6" style={{ background: 'linear-gradient(to bottom right, rgba(74, 44, 96, 0.05), rgba(74, 44, 96, 0.1))', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
+        <Card 
+          className="p-6 border-0" 
+          style={{ 
+            background: temaAtual === 'escuro' 
+              ? 'linear-gradient(to bottom right, rgba(200, 224, 70, 0.08), rgba(200, 224, 70, 0.15))'
+              : 'linear-gradient(to bottom right, rgba(74, 44, 96, 0.05), rgba(74, 44, 96, 0.1))',
+            borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : 'rgba(74, 44, 96, 0.2)'
+          }}
+        >
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">Total acumulado</p>
-            <p className="text-4xl mb-1" style={{ color: '#4A2C60' }}>
+            <p 
+              className="text-sm mb-2" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' 
+              }}
+            >
+              {t.registerTime.totalAccumulated}
+            </p>
+            <p 
+              className="text-4xl mb-1" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+                fontWeight: 'bold'
+              }}
+            >
               {formatarTempo(horasGeral, minutosGeral)}
             </p>
-            <p className="text-sm text-gray-600">
-              {atividades.length} atividade{atividades.length !== 1 ? 's' : ''}
+            <p 
+              className="text-sm" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' 
+              }}
+            >
+              {atividades.length} {t.registerTime.activity}{atividades.length !== 1 ? 's' : ''}
             </p>
           </div>
         </Card>
 
         {/* Lista de atividades */}
         {atividades.length === 0 ? (
-          <Card className="p-12 text-center">
+          <Card 
+            className="p-12 text-center border-0"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+            }}
+          >
             <div className="mb-4 flex justify-center">
-              <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
-                <ClipboardList className="w-12 h-12 text-gray-400" />
+              <div 
+                className="w-20 h-20 rounded-full flex items-center justify-center"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.15)' : 'rgba(74, 44, 96, 0.1)'
+                }}
+              >
+                <ClipboardList 
+                  className="w-12 h-12" 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#C8E046' : '#9CA3AF' 
+                  }} 
+                />
               </div>
             </div>
-            <h4 className="mb-2">Nenhuma atividade adicionada</h4>
-            <p className="text-sm text-gray-600 mb-4">
-              Adicione pelo menos uma atividade para continuar
+            <h4 
+              className="mb-2" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#D1D5DB' : '#1F2937' 
+              }}
+            >
+              {t.registerTime.noActivityAdded}
+            </h4>
+            <p 
+              className="text-sm mb-4" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' 
+              }}
+            >
+              {t.registerTime.addAtLeastOneActivityToContinue}
             </p>
           </Card>
         ) : (
           <div className="space-y-3">
-            <h3 className="text-sm text-gray-700 px-1">Atividades cadastradas</h3>
+            <h3 
+              className="text-sm px-1" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#D1D5DB' : '#374151' 
+              }}
+            >
+              {t.registerTime.registeredActivities}
+            </h3>
             {atividades.map((atividade) => (
-              <Card key={atividade.id} className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center flex-shrink-0 text-primary-700">
-                    {getIconForTipo(atividade.tipo)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div>
-                        <p className="text-gray-900">{atividade.nome}</p>
-                        {atividade.pessoaNome && (
-                          <p className="text-sm text-gray-600 flex items-center gap-1">
-                            <UserCircle className="w-4 h-4" /> {atividade.pessoaNome}
-                          </p>
-                        )}
-                      </div>
-                      <Badge className="text-white" style={{ backgroundColor: '#4A2C60' }}>
-                        {formatarTempo(atividade.horas, atividade.minutos)}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="secondary" 
-                        className={
-                          atividade.categoria === 'campo' 
-                            ? 'bg-secondary-100 text-secondary-900 flex items-center gap-1' 
-                            : 'flex items-center gap-1'
-                        }
-                        style={atividade.categoria !== 'campo' ? { backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' } : {}}
-                      >
-                        {atividade.categoria === 'campo' ? (
-                          <>
-                            <Sprout className="w-3 h-3" /> Campo
-                          </>
-                        ) : (
-                          <>
-                            <Clock className="w-3 h-3" /> Crédito
-                          </>
-                        )}
-                      </Badge>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoverAtividade(atividade.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 flex-shrink-0"
+              <Card 
+                key={atividade.id} 
+                className="p-5 border-0"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+                }}
+              >
+                <div className="flex items-start gap-4">
+                  {/* Ícone */}
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ 
+                      backgroundColor: temaAtual === 'escuro' 
+                        ? 'rgba(200, 224, 70, 0.15)' 
+                        : 'rgba(200, 224, 70, 0.15)' 
+                    }}
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                    <div 
+                      style={{ 
+                        color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                      }}
+                    >
+                      {getIconForTipo(atividade.tipo)}
+                    </div>
+                  </div>
+
+                  {/* Conteúdo central */}
+                  <div className="flex-1 min-w-0">
+                    {/* Título da atividade */}
+                    <p 
+                      className="text-base mb-2 capitalize" 
+                      style={{ 
+                        color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                      }}
+                    >
+                      {atividade.nome}
+                    </p>
+                    
+                    {/* Badges e informações */}
+                    <div className="space-y-2">
+                      {/* Badge de categoria */}
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          className="flex items-center gap-1.5 border-0"
+                          style={
+                            atividade.categoria === 'campo' 
+                              ? {
+                                  backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.2)' : 'rgba(200, 224, 70, 0.2)',
+                                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A5D0B'
+                                }
+                              : {
+                                  backgroundColor: temaAtual === 'escuro' ? 'rgba(167, 139, 202, 0.2)' : 'rgba(74, 44, 96, 0.1)',
+                                  color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+                                }
+                          }
+                        >
+                          {atividade.categoria === 'campo' ? (
+                            <>
+                              <Sprout className="w-3 h-3" /> {t.registerTime.field}
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-3 h-3" /> {t.registerTime.credit}
+                            </>
+                          )}
+                        </Badge>
+                        
+                        {/* Badge de tempo (movido para cá) */}
+                        <Badge 
+                          className="h-6 px-2.5 flex items-center gap-1 border-0" 
+                          style={{ 
+                            backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+                            color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+                          }}
+                        >
+                          <Clock className="w-3 h-3" />
+                          {formatarTempo(atividade.horas, atividade.minutos)}
+                        </Badge>
+                      </div>
+                      
+                      {/* Nome da pessoa (se houver) */}
+                      {atividade.pessoaNome && (
+                        <div 
+                          className="flex items-center gap-1.5 text-sm"
+                          style={{ 
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' 
+                          }}
+                        >
+                          <UserCircle 
+                            className="w-4 h-4" 
+                            style={{ 
+                              color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                            }} 
+                          />
+                          <span>{atividade.pessoaNome}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Botões de ação verticais */}
+                  <div className="flex flex-col gap-1 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditarAtividade(atividade.id)}
+                      className="p-2 h-8 w-8"
+                      style={{ 
+                        color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+                        backgroundColor: 'transparent'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoverAtividade(atividade.id)}
+                      className="p-2 h-8 w-8"
+                      style={{ 
+                        color: '#EF4444',
+                        backgroundColor: 'transparent'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -893,30 +1225,48 @@ export default function CadastrarTempoPage({ onVoltar, sessaoParaEditar }: Cadas
 
         {/* Botões de ação */}
         <div className="space-y-3">
-          <Button
-            size="lg"
-            className="w-full text-white"
-            style={{ backgroundColor: '#4A2C60' }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          <button
+            className="w-full h-14 rounded-md transition-all cursor-pointer border-0 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ 
+              backgroundColor: '#C8E046',
+              color: '#1F2937',
+              border: 'none',
+              outline: 'none'
+            }}
+            onMouseEnter={(e) => {
+              if (atividades.length > 0) {
+                e.currentTarget.style.backgroundColor = '#B5CC3D';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#C8E046';
+            }}
             onClick={handleConcluir}
             disabled={atividades.length === 0}
           >
             <CheckCircle2 className="w-5 h-5 mr-2" />
-            Concluir Cadastro
-          </Button>
+            {t.registerTime.completeRegistration}
+          </button>
 
           <Button
             size="lg"
             variant="outline"
-            className="w-full"
-            style={{ borderColor: 'rgba(74, 44, 96, 0.3)', color: '#4A2C60' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(74, 44, 96, 0.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className="w-full border-2"
+            style={{ 
+              borderColor: '#C8E046',
+              color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(200, 224, 70, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
             onClick={() => setPasso('escolher-tipo')}
           >
             <Plus className="w-5 h-5 mr-2" />
-            Adicionar Mais Atividades
+            {t.registerTime.addMoreActivities}
           </Button>
         </div>
       </div>

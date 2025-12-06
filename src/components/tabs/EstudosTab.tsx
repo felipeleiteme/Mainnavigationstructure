@@ -1,10 +1,10 @@
-import { BookOpen, Plus, Search, Filter, Calendar, MapPin, Phone, MessageCircle, MoreVertical, Bell, Clock, X, ChevronRight, Sparkles, BookMarked, HelpCircle, GraduationCap, Lightbulb } from 'lucide-react';
+import { BookOpen, Plus, Search, Filter, Calendar, MapPin, Phone, MessageCircle, MoreVertical, Bell, Clock, X, ChevronRight, Sparkles, BookMarked, HelpCircle, GraduationCap, Lightbulb, MessageSquare } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Switch } from '../ui/switch';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { DataService, Estudo } from '../../services/dataService';
 import { toast } from 'sonner';
 import FAB from '../shared/FAB';
@@ -12,6 +12,9 @@ import BarraSessao from '../shared/BarraSessao';
 import { seedDemoData } from '../../services/seedData';
 import DetalhesEstudoPage from '../pages/DetalhesEstudoPage';
 import NovoEstudoPage from '../pages/NovoEstudoPage';
+import EmptyState from '../shared/EmptyState';
+import { ThemeService } from '@/services/themeService';
+import { useTranslations } from '../../utils/i18n/translations';
 
 interface EstudosTabProps {
   filtro?: string;
@@ -29,26 +32,6 @@ interface EstudosTabProps {
 
 type PaginaEstudos = 'home' | 'detalhes' | 'novo-estudo' | 'editar-estudo';
 
-// Empty State Component
-function EmptyState({ emoji, title, description, actions }: any) {
-  return (
-    <Card className="p-8 text-center bg-gray-50">
-      <div className="text-6xl mb-4">{emoji}</div>
-      <h3 className="text-lg mb-2">{title}</h3>
-      <p className="text-sm text-gray-600 mb-6">{description}</p>
-      {actions && (
-        <div className="space-y-2">
-          {actions.map((action: any, idx: number) => (
-            <Button key={idx} onClick={action.onClick} variant="outline">
-              {action.label}
-            </Button>
-          ))}
-        </div>
-      )}
-    </Card>
-  );
-}
-
 export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPausarSessao, onFinalizarSessao, onAbrirControlesSessao, estudoId, abrirDetalhes }: EstudosTabProps) {
   const [filtroAtivo, setFiltroAtivo] = useState('todos');
   const [busca, setBusca] = useState('');
@@ -56,6 +39,20 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
   const [paginaAtual, setPaginaAtual] = useState<PaginaEstudos>('home');
   const [estudoSelecionado, setEstudoSelecionado] = useState<string>('');
   const [estudoEditando, setEstudoEditando] = useState<Estudo | undefined>();
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+  
+  // Hook de traduções - DEVE ser chamado no topo do componente
+  const t = useTranslations();
+
+  // Escutar mudanças de tema
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
+  }, []);
 
   // Aplicar filtro passado como prop
   useEffect(() => {
@@ -120,9 +117,20 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
       return false;
     }
 
-    // Filtros de tempo
+    // Filtros de tempo e status
     if (filtroAtivo === 'hoje') {
       return e.isHoje;
+    }
+    
+    if (filtroAtivo === 'semana') {
+      // Filtrar estudos "quentes" - estudos com status 'duvidas' ou 'progredindo'
+      return e.status === 'duvidas' || e.status === 'progredindo';
+    }
+    
+    if (filtroAtivo === 'pausados') {
+      // Filtrar estudos que não tiveram atividade recente (mais de 30 dias)
+      const diasDesdeEstudo = Math.floor((new Date().getTime() - new Date(e.data).getTime()) / (1000 * 60 * 60 * 24));
+      return diasDesdeEstudo > 30;
     }
     
     return true;
@@ -135,6 +143,7 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
   });
 
   const estudosHoje = estudosProcessados.filter(e => e.isHoje);
+  const totalEstudos = estudos.length;
 
   // Helper: calcular tempo atrás
   function calcularTempoAtras(data: string) {
@@ -153,21 +162,21 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
         return (
           <Badge className="bg-blue-50 text-blue-600 border border-blue-100 flex items-center gap-1 w-fit">
             <Sparkles className="w-3 h-3" />
-            Iniciando
+            {t.studies.statusStarting}
           </Badge>
         );
       case 'progredindo':
         return (
           <Badge className="bg-green-50 text-green-600 border border-green-100 flex items-center gap-1 w-fit">
             <BookMarked className="w-3 h-3" />
-            Progredindo
+            {t.studies.statusProgressing}
           </Badge>
         );
       case 'duvidas':
         return (
           <Badge className="bg-yellow-50 text-yellow-600 border border-yellow-100 flex items-center gap-1 w-fit">
             <HelpCircle className="w-3 h-3" />
-            Com dúvidas
+            {t.studiesTab.statusWithDoubt}
           </Badge>
         );
       case 'avancado':
@@ -181,7 +190,7 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
             }}
           >
             <GraduationCap className="w-3 h-3" />
-            Avançado
+            {t.studies.statusAdvanced}
           </Badge>
         );
       default:
@@ -234,28 +243,38 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
 
   // Página Home (Lista)
   return (
-    <div className="min-h-full" style={{ backgroundColor: '#FDF8EE' }}>
+    <div 
+      className="min-h-full" 
+      style={{ 
+        backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE' 
+      }}
+    >
       {/* Header fixo */}
-      <div style={{ backgroundColor: '#4A2C60' }} className="sticky top-0 z-50 text-white">
-        <div className="px-6 pt-12 pb-4">
+      <div 
+        className="sticky top-0 z-50 text-white" 
+        style={{ 
+          backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' 
+        }}
+      >
+        <div className="px-6 pt-12 pb-6">
           <div className="flex items-center gap-3">
             <BookOpen className="w-7 h-7" />
             <div>
-              <h2 className="text-xl">Estudos Bíblicos</h2>
-              <p className="text-xs opacity-90">
-                {estudos.length} {estudos.length === 1 ? 'estudo ativo' : 'estudos ativos'}
+              <h1 className="text-2xl">{t.studies.title}</h1>
+              <p className="text-sm opacity-90">
+                {t.studies.activeStudies(totalEstudos)}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-6 space-y-4">
+      <div className="px-6 py-6 space-y-6">
         {/* Busca */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <Input 
-            placeholder="Buscar por nome, endereço..." 
+            placeholder={t.studies.searchPlaceholder} 
             className="h-14 pl-12 pr-16 bg-white border-2"
             style={{ borderColor: '#D8CEE8' }}
             value={busca}
@@ -266,7 +285,6 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
             variant="ghost"
             className="absolute right-1 top-1/2 -translate-y-1/2"
           >
-            <Filter className="w-5 h-5" />
           </Button>
         </div>
 
@@ -276,37 +294,49 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
             size="sm"
             variant={filtroAtivo === 'todos' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('todos')}
-            className={`whitespace-nowrap ${filtroAtivo === 'todos' ? '' : 'bg-white border-gray-200'}`}
-            style={filtroAtivo === 'todos' ? { backgroundColor: '#4A2C60' } : {}}
+            className={`whitespace-nowrap ${
+              filtroAtivo === 'todos' 
+                ? 'bg-primary-500 hover:bg-primary-600 text-white' 
+                : 'bg-white border-gray-200'
+            }`}
           >
-            Todas
+            {t.studies.filterAll}
           </Button>
           <Button
             size="sm"
             variant={filtroAtivo === 'hoje' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('hoje')}
-            className="whitespace-nowrap bg-white border-gray-200"
-            style={filtroAtivo === 'hoje' ? { backgroundColor: '#4A2C60' } : {}}
+            className={`whitespace-nowrap ${
+              filtroAtivo === 'hoje' 
+                ? 'bg-primary-500 hover:bg-primary-600 text-white' 
+                : 'bg-white border-gray-200'
+            }`}
           >
-            Disponíveis Agora
+            {t.studies.filterAvailable}
           </Button>
           <Button
             size="sm"
             variant={filtroAtivo === 'semana' ? 'default' : 'outline'}
             onClick={() => setFiltroAtivo('semana')}
-            className={`whitespace-nowrap ${filtroAtivo === 'semana' ? '' : 'bg-white border-gray-200'}`}
-            style={filtroAtivo === 'semana' ? { backgroundColor: '#4A2C60' } : {}}
+            className={`whitespace-nowrap ${
+              filtroAtivo === 'semana' 
+                ? 'bg-primary-500 hover:bg-primary-600 text-white' 
+                : 'bg-white border-gray-200'
+            }`}
           >
-            Quentes
+            {t.studies.filterHot}
           </Button>
           <Button
             size="sm"
-            variant={filtroAtivo === 'proximos' ? 'default' : 'outline'}
-            onClick={() => setFiltroAtivo('proximos')}
-            className={`whitespace-nowrap ${filtroAtivo === 'proximos' ? '' : 'bg-white border-gray-200'}`}
-            style={filtroAtivo === 'proximos' ? { backgroundColor: '#4A2C60' } : {}}
+            variant={filtroAtivo === 'pausados' ? 'default' : 'outline'}
+            onClick={() => setFiltroAtivo('pausados')}
+            className={`whitespace-nowrap ${
+              filtroAtivo === 'pausados' 
+                ? 'bg-primary-500 hover:bg-primary-600 text-white' 
+                : 'bg-white border-gray-200'
+            }`}
           >
-            Para Descanso
+            {t.studies.filterPaused}
           </Button>
         </div>
 
@@ -317,8 +347,7 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
               <Lightbulb className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm text-gray-700">
-                  Você tem <strong>{estudosHoje.length} {estudosHoje.length === 1 ? 'estudo' : 'estudos'}</strong> agendado{estudosHoje.length === 1 ? '' : 's'} para hoje. 
-                  Prepare-se para ótimas conversas!
+                  {t.studiesTab.todayBanner(estudosHoje.length)}
                 </p>
               </div>
             </div>
@@ -327,26 +356,12 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
       </div>
 
       {/* Lista de Estudos */}
-      <div className="px-4 pb-24 space-y-3">
+      <div className="px-6 pb-24 space-y-4">
         {estudosFiltrados.length === 0 ? (
           <EmptyState
-            emoji="📚"
-            title="Nenhum estudo bíblico ainda"
-            description="Quando você iniciar estudos bíblicos com as pessoas, eles aparecerão aqui para você acompanhar o progresso de cada um."
-            actions={[
-              {
-                label: '✨ Carregar Dados de Exemplo',
-                onClick: carregarDadosExemplo,
-              },
-              {
-                label: 'Ver Minhas Revisitas',
-                onClick: () => {
-                  if (onNavigateToTab) {
-                    onNavigateToTab('campo');
-                  }
-                },
-              },
-            ]}
+            icon={<BookOpen className="w-12 h-12" />}
+            title={t.studiesTab.emptyTitle}
+            description={t.studiesTab.emptyDescription}
           />
         ) : (
           estudosFiltrados.map((estudo) => (
@@ -393,10 +408,10 @@ export default function EstudosTab({ filtro, onNavigateToTab, sessaoAtiva, onPau
                   <div className="p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-200">
                     <div className="flex items-center gap-2 mb-1">
                       <Calendar className="w-4 h-4 text-orange-600" />
-                      <p className="text-xs text-orange-700">Estudo Agendado para Hoje</p>
+                      <p className="text-xs text-orange-700">{t.studiesTab.studyScheduledToday}</p>
                     </div>
                     <p className="text-sm text-orange-900 ml-6">
-                      Prepare-se para uma ótima conversa!
+                      {t.studiesTab.prepareConversation}
                     </p>
                   </div>
                 )}

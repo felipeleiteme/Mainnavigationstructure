@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, Lightbulb } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import { DataService, TipoPublicador } from '../../services/dataService';
@@ -102,9 +102,10 @@ export default function EditarTipoPublicadorModal({ onClose, onSave }: EditarTip
           ))}
 
           <div className="p-4 rounded-lg border mt-4" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
-            <p className="text-sm text-gray-700">
-              💡 <strong>Dica:</strong> A meta mensal é ajustada automaticamente de acordo com o tipo selecionado.
-              Você pode acompanhar seu progresso na tela Início.
+            <p className="text-sm text-gray-700 flex items-start gap-2">
+              <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5 text-primary-500" />
+              <span><strong>Dica:</strong> A meta mensal é ajustada automaticamente de acordo com o tipo selecionado.
+              Você pode acompanhar seu progresso na tela Início.</span>
             </p>
           </div>
         </div>

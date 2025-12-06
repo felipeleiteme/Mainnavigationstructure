@@ -1,3 +1,5 @@
+import { CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner@2.0.3';
 import { 
   gerarProximasAcoes, 
@@ -49,8 +51,9 @@ export default function ProximasAcoes({ onNavigate }: ProximasAcoesProps) {
       
       setTimeout(() => {
         setAcoes(acoes.filter(a => a.id !== acao.id));
-        toast.success('Ação concluída! ✅', {
+        toast.success('Ação concluída', {
           description: 'Parabéns por manter-se em dia',
+          icon: <CheckCircle2 className="w-5 h-5" />
         });
       }, 300);
     }

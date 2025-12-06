@@ -4,6 +4,9 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { DataService, Sessao } from '../../services/dataService';
+import { ThemeService } from '../../services/themeService';
+import { LanguageService } from '../../services/languageService';
+import { useTranslations } from '../../utils/i18n/translations';
 import HorizontalFilterList, { FilterOption } from '../shared/HorizontalFilterList';
 import {
   BarChart,
@@ -42,15 +45,50 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
   const [visualizacao, setVisualizacao] = useState<VisualizacaoPrincipal>('metas');
   const [categoriaQuantidade, setCategoriaQuantidade] = useState<CategoriaQuantidade>('total');
   const [categoriaHoras, setCategoriaHoras] = useState<CategoriaHoras>('total');
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+  const [idiomaAtual, setIdiomaAtual] = useState(LanguageService.getLanguage());
+  const t = useTranslations();
   
   // Estado para navegação de mês na aba Metas
   const hoje = new Date();
   const [mesSelecionado, setMesSelecionado] = useState(hoje.getMonth());
   const [anoSelecionado, setAnoSelecionado] = useState(hoje.getFullYear());
 
+  // Estado para navegação de Ano de Serviço (setembro a agosto) nas abas Atividades e Horas
+  const getAnoServicoAtual = () => {
+    const mesAtual = hoje.getMonth(); // 0-11
+    const anoAtual = hoje.getFullYear();
+    // Se estamos entre setembro (8) e dezembro (11), o ano de serviço é o ano seguinte
+    // Se estamos entre janeiro (0) e agosto (7), o ano de serviço é o ano atual
+    // Exemplo: outubro/2024 = ano de serviço 2025, janeiro/2025 = ano de serviço 2025
+    return mesAtual >= 8 ? anoAtual + 1 : anoAtual;
+  };
+  
+  const [anoServicoSelecionado, setAnoServicoSelecionado] = useState(getAnoServicoAtual());
+
   // Scroll para o topo quando o componente montar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  // Escutar mudanças de tema
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
+  }, []);
+
+  // Escutar mudanças de idioma
+  useEffect(() => {
+    const handleIdiomaChange = () => {
+      setIdiomaAtual(LanguageService.getLanguage());
+    };
+
+    LanguageService.on('mynis-language-change', handleIdiomaChange);
+    return () => LanguageService.off('mynis-language-change', handleIdiomaChange);
   }, []);
 
   // Buscar dados do DataService
@@ -193,12 +231,66 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
     }
   };
 
-  const nomeMes = new Date(anoSelecionado, mesSelecionado, 1).toLocaleDateString('pt-BR', { 
+  const locale = idiomaAtual === 'pt-BR' ? 'pt-BR' : idiomaAtual === 'es' ? 'es-ES' : 'en-US';
+  const nomeMes = new Date(anoSelecionado, mesSelecionado, 1).toLocaleDateString(locale, { 
     month: 'long', 
     year: 'numeric' 
   });
 
-  // Dados para gráficos (últimos 6 meses)
+  // Função para obter nome do mês traduzido (apenas o nome, sem o ano)
+  const getNomeMesApenas = () => {
+    const meses = [
+      t.statistics.january, t.statistics.february, t.statistics.march,
+      t.statistics.april, t.statistics.may, t.statistics.june,
+      t.statistics.july, t.statistics.august, t.statistics.september,
+      t.statistics.october, t.statistics.november, t.statistics.december
+    ];
+    return meses[mesSelecionado];
+  };
+
+  // Navegação de Ano de Serviço (setembro a agosto)
+  const navegarAnoServico = (direcao: 'anterior' | 'proximo') => {
+    if (direcao === 'anterior') {
+      setAnoServicoSelecionado(anoServicoSelecionado - 1);
+    } else {
+      // Não permitir avançar além do ano de serviço atual
+      const anoServicoAtual = getAnoServicoAtual();
+      if (anoServicoSelecionado < anoServicoAtual) {
+        setAnoServicoSelecionado(anoServicoSelecionado + 1);
+      }
+    }
+  };
+
+  // Formatar nome do Ano de Serviço
+  const getNomeAnoServico = (anoInicio: number) => {
+    return `${anoInicio}/${(anoInicio + 1).toString().slice(-2)}`;
+  };
+
+  // Obter meses do Ano de Serviço (setembro a agosto)
+  const getMesesAnoServico = (anoInicio: number) => {
+    const mesesAnoServico = [];
+    // Setembro a Dezembro do ano anterior ao ano de serviço
+    for (let mes = 8; mes <= 11; mes++) {
+      const mesCompleto = `${anoInicio - 1}-${String(mes + 1).padStart(2, '0')}`;
+      mesesAnoServico.push({
+        mes: new Date(anoInicio - 1, mes, 1).toLocaleDateString(locale, { month: 'short' }),
+        mesCompleto,
+      });
+    }
+    // Janeiro a Agosto do ano de serviço
+    for (let mes = 0; mes <= 7; mes++) {
+      const mesCompleto = `${anoInicio}-${String(mes + 1).padStart(2, '0')}`;
+      mesesAnoServico.push({
+        mes: new Date(anoInicio, mes, 1).toLocaleDateString(locale, { month: 'short' }),
+        mesCompleto,
+      });
+    }
+    return mesesAnoServico;
+  };
+
+  const mesesAnoServico = getMesesAnoServico(anoServicoSelecionado);
+
+  // Dados para gráficos (últimos 6 meses) - DEPRECATED - usar mesesAnoServico
   const getUltimos6Meses = () => {
     const meses = [];
     for (let i = 5; i >= 0; i--) {
@@ -213,26 +305,9 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
   const meses = getUltimos6Meses();
 
-  // Dados para gráfico anual (12 meses)
-  const getMesesAno = () => {
-    const mesesAno = [];
-    for (let i = 0; i < 12; i++) {
-      const data = new Date(anoSelecionado, i, 1);
-      const mesCompleto = `${anoSelecionado}-${String(i + 1).padStart(2, '0')}`;
-      mesesAno.push({
-        mes: data.toLocaleDateString('pt-BR', { month: 'short' }),
-        mesCompleto,
-        horas: calcularHorasTotaisMes(mesCompleto),
-      });
-    }
-    return mesesAno;
-  };
-
-  const dadosAno = getMesesAno();
-
   // Função genérica para gerar dados de atividade (quantidades)
   const getDadosAtividade = (tipo: string) => {
-    return meses.map(m => ({
+    return mesesAnoServico.map(m => ({
       mes: m.mes,
       total: contarAtividades(tipo, m.mesCompleto),
     }));
@@ -240,7 +315,7 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
   // Função genérica para gerar dados de horas por atividade
   const getDadosHorasAtividade = (tipo: string) => {
-    return meses.map(m => ({
+    return mesesAnoServico.map(m => ({
       mes: m.mes,
       total: Number(calcularHorasAtividade(tipo, m.mesCompleto).toFixed(1)),
     }));
@@ -248,26 +323,26 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
   // Dados para gráfico de pizza - Quantidades
   const dadosPizzaQuantidades = [
-    { nome: 'Casa em Casa', valor: totalCasaEmCasa, cor: CORES_ATIVIDADES['casa-em-casa'] },
-    { nome: 'Revisita', valor: totalRevisitaOcorrencias, cor: CORES_ATIVIDADES['revisita'] },
-    { nome: 'Estudo Bíblico', valor: totalEstudoOcorrencias, cor: CORES_ATIVIDADES['estudo-biblico'] },
-    { nome: 'Testemunho Público', valor: totalTestemunhoPublico, cor: CORES_ATIVIDADES['testemunho-publico'] },
-    { nome: 'Telefone', valor: totalTelefone, cor: CORES_ATIVIDADES['telefone'] },
-    { nome: 'Carta', valor: totalCarta, cor: CORES_ATIVIDADES['carta'] },
-    { nome: 'Informal', valor: totalInformal, cor: CORES_ATIVIDADES['informal'] },
-    { nome: 'Crédito', valor: totalCredito, cor: CORES_ATIVIDADES['credito'] },
+    { nome: t.statistics.houseToHouse, valor: totalCasaEmCasa, cor: CORES_ATIVIDADES['casa-em-casa'] },
+    { nome: t.statistics.returnVisit, valor: totalRevisitaOcorrencias, cor: CORES_ATIVIDADES['revisita'] },
+    { nome: t.statistics.bibleStudy, valor: totalEstudoOcorrencias, cor: CORES_ATIVIDADES['estudo-biblico'] },
+    { nome: t.statistics.publicWitnessing, valor: totalTestemunhoPublico, cor: CORES_ATIVIDADES['testemunho-publico'] },
+    { nome: t.statistics.phone, valor: totalTelefone, cor: CORES_ATIVIDADES['telefone'] },
+    { nome: t.statistics.letter, valor: totalCarta, cor: CORES_ATIVIDADES['carta'] },
+    { nome: t.statistics.informal, valor: totalInformal, cor: CORES_ATIVIDADES['informal'] },
+    { nome: t.statistics.credit, valor: totalCredito, cor: CORES_ATIVIDADES['credito'] },
   ].filter(item => item.valor > 0);
 
   // Dados para gráfico de pizza - Horas
   const dadosPizzaHoras = [
-    { nome: 'Casa em Casa', valor: Number(horasCasaEmCasa.toFixed(1)), cor: CORES_ATIVIDADES['casa-em-casa'] },
-    { nome: 'Revisita', valor: Number(horasRevisita.toFixed(1)), cor: CORES_ATIVIDADES['revisita'] },
-    { nome: 'Estudo Bíblico', valor: Number(horasEstudo.toFixed(1)), cor: CORES_ATIVIDADES['estudo-biblico'] },
-    { nome: 'Testemunho Público', valor: Number(horasTestemunhoPublico.toFixed(1)), cor: CORES_ATIVIDADES['testemunho-publico'] },
-    { nome: 'Telefone', valor: Number(horasTelefone.toFixed(1)), cor: CORES_ATIVIDADES['telefone'] },
-    { nome: 'Carta', valor: Number(horasCarta.toFixed(1)), cor: CORES_ATIVIDADES['carta'] },
-    { nome: 'Informal', valor: Number(horasInformal.toFixed(1)), cor: CORES_ATIVIDADES['informal'] },
-    { nome: 'Crédito', valor: Number(horasCredito.toFixed(1)), cor: CORES_ATIVIDADES['credito'] },
+    { nome: t.statistics.houseToHouse, valor: Number(horasCasaEmCasa.toFixed(1)), cor: CORES_ATIVIDADES['casa-em-casa'] },
+    { nome: t.statistics.returnVisit, valor: Number(horasRevisita.toFixed(1)), cor: CORES_ATIVIDADES['revisita'] },
+    { nome: t.statistics.bibleStudy, valor: Number(horasEstudo.toFixed(1)), cor: CORES_ATIVIDADES['estudo-biblico'] },
+    { nome: t.statistics.publicWitnessing, valor: Number(horasTestemunhoPublico.toFixed(1)), cor: CORES_ATIVIDADES['testemunho-publico'] },
+    { nome: t.statistics.phone, valor: Number(horasTelefone.toFixed(1)), cor: CORES_ATIVIDADES['telefone'] },
+    { nome: t.statistics.letter, valor: Number(horasCarta.toFixed(1)), cor: CORES_ATIVIDADES['carta'] },
+    { nome: t.statistics.informal, valor: Number(horasInformal.toFixed(1)), cor: CORES_ATIVIDADES['informal'] },
+    { nome: t.statistics.credit, valor: Number(horasCredito.toFixed(1)), cor: CORES_ATIVIDADES['credito'] },
   ].filter(item => item.valor > 0);
 
   // Calcular progresso das metas
@@ -280,31 +355,29 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
       return {
         icon: Trophy,
         texto: tipo === 'mensal' 
-          ? 'Meta mensal atingida! Continue firme!' 
-          : 'Meta anual atingida! Que bênção!'
+          ? t.statistics.monthlyGoalReached
+          : t.statistics.yearlyGoalReached
       };
     }
     if (progresso >= 75) {
       return {
         icon: Sparkles,
         texto: tipo === 'mensal'
-          ? 'Falta pouco para sua meta mensal!'
-          : 'Você está quase lá no seu alvo anual!'
+          ? t.statistics.almostMonthly
+          : t.statistics.almostYearly
       };
     }
     if (progresso >= 50) {
       return {
         icon: Sprout,
-        texto: tipo === 'mensal'
-          ? 'Metade do caminho! Continue assim!'
-          : 'Já passou da metade do ano!'
+        texto: t.statistics.keepGoing
       };
     }
     return {
         icon: Sparkles,
         texto: tipo === 'mensal'
-          ? 'Cada hora dedicada conta!'
-          : 'Cada mês é uma nova oportunidade!'
+          ? t.statistics.everyHourCounts
+          : t.statistics.everyMonthOpportunity
       };
   };
 
@@ -312,63 +385,63 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
   const tabsQuantidades: FilterOption[] = [
     { 
       id: 'total', 
-      label: 'Total', 
+      label: t.statistics.total, 
       icon: TrendingUp, 
       count: totalGeralAtividades,
       color: 'from-green-500 to-green-600',
     },
     { 
       id: 'casa-em-casa', 
-      label: 'Casa em Casa', 
+      label: t.statistics.houseToHouse, 
       icon: Home, 
       count: totalCasaEmCasa,
       color: 'from-orange-500 to-orange-600',
     },
     { 
       id: 'revisita', 
-      label: 'Revisita', 
+      label: t.statistics.returnVisit, 
       icon: Sprout, 
       count: totalRevisitaOcorrencias,
       color: 'from-green-500 to-green-600',
     },
     { 
       id: 'estudo-biblico', 
-      label: 'Estudo Bíblico', 
+      label: t.statistics.bibleStudy, 
       icon: BookOpen, 
       count: totalEstudoOcorrencias,
       color: 'from-blue-500 to-blue-600',
     },
     { 
       id: 'testemunho-publico', 
-      label: 'Testemunho Público', 
+      label: t.statistics.publicWitnessing, 
       icon: MapPin, 
       count: totalTestemunhoPublico,
       color: 'from-purple-500 to-purple-600',
     },
     { 
       id: 'telefone', 
-      label: 'Telefone', 
+      label: t.statistics.phone, 
       icon: Phone, 
       count: totalTelefone,
       color: 'from-cyan-500 to-cyan-600',
     },
     { 
       id: 'carta', 
-      label: 'Carta', 
+      label: t.statistics.letter, 
       icon: Mail, 
       count: totalCarta,
       color: 'from-pink-500 to-pink-600',
     },
     { 
       id: 'informal', 
-      label: 'Informal', 
+      label: t.statistics.informal, 
       icon: Briefcase, 
       count: totalInformal,
       color: 'from-indigo-500 to-indigo-600',
     },
     { 
       id: 'credito', 
-      label: 'Crédito', 
+      label: t.statistics.credit, 
       icon: Award, 
       count: totalCredito,
       color: 'from-amber-500 to-amber-600',
@@ -379,55 +452,55 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
   const tabsHoras: FilterOption[] = [
     { 
       id: 'total', 
-      label: 'Total', 
+      label: t.statistics.total, 
       icon: TrendingUp,
       color: 'from-green-500 to-green-600',
     },
     { 
       id: 'casa-em-casa', 
-      label: 'Casa em Casa', 
+      label: t.statistics.houseToHouse, 
       icon: Home,
       color: 'from-orange-500 to-orange-600',
     },
     { 
       id: 'revisita', 
-      label: 'Revisita', 
+      label: t.statistics.returnVisit, 
       icon: Sprout,
       color: 'from-green-500 to-green-600',
     },
     { 
       id: 'estudo-biblico', 
-      label: 'Estudo Bíblico', 
+      label: t.statistics.bibleStudy, 
       icon: BookOpen,
       color: 'from-blue-500 to-blue-600',
     },
     { 
       id: 'testemunho-publico', 
-      label: 'Testemunho Público', 
+      label: t.statistics.publicWitnessing, 
       icon: MapPin,
       color: 'from-purple-500 to-purple-600',
     },
     { 
       id: 'telefone', 
-      label: 'Telefone', 
+      label: t.statistics.phone, 
       icon: Phone,
       color: 'from-cyan-500 to-cyan-600',
     },
     { 
       id: 'carta', 
-      label: 'Carta', 
+      label: t.statistics.letter, 
       icon: Mail,
       color: 'from-pink-500 to-pink-600',
     },
     { 
       id: 'informal', 
-      label: 'Informal', 
+      label: t.statistics.informal, 
       icon: Briefcase,
       color: 'from-indigo-500 to-indigo-600',
     },
     { 
       id: 'credito', 
-      label: 'Crédito', 
+      label: t.statistics.credit, 
       icon: Award,
       color: 'from-amber-500 to-amber-600',
     },
@@ -435,15 +508,15 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
   // Mapeamento de nomes amigáveis
   const nomesAtividades: Record<string, string> = {
-    'casa-em-casa': 'Casa em Casa',
-    'testemunho-publico': 'Testemunho Público',
-    'telefone': 'Por Telefone',
-    'carta': 'Por Carta',
-    'informal': 'Informal',
-    'revisita': 'Revisita',
-    'estudo-biblico': 'Estudo Bíblico',
-    'estudo': 'Estudo Bíblico',
-    'credito': 'Crédito',
+    'casa-em-casa': t.statistics.houseToHouse,
+    'testemunho-publico': t.statistics.publicWitnessing,
+    'telefone': t.statistics.phone,
+    'carta': t.statistics.letter,
+    'informal': t.statistics.informal,
+    'revisita': t.statistics.returnVisit,
+    'estudo-biblico': t.statistics.bibleStudy,
+    'estudo': t.statistics.bibleStudy,
+    'credito': t.statistics.credit,
   };
 
   // Configuração da visualização ativa
@@ -451,9 +524,9 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
     if (visualizacao === 'quantidades') {
       if (categoriaQuantidade === 'total') {
         return {
-          titulo: 'Visão Geral',
+          titulo: t.statistics.overview,
           valor: totalGeralAtividades,
-          subtitulo: 'atividades este mês',
+          subtitulo: t.statistics.activitiesThisMonth,
           cor: 'green',
           icon: TrendingUp,
           dados: [],
@@ -496,7 +569,7 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
       return {
         titulo: nomesAtividades[categoriaQuantidade],
         valor: counts[categoriaQuantidade as Exclude<CategoriaQuantidade, 'total'>],
-        subtitulo: 'ocorrências este mês',
+        subtitulo: t.statistics.occurrencesThisMonth,
         cor: cores[categoriaQuantidade as Exclude<CategoriaQuantidade, 'total'>],
         icon: icons[categoriaQuantidade as Exclude<CategoriaQuantidade, 'total'>],
         dados: getDadosAtividade(categoriaQuantidade),
@@ -505,9 +578,9 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
       // Aba Horas
       if (categoriaHoras === 'total') {
         return {
-          titulo: 'Visão Geral',
+          titulo: t.statistics.overview,
           valor: formatarHoras(totalGeralHoras),
-          subtitulo: 'neste mês',
+          subtitulo: t.statistics.inThisMonth,
           cor: 'green',
           icon: TrendingUp,
           dados: [],
@@ -550,7 +623,7 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
       return {
         titulo: nomesAtividades[categoriaHoras],
         valor: formatarHoras(horas[categoriaHoras as Exclude<CategoriaHoras, 'total'>]),
-        subtitulo: 'neste mês',
+        subtitulo: t.statistics.inThisMonth,
         cor: cores[categoriaHoras as Exclude<CategoriaHoras, 'total'>],
         icon: icons[categoriaHoras as Exclude<CategoriaHoras, 'total'>],
         dados: getDadosHorasAtividade(categoriaHoras),
@@ -577,18 +650,43 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
               variant="ghost"
               size="sm"
               onClick={() => navegarMes('anterior')}
-              className="p-2 hover:bg-gray-100"
-              style={{ color: '#4A2C60' }}
+              className="p-2"
+              style={{ 
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <h3 className="capitalize text-gray-900">{nomeMes}</h3>
+            <h3 
+              className="capitalize"
+              style={{
+                color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+              }}
+            >
+              {nomeMes}
+            </h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navegarMes('proximo')}
-              className="p-2 hover:bg-gray-100"
-              style={{ color: '#4A2C60' }}
+              className="p-2"
+              style={{ 
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
               disabled={mesSelecionado === hoje.getMonth() && anoSelecionado === hoje.getFullYear()}
             >
               <ChevronRight className="w-5 h-5" />
@@ -597,19 +695,58 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
         </Card>
 
         {/* Card Meta Mensal */}
-        <Card className="p-6 border-2" style={{ backgroundColor: '#FAF8FF', borderColor: '#E8DFFF' }}>
+        <Card 
+          className="p-6 border-2" 
+          style={{ 
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FAF8FF', 
+            borderColor: temaAtual === 'escuro' ? 'rgba(167, 139, 202, 0.3)' : '#E8DFFF'
+          }}
+        >
           <div className="space-y-5">
             {/* Header com ícone e labels */}
             <div className="flex items-start gap-4">
-              <Target className="w-7 h-7 flex-shrink-0 mt-1" style={{ color: '#4A2C60' }} />
+              <Target 
+                className="w-7 h-7 flex-shrink-0 mt-1" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+                }} 
+              />
               <div className="flex-1 flex items-end justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 mb-1">Meta Mensal</p>
-                  <p className="text-2xl" style={{ color: '#4A2C60' }}>{metaMensal}h</p>
+                  <p 
+                    className="text-xs mb-1"
+                    style={{
+                      color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                    }}
+                  >
+                    {t.statistics.monthlyGoal}
+                  </p>
+                  <p 
+                    className="text-2xl" 
+                    style={{ 
+                      color: temaAtual === 'escuro' ? '#C7B3E5' : '#4A2C60'
+                    }}
+                  >
+                    {metaMensal}h
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-600 mb-1">Realizado</p>
-                  <p className="text-2xl text-gray-900">{formatarHoras(horasMesSelecionado)}</p>
+                  <p 
+                    className="text-xs mb-1"
+                    style={{
+                      color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                    }}
+                  >
+                    {t.statistics.completed}
+                  </p>
+                  <p 
+                    className="text-2xl"
+                    style={{
+                      color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                    }}
+                  >
+                    {formatarHoras(horasMesSelecionado)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -617,14 +754,29 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
             {/* Barra de Progresso */}
             <div className="space-y-2.5">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-600">{progressoMensal.toFixed(0)}% concluído</span>
-                <span style={{ color: '#4A2C60' }}>
+                <span 
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.statistics.percentComplete.replace('{n}', progressoMensal.toFixed(0))}
+                </span>
+                <span 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#C7B3E5' : '#4A2C60'
+                  }}
+                >
                   {metaMensal - horasMesSelecionado > 0 
-                    ? `Faltam ${formatarHoras(metaMensal - horasMesSelecionado)}`
-                    : 'Meta atingida!'}
+                    ? t.statistics.remaining.replace('{time}', formatarHoras(metaMensal - horasMesSelecionado))
+                    : t.statistics.monthlyGoalReached}
                 </span>
               </div>
-              <div className="w-full rounded-full h-3 overflow-hidden" style={{ backgroundColor: '#E8DFFF' }}>
+              <div 
+                className="w-full rounded-full h-3 overflow-hidden" 
+                style={{ 
+                  backgroundColor: temaAtual === 'escuro' ? 'rgba(167, 139, 202, 0.15)' : '#E8DFFF'
+                }}
+              >
                 <div 
                   className="h-full rounded-full transition-all duration-500"
                   style={{ 
@@ -634,27 +786,78 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
                 ></div>
               </div>
               <div className="flex items-center justify-center gap-2 pt-1">
-                <IconMensal className="w-4 h-4" style={{ color: '#4A2C60' }} />
-                <p className="text-xs text-gray-700">{mensagemMensal.texto}</p>
+                <IconMensal 
+                  className="w-4 h-4" 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+                  }} 
+                />
+                <p 
+                  className="text-xs"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#D1D5DB' : '#374151'
+                  }}
+                >
+                  {mensagemMensal.texto}
+                </p>
               </div>
             </div>
           </div>
         </Card>
 
         {/* Card Meta Anual */}
-        <Card className="p-6 border-2" style={{ backgroundColor: '#FAF8FF', borderColor: '#E8DFFF' }}>
+        <Card 
+          className="p-6 border-2" 
+          style={{ 
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FAF8FF', 
+            borderColor: temaAtual === 'escuro' ? 'rgba(167, 139, 202, 0.3)' : '#E8DFFF'
+          }}
+        >
           <div className="space-y-5">
             {/* Header com ícone e labels */}
             <div className="flex items-start gap-4">
-              <TrendingUp className="w-7 h-7 flex-shrink-0 mt-1" style={{ color: '#4A2C60' }} />
+              <TrendingUp 
+                className="w-7 h-7 flex-shrink-0 mt-1" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+                }} 
+              />
               <div className="flex-1 flex items-end justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 mb-1">Meta Anual {anoSelecionado}</p>
-                  <p className="text-2xl" style={{ color: '#4A2C60' }}>{metaAnual}h</p>
+                  <p 
+                    className="text-xs mb-1"
+                    style={{
+                      color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                    }}
+                  >
+                    {t.statistics.yearlyGoal.replace('2025', anoSelecionado.toString())}
+                  </p>
+                  <p 
+                    className="text-2xl" 
+                    style={{ 
+                      color: temaAtual === 'escuro' ? '#C7B3E5' : '#4A2C60'
+                    }}
+                  >
+                    {metaAnual}h
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-600 mb-1">Realizado</p>
-                  <p className="text-2xl text-gray-900">{formatarHoras(horasAnoAtual)}</p>
+                  <p 
+                    className="text-xs mb-1"
+                    style={{
+                      color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                    }}
+                  >
+                    {t.statistics.completed}
+                  </p>
+                  <p 
+                    className="text-2xl"
+                    style={{
+                      color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                    }}
+                  >
+                    {formatarHoras(horasAnoAtual)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -662,14 +865,29 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
             {/* Barra de Progresso */}
             <div className="space-y-2.5">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-600">{progressoAnual.toFixed(0)}% concluído</span>
-                <span style={{ color: '#4A2C60' }}>
+                <span 
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.statistics.percentComplete.replace('{n}', progressoAnual.toFixed(0))}
+                </span>
+                <span 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#C7B3E5' : '#4A2C60'
+                  }}
+                >
                   {metaAnual - horasAnoAtual > 0 
-                    ? `Faltam ${formatarHoras(metaAnual - horasAnoAtual)}`
-                    : 'Meta atingida!'}
+                    ? t.statistics.remaining.replace('{time}', formatarHoras(metaAnual - horasAnoAtual))
+                    : t.statistics.yearlyGoalReached}
                 </span>
               </div>
-              <div className="w-full rounded-full h-3 overflow-hidden" style={{ backgroundColor: '#E8DFFF' }}>
+              <div 
+                className="w-full rounded-full h-3 overflow-hidden" 
+                style={{ 
+                  backgroundColor: temaAtual === 'escuro' ? 'rgba(167, 139, 202, 0.15)' : '#E8DFFF'
+                }}
+              >
                 <div 
                   className="h-full rounded-full transition-all duration-500"
                   style={{ 
@@ -679,8 +897,20 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
                 ></div>
               </div>
               <div className="flex items-center justify-center gap-2 pt-1">
-                <IconAnual className="w-4 h-4" style={{ color: '#4A2C60' }} />
-                <p className="text-xs text-gray-700">{mensagemAnual.texto}</p>
+                <IconAnual 
+                  className="w-4 h-4" 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#A78BCA' : '#4A2C60'
+                  }} 
+                />
+                <p 
+                  className="text-xs"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#D1D5DB' : '#374151'
+                  }}
+                >
+                  {mensagemAnual.texto}
+                </p>
               </div>
             </div>
           </div>
@@ -688,32 +918,112 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
         {/* Mini estatísticas do mês selecionado */}
         <div className="space-y-3">
-          <h3 className="text-gray-900">Resumo de {nomeMes.split(' ')[0]}</h3>
+          <h3 
+            style={{
+              color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+            }}
+          >
+            {t.statistics.summaryOf.replace('{month}', getNomeMesApenas())}
+          </h3>
           <div className="grid grid-cols-2 gap-3">
-            <Card className="p-5">
+            <Card 
+              className="p-5"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+              }}
+            >
               <div className="text-center">
-                <p className="text-4xl text-gray-900">{contarAtividades('casa-em-casa', mesAtualSelecionado)}</p>
-                <p className="text-xs text-gray-600 mt-2">Casa em Casa</p>
+                <p 
+                  className="text-4xl"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                  }}
+                >
+                  {contarAtividades('casa-em-casa', mesAtualSelecionado)}
+                </p>
+                <p 
+                  className="text-xs mt-2"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.statistics.houseToHouse}
+                </p>
               </div>
             </Card>
-            <Card className="p-5">
+            <Card 
+              className="p-5"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+              }}
+            >
               <div className="text-center">
-                <p className="text-4xl text-gray-900">{contarAtividades('revisita', mesAtualSelecionado)}</p>
-                <p className="text-xs text-gray-600 mt-2">Revisitas</p>
+                <p 
+                  className="text-4xl"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                  }}
+                >
+                  {contarAtividades('revisita', mesAtualSelecionado)}
+                </p>
+                <p 
+                  className="text-xs mt-2"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.statistics.returnVisits}
+                </p>
               </div>
             </Card>
-            <Card className="p-5">
+            <Card 
+              className="p-5"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+              }}
+            >
               <div className="text-center">
-                <p className="text-4xl text-gray-900">{contarAtividades('estudo-biblico', mesAtualSelecionado)}</p>
-                <p className="text-xs text-gray-600 mt-2">Estudos</p>
+                <p 
+                  className="text-4xl"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                  }}
+                >
+                  {contarAtividades('estudo-biblico', mesAtualSelecionado)}
+                </p>
+                <p 
+                  className="text-xs mt-2"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.statistics.bibleStudies}
+                </p>
               </div>
             </Card>
-            <Card className="p-5">
+            <Card 
+              className="p-5"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+              }}
+            >
               <div className="text-center">
-                <p className="text-4xl text-gray-900">
+                <p 
+                  className="text-4xl"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                  }}
+                >
                   {sessoes.filter(s => s.data.startsWith(mesAtualSelecionado)).length}
                 </p>
-                <p className="text-xs text-gray-600 mt-2">Sessões</p>
+                <p 
+                  className="text-xs mt-2"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.statistics.sessions}
+                </p>
               </div>
             </Card>
           </div>
@@ -727,23 +1037,81 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
     return (
       <div className="space-y-6">
         {/* Card Hero */}
-        <Card className="p-6 border-2" style={{ backgroundColor: '#F3F9E6', borderColor: '#C8E046' }}>
+        <Card 
+          className="p-6 border-2" 
+          style={{ 
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#F3F9E6', 
+            borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : '#C8E046'
+          }}
+        >
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" style={{ backgroundColor: '#C8E046' }}>
-              <TrendingUp className="w-8 h-8" style={{ color: '#4A2C60' }} />
+            <div 
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" 
+              style={{ 
+                backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.2)' : '#C8E046'
+              }}
+            >
+              <TrendingUp 
+                className="w-8 h-8" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                }} 
+              />
             </div>
             <div>
-              <p className="text-5xl text-gray-900 mb-1">{totalGeralAtividades}</p>
-              <p className="text-xs text-gray-700">atividades realizadas este mês</p>
+              <p 
+                className="text-5xl mb-1"
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                }}
+              >
+                {totalGeralAtividades}
+              </p>
+              <p 
+                className="text-xs"
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#374151'
+                }}
+              >
+                {t.statistics.activitiesThisMonthCount}
+              </p>
             </div>
             <div className="flex items-center justify-center gap-8 pt-1">
               <div>
-                <p className="text-2xl" style={{ color: '#4A2C60' }}>{totalPessoasRevisita}</p>
-                <p className="text-xs text-gray-700">revisitas</p>
+                <p 
+                  className="text-2xl" 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#C7B3E5' : '#4A2C60'
+                  }}
+                >
+                  {totalPessoasRevisita}
+                </p>
+                <p 
+                  className="text-xs"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#374151'
+                  }}
+                >
+                  {t.statistics.returnVisitsCount}
+                </p>
               </div>
               <div>
-                <p className="text-2xl" style={{ color: '#4A2C60' }}>{totalPessoasEstudo}</p>
-                <p className="text-xs text-gray-700">estudantes</p>
+                <p 
+                  className="text-2xl" 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#C7B3E5' : '#4A2C60'
+                  }}
+                >
+                  {totalPessoasEstudo}
+                </p>
+                <p 
+                  className="text-xs"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#374151'
+                  }}
+                >
+                  {t.statistics.studentsCount}
+                </p>
               </div>
             </div>
           </div>
@@ -751,8 +1119,20 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
         {/* Gráfico de Pizza */}
         {dadosPizzaQuantidades.length > 0 && (
-          <Card className="p-6">
-            <h3 className="text-gray-900 mb-6">Distribuição de Atividades</h3>
+          <Card 
+            className="p-6"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+            }}
+          >
+            <h3 
+              className="mb-6"
+              style={{
+                color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+              }}
+            >
+              {t.statistics.activityDistribution}
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -777,26 +1157,61 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
         {/* Cards resumo por atividade */}
         <div className="space-y-3">
-          <h3 className="text-gray-900">Detalhamento por Atividade</h3>
+          <h3 
+            style={{
+              color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+            }}
+          >
+            {t.statistics.breakdownByActivity}
+          </h3>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: 'Casa em Casa', valor: totalCasaEmCasa, icon: Home, cor: '#F59E0B' },
-              { label: 'Revisitas', valor: totalRevisitaOcorrencias, icon: Sprout, cor: '#C8E046' },
-              { label: 'Estudos', valor: totalEstudoOcorrencias, icon: BookOpen, cor: '#4A2C60' },
-              { label: 'Testemunho', valor: totalTestemunhoPublico, icon: MapPin, cor: '#8B5CF6' },
-              { label: 'Telefone', valor: totalTelefone, icon: Phone, cor: '#06B6D4' },
-              { label: 'Carta', valor: totalCarta, icon: Mail, cor: '#EC4899' },
-              { label: 'Informal', valor: totalInformal, icon: Briefcase, cor: '#6366F1' },
-              { label: 'Crédito', valor: totalCredito, icon: Award, cor: '#F97316' },
+              { label: t.statistics.houseToHouse, valor: totalCasaEmCasa, icon: Home, cor: '#F59E0B' },
+              { label: t.statistics.returnVisits, valor: totalRevisitaOcorrencias, icon: Sprout, cor: '#C8E046' },
+              { label: t.statistics.bibleStudies, valor: totalEstudoOcorrencias, icon: BookOpen, cor: '#4A2C60' },
+              { label: t.statistics.publicWitnessing, valor: totalTestemunhoPublico, icon: MapPin, cor: '#8B5CF6' },
+              { label: t.statistics.phone, valor: totalTelefone, icon: Phone, cor: '#06B6D4' },
+              { label: t.statistics.letter, valor: totalCarta, icon: Mail, cor: '#EC4899' },
+              { label: t.statistics.informal, valor: totalInformal, icon: Briefcase, cor: '#6366F1' },
+              { label: t.statistics.credit, valor: totalCredito, icon: Award, cor: '#F97316' },
             ].map((item) => {
               const ItemIcon = item.icon;
               return (
-                <Card key={item.label} className="p-4">
-                  <div className="flex items-center gap-3">
-                    <ItemIcon className="w-6 h-6 flex-shrink-0" style={{ color: item.cor }} />
-                    <div className="flex-1">
-                      <p className="text-2xl text-gray-900">{item.valor}</p>
-                      <p className="text-xs text-gray-600">{item.label}</p>
+                <Card 
+                  key={item.label} 
+                  className="p-5"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+                  }}
+                >
+                  <div className="text-center space-y-3">
+                    <div 
+                      className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto"
+                      style={{ 
+                        backgroundColor: temaAtual === 'escuro' 
+                          ? `${item.cor}30` 
+                          : `${item.cor}20` 
+                      }}
+                    >
+                      <ItemIcon className="w-6 h-6" style={{ color: item.cor }} />
+                    </div>
+                    <div>
+                      <p 
+                        className="text-3xl mb-1"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                        }}
+                      >
+                        {item.valor}
+                      </p>
+                      <p 
+                        className="text-xs"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                        }}
+                      >
+                        {item.label}
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -813,22 +1228,64 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
     return (
       <div className="space-y-6">
         {/* Card Hero */}
-        <Card className="p-6 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-green-200">
+        <Card 
+          className="p-6 border-2"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#F3F9E6',
+            borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : '#C8E046'
+          }}
+        >
           <div className="text-center space-y-4">
-            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-              <TrendingUp className="w-10 h-10 text-green-600" />
+            <div 
+              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.2)' : 'rgba(200, 224, 70, 0.3)'
+              }}
+            >
+              <TrendingUp 
+                className="w-10 h-10" 
+                style={{
+                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                }}
+              />
             </div>
             <div>
-              <p className="text-5xl text-gray-900 mb-2">{formatarHoras(totalGeralHoras)}</p>
-              <p className="text-sm text-gray-600">dedicadas ao ministério este mês</p>
+              <p 
+                className="text-5xl mb-2"
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                }}
+              >
+                {formatarHoras(totalGeralHoras)}
+              </p>
+              <p 
+                className="text-sm"
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.statistics.dedicatedToMinistry}
+              </p>
             </div>
           </div>
         </Card>
 
         {/* Gráfico de Pizza */}
         {dadosPizzaHoras.length > 0 && (
-          <Card className="p-6">
-            <h3 className="text-sm text-gray-700 mb-4">Distribuição de Tempo</h3>
+          <Card 
+            className="p-6"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+            }}
+          >
+            <h3 
+              className="text-sm mb-4"
+              style={{
+                color: temaAtual === 'escuro' ? '#E5E7EB' : '#374151'
+              }}
+            >
+              {t.statistics.timeDistribution}
+            </h3>
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
@@ -853,26 +1310,53 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
         {/* Cards resumo por atividade */}
         <div className="space-y-3">
-          <h3 className="text-sm text-gray-700">Detalhamento por Atividade</h3>
+          <h3 
+            className="text-sm"
+            style={{
+              color: temaAtual === 'escuro' ? '#E5E7EB' : '#374151'
+            }}
+          >
+            {t.statistics.breakdownByActivity}
+          </h3>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: 'Casa em Casa', valor: horasCasaEmCasa, icon: Home, cor: '#F59E0B' },
-              { label: 'Revisitas', valor: horasRevisita, icon: Sprout, cor: '#C8E046' },
-              { label: 'Estudos', valor: horasEstudo, icon: BookOpen, cor: '#4A2C60' },
-              { label: 'Testemunho', valor: horasTestemunhoPublico, icon: MapPin, cor: '#8B5CF6' },
-              { label: 'Telefone', valor: horasTelefone, icon: Phone, cor: '#06B6D4' },
-              { label: 'Carta', valor: horasCarta, icon: Mail, cor: '#EC4899' },
-              { label: 'Informal', valor: horasInformal, icon: Briefcase, cor: '#6366F1' },
-              { label: 'Crédito', valor: horasCredito, icon: Award, cor: '#F97316' },
+              { label: t.statistics.houseToHouse, valor: horasCasaEmCasa, icon: Home, cor: '#F59E0B' },
+              { label: t.statistics.returnVisits, valor: horasRevisita, icon: Sprout, cor: '#C8E046' },
+              { label: t.statistics.bibleStudies, valor: horasEstudo, icon: BookOpen, cor: '#4A2C60' },
+              { label: t.statistics.publicWitnessing, valor: horasTestemunhoPublico, icon: MapPin, cor: '#8B5CF6' },
+              { label: t.statistics.phone, valor: horasTelefone, icon: Phone, cor: '#06B6D4' },
+              { label: t.statistics.letter, valor: horasCarta, icon: Mail, cor: '#EC4899' },
+              { label: t.statistics.informal, valor: horasInformal, icon: Briefcase, cor: '#6366F1' },
+              { label: t.statistics.credit, valor: horasCredito, icon: Award, cor: '#F97316' },
             ].map((item) => {
               const ItemIcon = item.icon;
               return (
-                <Card key={item.label} className="p-4">
+                <Card 
+                  key={item.label} 
+                  className="p-4"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+                  }}
+                >
                   <div className="flex items-center gap-3">
                     <ItemIcon className="w-6 h-6 flex-shrink-0" style={{ color: item.cor }} />
                     <div className="flex-1">
-                      <p className="text-lg text-gray-900">{formatarHoras(item.valor)}</p>
-                      <p className="text-xs text-gray-600">{item.label}</p>
+                      <p 
+                        className="text-lg"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                        }}
+                      >
+                        {formatarHoras(item.valor)}
+                      </p>
+                      <p 
+                        className="text-xs"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                        }}
+                      >
+                        {item.label}
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -891,8 +1375,13 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
     return (
       <div className="space-y-3">
         {sessoesFiltradas.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
-            Nenhuma ocorrência de {nomesAtividades[categoriaQuantidade]} este mês
+          <p 
+            className="text-center py-8"
+            style={{
+              color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+            }}
+          >
+            {t.statistics.noOccurrencesThisMonth.replace('{activity}', nomesAtividades[categoriaQuantidade])}
           </p>
         ) : (
           sessoesFiltradas.map((sessao) => {
@@ -903,41 +1392,89 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
             });
 
             return (
-              <Card key={sessao.id} className="p-4">
+              <Card 
+                key={sessao.id} 
+                className="p-4"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+                }}
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       {sessao.tipo === 'campo' ? (
-                        <Sprout className="w-4 h-4 text-green-600" />
+                        <Sprout className="w-4 h-4" style={{ color: '#C8E046' }} />
                       ) : (
-                        <Clock className="w-4 h-4 text-gray-600" />
+                        <Clock 
+                          className="w-4 h-4" 
+                          style={{ 
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }} 
+                        />
                       )}
-                      <h4>{nomesAtividades[categoriaQuantidade]}</h4>
+                      <h4 
+                        style={{
+                          color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                        }}
+                      >
+                        {nomesAtividades[categoriaQuantidade]}
+                      </h4>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      {new Date(sessao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                    <p 
+                      className="text-sm"
+                      style={{
+                        color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                      }}
+                    >
+                      {new Date(sessao.data).toLocaleDateString(locale, { day: '2-digit', month: 'short' })}
                       {' • '}
                       {sessao.horaInicio}
                       {sessao.horaFim && ` - ${sessao.horaFim}`}
                     </p>
                     {atividadeEspecifica?.detalhes && (
                       <div className="flex items-start gap-1.5 mt-2">
-                        <MessageCircle className="w-3 h-3 text-gray-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-gray-500">
+                        <MessageCircle 
+                          className="w-3 h-3 flex-shrink-0 mt-0.5" 
+                          style={{
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }}
+                        />
+                        <p 
+                          className="text-xs"
+                          style={{
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }}
+                        >
                           {atividadeEspecifica.detalhes}
                         </p>
                       </div>
                     )}
                     {sessao.observacoes && (
                       <div className="flex items-start gap-1.5 mt-2">
-                        <MessageCircle className="w-3 h-3 text-gray-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-gray-500 italic">
+                        <MessageCircle 
+                          className="w-3 h-3 flex-shrink-0 mt-0.5" 
+                          style={{
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }}
+                        />
+                        <p 
+                          className="text-xs italic"
+                          style={{
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }}
+                        >
                           {sessao.observacoes}
                         </p>
                       </div>
                     )}
                   </div>
-                  <Badge className="bg-green-600 text-white">
+                  <Badge 
+                    className="text-white"
+                    style={{
+                      backgroundColor: '#C8E046',
+                      color: '#1F2937'
+                    }}
+                  >
                     {formatarHoras((sessao.duracaoMinutos || 0) / 60)}
                   </Badge>
                 </div>
@@ -956,8 +1493,13 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
     return (
       <div className="space-y-3">
         {sessoesFiltradas.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
-            Nenhuma sessão de {nomesAtividades[categoriaHoras]} este mês
+          <p 
+            className="text-center py-8"
+            style={{
+              color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+            }}
+          >
+            {t.statistics.noSessionsThisMonth.replace('{activity}', nomesAtividades[categoriaHoras])}
           </p>
         ) : (
           sessoesFiltradas.map((sessao) => {
@@ -968,41 +1510,89 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
             });
 
             return (
-              <Card key={sessao.id} className="p-4">
+              <Card 
+                key={sessao.id} 
+                className="p-4"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+                }}
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       {sessao.tipo === 'campo' ? (
-                        <Sprout className="w-4 h-4 text-green-600" />
+                        <Sprout className="w-4 h-4" style={{ color: '#C8E046' }} />
                       ) : (
-                        <Clock className="w-4 h-4 text-gray-600" />
+                        <Clock 
+                          className="w-4 h-4" 
+                          style={{ 
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }} 
+                        />
                       )}
-                      <h4>{nomesAtividades[categoriaHoras]}</h4>
+                      <h4 
+                        style={{
+                          color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                        }}
+                      >
+                        {nomesAtividades[categoriaHoras]}
+                      </h4>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      {new Date(sessao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                    <p 
+                      className="text-sm"
+                      style={{
+                        color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                      }}
+                    >
+                      {new Date(sessao.data).toLocaleDateString(locale, { day: '2-digit', month: 'short' })}
                       {' • '}
                       {sessao.horaInicio}
                       {sessao.horaFim && ` - ${sessao.horaFim}`}
                     </p>
                     {atividadeEspecifica?.detalhes && (
                       <div className="flex items-start gap-1.5 mt-2">
-                        <MessageCircle className="w-3 h-3 text-gray-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-gray-500">
+                        <MessageCircle 
+                          className="w-3 h-3 flex-shrink-0 mt-0.5" 
+                          style={{
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }}
+                        />
+                        <p 
+                          className="text-xs"
+                          style={{
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }}
+                        >
                           {atividadeEspecifica.detalhes}
                         </p>
                       </div>
                     )}
                     {sessao.observacoes && (
                       <div className="flex items-start gap-1.5 mt-2">
-                        <MessageCircle className="w-3 h-3 text-gray-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-gray-500 italic">
+                        <MessageCircle 
+                          className="w-3 h-3 flex-shrink-0 mt-0.5" 
+                          style={{
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }}
+                        />
+                        <p 
+                          className="text-xs italic"
+                          style={{
+                            color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                          }}
+                        >
                           {sessao.observacoes}
                         </p>
                       </div>
                     )}
                   </div>
-                  <Badge className="bg-green-600 text-white">
+                  <Badge 
+                    className="text-white"
+                    style={{
+                      backgroundColor: '#C8E046',
+                      color: '#1F2937'
+                    }}
+                  >
                     {formatarHoras((sessao.duracaoMinutos || 0) / 60)}
                   </Badge>
                 </div>
@@ -1015,59 +1605,125 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
   };
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: '#FDF8EE' }}>
+    <div 
+      className="min-h-screen pb-20" 
+      style={{ 
+        backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE'
+      }}
+    >
       {/* Header fixo */}
-      <div className="sticky top-0 z-50 text-white" style={{ backgroundColor: '#4A2C60' }}>
-        <div className="px-6 pt-12 pb-4">
-          <div className="flex items-center gap-3 mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onVoltar}
-              className="p-0 text-white hover:bg-white/20 hover:text-white h-8 w-8"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h2 className="text-xl">Estatísticas</h2>
+      <div 
+        className="sticky top-0 z-50 text-white" 
+        style={{ 
+          backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60'
+        }}
+      >
+        <div className="flex items-center gap-4 px-6 pt-12 pb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onVoltar}
+            className="p-2 text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1">
+            <h2 className="text-xl">{t.statistics.title}</h2>
           </div>
+        </div>
 
-          {/* Tabs principais - Metas, Atividades, Horas */}
+        {/* Tabs principais - Metas, Atividades, Horas */}
+        <div className="px-6 pb-4">
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => setVisualizacao('metas')}
               className={`px-5 py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 ${
                 visualizacao === 'metas'
                   ? 'shadow-md'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
+                  : ''
               }`}
-              style={visualizacao === 'metas' ? { backgroundColor: '#C8E046', color: '#4A2C60' } : {}}
+              style={visualizacao === 'metas' ? { 
+                backgroundColor: '#C8E046', 
+                color: '#1F2937',
+                fontWeight: 600
+              } : {
+                backgroundColor: temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.2)',
+                color: '#FFFFFF',
+                fontWeight: 400
+              }}
+              onMouseEnter={(e) => {
+                if (visualizacao !== 'metas') {
+                  e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (visualizacao !== 'metas') {
+                  e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.2)';
+                }
+              }}
             >
               <Target className="w-4 h-4" />
-              <span>Metas</span>
+              <span>{t.statistics.goals}</span>
             </button>
             <button
               onClick={() => setVisualizacao('quantidades')}
               className={`px-5 py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 ${
                 visualizacao === 'quantidades'
                   ? 'shadow-md'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
+                  : ''
               }`}
-              style={visualizacao === 'quantidades' ? { backgroundColor: '#C8E046', color: '#4A2C60' } : {}}
+              style={visualizacao === 'quantidades' ? { 
+                backgroundColor: '#C8E046', 
+                color: '#1F2937',
+                fontWeight: 600
+              } : {
+                backgroundColor: temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.2)',
+                color: '#FFFFFF',
+                fontWeight: 400
+              }}
+              onMouseEnter={(e) => {
+                if (visualizacao !== 'quantidades') {
+                  e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (visualizacao !== 'quantidades') {
+                  e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.2)';
+                }
+              }}
             >
               <Calendar className="w-4 h-4" />
-              <span>Atividades</span>
+              <span>{t.statistics.activities}</span>
             </button>
             <button
               onClick={() => setVisualizacao('horas')}
               className={`px-5 py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 ${
                 visualizacao === 'horas'
                   ? 'shadow-md'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
+                  : ''
               }`}
-              style={visualizacao === 'horas' ? { backgroundColor: '#C8E046', color: '#4A2C60' } : {}}
+              style={visualizacao === 'horas' ? { 
+                backgroundColor: '#C8E046', 
+                color: '#1F2937',
+                fontWeight: 600
+              } : {
+                backgroundColor: temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.2)',
+                color: '#FFFFFF',
+                fontWeight: 400
+              }}
+              onMouseEnter={(e) => {
+                if (visualizacao !== 'horas') {
+                  e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (visualizacao !== 'horas') {
+                  e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.2)';
+                }
+              }}
             >
               <Clock className="w-4 h-4" />
-              <span>Horas</span>
+              <span>{t.statistics.hours}</span>
             </button>
           </div>
         </div>
@@ -1075,7 +1731,12 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
       {/* Subtabs - apenas para Atividades e Horas - FORA DO HEADER ROXO */}
       {visualizacao !== 'metas' && (
-        <div className="px-6 pt-6 pb-4" style={{ backgroundColor: '#FDF8EE' }}>
+        <div 
+          className="px-6 pt-6 pb-4" 
+          style={{ 
+            backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE'
+          }}
+        >
           <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
             {(visualizacao === 'quantidades' ? tabsQuantidades : tabsHoras).map((option) => {
               const Icon = option.icon;
@@ -1096,10 +1757,18 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
                     text-sm transition-all duration-200 flex-shrink-0
                     ${isActive
                       ? 'shadow-sm'
-                      : 'text-gray-900 hover:bg-gray-100 border-2 border-gray-900'
+                      : temaAtual === 'escuro' 
+                        ? 'bg-[#2A2A2A] text-gray-200 hover:bg-[#333333] border-2' 
+                        : 'bg-white text-gray-900 hover:bg-gray-50 border-2 border-gray-900'
                     }
                   `}
-                  style={isActive ? { backgroundColor: '#C8E046', color: '#4A2C60', border: 'none' } : {}}
+                  style={isActive ? { 
+                    backgroundColor: '#C8E046', 
+                    color: '#1F2937', 
+                    border: 'none' 
+                  } : temaAtual === 'escuro' ? {
+                    borderColor: 'rgba(200, 224, 70, 0.3)'
+                  } : {}}
                 >
                   {Icon && <Icon className="w-4 h-4" />}
                   <span>{option.label}</span>
@@ -1107,8 +1776,10 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
                     <span 
                       className="ml-1 px-2 py-0.5 rounded-full text-xs"
                       style={isActive 
-                        ? { backgroundColor: 'rgba(74, 44, 96, 0.2)', color: '#4A2C60' } 
-                        : { backgroundColor: '#E5E7EB', color: '#1F2937' }
+                        ? { backgroundColor: 'rgba(31, 41, 55, 0.3)', color: '#1F2937' }
+                        : temaAtual === 'escuro'
+                          ? { backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#C8E046' }
+                          : { backgroundColor: '#E5E7EB', color: '#1F2937' }
                       }
                     >
                       {option.count}
@@ -1123,6 +1794,68 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
       {/* Conteúdo */}
       <div className="px-6 py-6 space-y-6">
+        {/* Controle de Ano de Serviço - Para Atividades e Horas (inclusive Total) */}
+        {visualizacao !== 'metas' && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navegarAnoServico('anterior')}
+                className="p-2"
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+              <div className="text-center">
+                <p 
+                  className="text-xs"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.statistics.serviceYearLabel}
+                </p>
+                <h3 
+                  style={{
+                    color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                  }}
+                >
+                  {getNomeAnoServico(anoServicoSelecionado)}
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navegarAnoServico('proximo')}
+                className="p-2"
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+                disabled={anoServicoSelecionado === getAnoServicoAtual()}
+              >
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
+          </Card>
+        )}
+
         {/* Renderização condicional baseada na visualização */}
         {visualizacao === 'metas' ? (
           renderVisaoMetas()
@@ -1133,28 +1866,69 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
         ) : (
           <>
             {/* Card com ícone e total */}
-            <Card className={`p-6 bg-gradient-to-br from-${configAtual!.cor}-50 to-white border-${configAtual!.cor}-200`}>
+            <Card 
+              className="p-6"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+              }}
+            >
               {visualizacao === 'quantidades' && (categoriaQuantidade === 'revisita' || categoriaQuantidade === 'estudo-biblico') ? (
                 // Layout especial para Revisita e Estudo Bíblico na aba Quantidades
-                <div className="flex items-center gap-4">
-                  <div className={`w-16 h-16 rounded-full bg-${configAtual!.cor}-100 flex items-center justify-center flex-shrink-0`}>
-                    <Icon className={`w-8 h-8 text-${configAtual!.cor}-600`} />
+                <div className="text-center space-y-4">
+                  <div 
+                    className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto flex-shrink-0"
+                    style={{ 
+                      backgroundColor: temaAtual === 'escuro' 
+                        ? `${CORES_ATIVIDADES[categoriaQuantidade]}30`
+                        : `${CORES_ATIVIDADES[categoriaQuantidade]}20` 
+                    }}
+                  >
+                    <Icon className="w-8 h-8" style={{ color: CORES_ATIVIDADES[categoriaQuantidade] }} />
                   </div>
-                  <div className="flex-1 grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-6">
                     {/* Coluna 1: Ocorrências */}
-                    <div className="border-r border-gray-200 pr-4">
-                      <p className="text-3xl text-gray-900">{configAtual!.valor}</p>
-                      <p className="text-sm text-gray-600">ocorrências este mês</p>
+                    <div 
+                      className="border-r pr-4"
+                      style={{
+                        borderColor: temaAtual === 'escuro' ? '#374151' : '#E5E7EB'
+                      }}
+                    >
+                      <p 
+                        className="text-3xl mb-1"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                        }}
+                      >
+                        {configAtual!.valor}
+                      </p>
+                      <p 
+                        className="text-sm"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                        }}
+                      >
+                        {t.statistics.occurrencesThisMonth}
+                      </p>
                     </div>
                     {/* Coluna 2: Pessoas */}
                     <div className="pl-2">
-                      <p className="text-3xl text-gray-900">
+                      <p 
+                        className="text-3xl mb-1"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                        }}
+                      >
                         {categoriaQuantidade === 'revisita' ? totalPessoasRevisita : totalPessoasEstudo}
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p 
+                        className="text-sm"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                        }}
+                      >
                         {categoriaQuantidade === 'revisita' 
-                          ? `pessoa${totalPessoasRevisita !== 1 ? 's' : ''} cadastrada${totalPessoasRevisita !== 1 ? 's' : ''}`
-                          : `estudante${totalPessoasEstudo !== 1 ? 's' : ''} ativo${totalPessoasEstudo !== 1 ? 's' : ''}`
+                          ? (totalPessoasRevisita !== 1 ? t.statistics.peopleRegisteredPlural : t.statistics.peopleRegistered)
+                          : (totalPessoasEstudo !== 1 ? t.statistics.activeStudentsPlural : t.statistics.activeStudent)
                         }
                       </p>
                     </div>
@@ -1162,21 +1936,54 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
                 </div>
               ) : (
                 // Layout padrão para outras categorias
-                <div className="flex items-center gap-4">
-                  <div className={`w-16 h-16 rounded-full bg-${configAtual!.cor}-100 flex items-center justify-center`}>
-                    <Icon className={`w-8 h-8 text-${configAtual!.cor}-600`} />
+                <div className="text-center space-y-4">
+                  <div 
+                    className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto"
+                    style={{ 
+                      backgroundColor: temaAtual === 'escuro'
+                        ? `${CORES_ATIVIDADES[visualizacao === 'quantidades' ? categoriaQuantidade : categoriaHoras]}30`
+                        : `${CORES_ATIVIDADES[visualizacao === 'quantidades' ? categoriaQuantidade : categoriaHoras]}20` 
+                    }}
+                  >
+                    <Icon className="w-8 h-8" style={{ color: CORES_ATIVIDADES[visualizacao === 'quantidades' ? categoriaQuantidade : categoriaHoras] }} />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-3xl text-gray-900">{configAtual!.valor}</p>
-                    <p className="text-sm text-gray-600">{configAtual!.subtitulo}</p>
+                  <div>
+                    <p 
+                      className="text-4xl mb-2"
+                      style={{
+                        color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                      }}
+                    >
+                      {configAtual!.valor}
+                    </p>
+                    <p 
+                      className="text-sm"
+                      style={{
+                        color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                      }}
+                    >
+                      {configAtual!.subtitulo}
+                    </p>
                   </div>
                 </div>
               )}
             </Card>
 
             {/* Gráfico */}
-            <Card className="p-6">
-              <h3 className="text-sm text-gray-700 mb-4">Últimos 6 meses</h3>
+            <Card 
+              className="p-6"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+              }}
+            >
+              <h3 
+                className="text-sm mb-4"
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#374151'
+                }}
+              >
+                {t.statistics.serviceYearLabel} {getNomeAnoServico(anoServicoSelecionado)}
+              </h3>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={configAtual!.dados}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -1217,7 +2024,14 @@ export default function EstatisticasPage({ onVoltar }: EstatisticasPageProps) {
 
             {/* Lista de itens */}
             <div>
-              <h3 className="text-sm text-gray-700 mb-4">Detalhes</h3>
+              <h3 
+                className="text-sm mb-4"
+                style={{
+                  color: temaAtual === 'escuro' ? '#E5E7EB' : '#374151'
+                }}
+              >
+                {t.statistics.details}
+              </h3>
               {visualizacao === 'quantidades' ? renderListaQuantidades() : renderListaHoras()}
             </div>
           </>

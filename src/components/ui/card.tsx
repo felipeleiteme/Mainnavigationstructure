@@ -11,13 +11,15 @@ import { cn } from "./utils";
  * - Border Radius: rounded-xl (12px) - padrão brandbook
  * - Shadow: shadow-sm para elevação leve
  * - Text: text-gray-900 para máxima legibilidade
+ * - Micro-interações: active:scale-95 para feedback tátil em cards clicáveis
+ * - Transitions: transition-all duration-200 para suavidade
  */
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card"
       className={cn(
-        "bg-white text-gray-900 rounded-xl border border-primary-100 shadow-sm",
+        "bg-white text-gray-900 rounded-xl border border-primary-100 shadow-sm transition-all duration-200",
         className,
       )}
       {...props}

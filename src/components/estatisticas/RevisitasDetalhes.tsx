@@ -70,7 +70,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Header */}
-      <div className="text-white px-6 pt-12 pb-6 sticky top-0 z-10" style={{ background: 'linear-gradient(to bottom right, #4A2C60, #5A3C70)' }}>
+      <div className="bg-primary-500 text-white px-6 pt-12 pb-6 sticky top-0 z-10">
         <button onClick={onClose} className="flex items-center gap-2 mb-4 hover:opacity-80">
           <ArrowLeft className="w-5 h-5" />
           <span>Início</span>
@@ -87,9 +87,9 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
 
       <div className="px-4 py-6 space-y-6 pb-32">
         {/* Resumo do Mês */}
-        <Card className="p-6 border-2" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
+        <Card className="p-6 bg-primary-50 border-2 border-primary-200">
           <div className="space-y-3">
-            <h3 className="flex items-center gap-2" style={{ color: '#4A2C60' }}>
+            <h3 className="flex items-center gap-2 text-primary-500">
               <PartyPopper className="w-5 h-5" /> Parabéns!
             </h3>
             <p className="text-gray-700">
@@ -102,13 +102,13 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
             <div className="flex items-center gap-4 pt-2">
               <div>
                 <p className="text-sm text-gray-600">Este mês</p>
-                <p className="text-2xl" style={{ color: '#C8E046' }}>5</p>
+                <p className="text-2xl text-secondary-500">5</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Mês anterior</p>
                 <p className="text-2xl text-gray-400">3</p>
               </div>
-              <Badge variant="secondary" style={{ backgroundColor: 'rgba(200, 224, 70, 0.2)', color: '#4A2C60' }}>
+              <Badge variant="sucesso">
                 +2 (+67%) ↗️
               </Badge>
             </div>
@@ -118,7 +118,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
         {/* Lista de Novas Revisitas */}
         <div className="space-y-3">
           <h3 className="flex items-center gap-2">
-            <Sprout className="w-5 h-5" style={{ color: '#4A2C60' }} />
+            <Sprout className="w-5 h-5 text-primary-500" />
             Suas Novas Revisitas
           </h3>
           
@@ -135,11 +135,10 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
                       <h4 className="truncate">{revisita.nome}</h4>
                       <p className="text-xs text-gray-600">{revisita.data}</p>
                     </div>
-                    <Badge variant="secondary" className={`flex-shrink-0 ${
-                      revisita.status === 'Quente' 
-                        ? 'bg-orange-100 text-orange-700' 
-                        : ''
-                    }`} style={revisita.status !== 'Quente' ? { backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' } : {}}>
+                    <Badge 
+                      variant={revisita.status === 'Quente' ? 'quente' : 'nova'}
+                      className="flex-shrink-0"
+                    >
                       {revisita.status === 'Quente' ? '⚡' : '🆕'} {revisita.status}
                     </Badge>
                   </div>
@@ -162,7 +161,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
                     </div>
                     
                     {revisita.converteuEstudo && (
-                      <Badge className="text-white text-xs flex items-center gap-1" style={{ backgroundColor: '#4A2C60' }}>
+                      <Badge variant="default" className="text-xs flex items-center gap-1">
                         <Sparkles className="w-3 h-3" /> Convertida em estudo!
                       </Badge>
                     )}
@@ -182,7 +181,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
                     <Button size="sm" variant="outline" className="text-xs flex-1">
                       Ver Detalhes
                     </Button>
-                    <Button size="sm" className="text-xs flex-1" style={{ backgroundColor: '#4A2C60', color: 'white' }}>
+                    <Button size="sm" className="text-xs flex-1 bg-primary-500 hover:bg-primary-600 text-white">
                       Agendar Visita
                     </Button>
                   </div>
@@ -210,12 +209,12 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Store className="w-4 h-4" style={{ color: '#4A2C60' }} />
+                <Store className="w-4 h-4 text-primary-500" />
                 <span className="text-sm">Testemunho Informal</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm">1 pessoa</span>
-                <Badge variant="secondary" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' }}>20%</Badge>
+                <Badge variant="interesse">20%</Badge>
               </div>
             </div>
             
@@ -239,13 +238,13 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
         </Card>
 
         {/* Taxa de Conversão */}
-        <Card className="p-6" style={{ background: 'linear-gradient(to bottom right, rgba(74, 44, 96, 0.05), rgba(74, 44, 96, 0.1))', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
-          <h3 className="mb-4" style={{ color: '#4A2C60' }}>Funil de Conversão</h3>
+        <Card className="p-6 bg-gradient-to-br from-primary-50 to-primary-100 border-2 border-primary-200">
+          <h3 className="mb-4 text-primary-500">Funil de Conversão</h3>
           
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-full bg-gray-200 rounded-full h-8 relative overflow-hidden">
-                <div className="absolute inset-0 rounded-full" style={{ width: '100%', backgroundColor: '#4A2C60' }}>
+                <div className="absolute inset-0 bg-primary-500 rounded-full" style={{ width: '100%' }}>
                   <span className="absolute inset-0 flex items-center justify-center text-white text-sm">
                     Contatos: 23 (100%)
                   </span>
@@ -255,7 +254,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
             
             <div className="flex items-center justify-between gap-3">
               <div className="w-full bg-gray-200 rounded-full h-8 relative overflow-hidden">
-                <div className="absolute inset-0 rounded-full" style={{ width: '35%', backgroundColor: 'rgba(74, 44, 96, 0.7)' }}>
+                <div className="absolute inset-0 bg-primary-400 rounded-full" style={{ width: '35%' }}>
                   <span className="absolute inset-0 flex items-center justify-center text-white text-sm">
                     Interessados: 8 (35%)
                   </span>
@@ -286,7 +285,10 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
           
           <div className="mt-4 space-y-2 text-sm text-gray-700">
             <p>• De 23 contatos este mês, <strong>5 se tornaram revisitas (22%)</strong></p>
-            <p>• <strong className="text-purple-600">2 revisitas progrediram para estudos bíblicos!</strong> 🎉</p>
+            <p className="flex items-center gap-1">
+              • <strong className="text-purple-600">2 revisitas progrediram para estudos bíblicos!</strong>
+              <PartyPopper className="w-4 h-4 text-purple-600" />
+            </p>
           </div>
         </Card>
 
@@ -339,7 +341,7 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
             
             <div className="text-center p-3 bg-white rounded-lg">
               <p className="text-2xl">🆕</p>
-              <p className="text-xl" style={{ color: '#4A2C60' }}>1</p>
+              <p className="text-xl text-primary-500">1</p>
               <p className="text-xs text-gray-600">Ainda não revisitada</p>
             </div>
             
@@ -397,19 +399,20 @@ export default function RevisitasDetalhes({ onClose, onNavigateToCampo }: Revisi
       {/* Botões de Ação Fixos */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 space-y-2">
         <Button 
-          style={{ backgroundColor: '#4A2C60', color: 'white' }}
-          className="w-full"
+          className="w-full bg-primary-500 hover:bg-primary-600 text-white"
           onClick={onNavigateToCampo}
         >
           <Sprout className="w-4 h-4 mr-2" />
           Ver Todas as Revisitas
         </Button>
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm">
-            📍 Ver no Mapa
+          <Button variant="outline" size="sm" className="flex items-center justify-center gap-1">
+            <MapPin className="w-3 h-3" />
+            Ver no Mapa
           </Button>
-          <Button variant="outline" size="sm">
-            📊 Histórico
+          <Button variant="outline" size="sm" className="flex items-center justify-center gap-1">
+            <BarChart3 className="w-3 h-3" />
+            Histórico
           </Button>
         </div>
       </div>

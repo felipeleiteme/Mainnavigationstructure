@@ -1,10 +1,10 @@
-import { X, BookOpen, User, Phone, MapPin, Calendar, Clock, Save, Trash2, Sprout, HelpCircle, Target } from 'lucide-react';
+import { X, BookOpen, User, Phone, MapPin, Calendar, Clock, Save, Trash2, Sprout, HelpCircle, Target, AlertCircle, Check, PartyPopper } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Badge } from '../ui/badge';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DataService, Estudo } from '../../services/dataService';
 import { toast } from 'sonner';
 import { SmartNotificationManager } from '../../utils/notifications/smartNotifications';
@@ -74,7 +74,9 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
   // Salvar
   const handleSalvar = () => {
     if (!validarFormulario()) {
-      toast.error('Por favor, preencha todos os campos obrigatórios');
+      toast.error('Por favor, preencha todos os campos obrigatórios', {
+        icon: <AlertCircle className="w-5 h-5" />
+      });
       return;
     }
 
@@ -108,7 +110,9 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
           formData.endereco
         );
         
-        toast.success('Estudo atualizado com sucesso! 📖');
+        toast.success('Você atualizou o estudo', {
+          icon: <Check className="w-5 h-5" />
+        });
       } else {
         // Adicionar novo estudo
         const estudoCriado = DataService.adicionarEstudo(novoEstudo);
@@ -124,8 +128,11 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
         
         toast.success(
           isConversao 
-            ? '🎉 Revisita convertida em estudo! Parabéns!' 
-            : 'Estudo adicionado com sucesso! 📖'
+            ? 'Revisita convertida em estudo! Parabéns!' 
+            : 'Estudo adicionado com sucesso!',
+          {
+            icon: isConversao ? <PartyPopper className="w-5 h-5" /> : <Check className="w-5 h-5" />
+          }
         );
       }
 
@@ -133,7 +140,9 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
       onClose();
     } catch (error) {
       console.error('Erro ao salvar estudo:', error);
-      toast.error('Erro ao salvar estudo. Tente novamente.');
+      toast.error('Erro ao salvar estudo. Tente novamente.', {
+        icon: <AlertCircle className="w-5 h-5" />
+      });
     }
   };
 
@@ -148,11 +157,15 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
         // Remover notificações agendadas
         SmartNotificationManager.removeSchedulesByEntity(estudo.id);
         
-        toast.success('Estudo removido');
+        toast.success('Estudo removido', {
+          icon: <Trash2 className="w-5 h-5" />
+        });
         onSave?.();
         onClose();
       } catch (error) {
-        toast.error('Erro ao remover estudo');
+        toast.error('Erro ao remover estudo', {
+          icon: <AlertCircle className="w-5 h-5" />
+        });
       }
     }
   };
@@ -168,17 +181,48 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center sm:justify-center">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
-        {/* Header - Roxo Brandbook */}
-        <div className="sticky top-0 bg-primary-500 text-white px-6 pt-6 pb-4 z-10">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex-1">
-              <h2 className="text-2xl flex items-center gap-2">
-                <BookOpen className="w-6 h-6" />
+        {/* Header - Roxo Brandbook - REFATORADO COMPLETO */}
+        <div 
+          style={{ 
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            backgroundColor: '#4A2C60',
+            paddingLeft: '24px',
+            paddingRight: '24px',
+            paddingTop: '24px',
+            paddingBottom: '16px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ flex: 1 }}>
+              <h2 
+                style={{ 
+                  fontSize: '24px',
+                  fontWeight: 600,
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  margin: 0,
+                  padding: 0
+                }}
+              >
+                <BookOpen style={{ width: '24px', height: '24px', color: '#FFFFFF' }} />
                 {isConversao ? 'Iniciar Estudo Bíblico' : isEdicao ? 'Editar Estudo' : 'Novo Estudo Bíblico'}
               </h2>
-              <p className="text-sm opacity-90 mt-1">
+              <p 
+                style={{ 
+                  fontSize: '14px',
+                  color: '#FFFFFF',
+                  opacity: 0.9,
+                  marginTop: '4px',
+                  margin: 0,
+                  padding: 0
+                }}
+              >
                 {isConversao 
-                  ? '🎉 Parabéns! Uma revisita se tornou estudante!' 
+                  ? 'Parabéns! Uma revisita se tornou estudante!' 
                   : isEdicao 
                   ? 'Atualize as informações do estudo' 
                   : 'Registre um novo estudo bíblico'}
@@ -186,9 +230,23 @@ export default function FormularioEstudo({ onClose, onSave, estudo, revisitaConv
             </div>
             <button 
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s',
+                padding: 0
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
             >
-              <X className="w-5 h-5" />
+              <X style={{ width: '20px', height: '20px', color: '#FFFFFF' }} />
             </button>
           </div>
         </div>

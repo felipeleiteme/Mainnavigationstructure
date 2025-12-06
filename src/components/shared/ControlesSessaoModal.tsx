@@ -39,14 +39,14 @@ export default function ControlesSessaoModal({
   // Formatar tipo para exibição
   const formatarTipo = (tipo: string) => {
     const nomes: Record<string, string> = {
-      'casa-em-casa': '🚶 Casa em Casa',
-      'testemunho-publico': '🏢 Testemunho Público',
-      'telefone': '📞 Telefone',
-      'carta': '✉️ Carta',
-      'informal': '💼 Informal',
-      'revisita': '🌱 Revisita',
-      'estudo-biblico': '📚 Estudo Bíblico',
-      'cronometro-simples': '⏱️ Ministério',
+      'casa-em-casa': 'Casa em Casa',
+      'testemunho-publico': 'Testemunho Público',
+      'telefone': 'Telefone',
+      'carta': 'Carta',
+      'informal': 'Informal',
+      'revisita': 'Revisita',
+      'estudo-biblico': 'Estudo Bíblico',
+      'cronometro-simples': 'Ministério',
     };
     
     return nomes[tipo] || 'Ministério';
@@ -71,8 +71,12 @@ export default function ControlesSessaoModal({
             <div className="text-6xl mb-2 tabular-nums tracking-tight">
               {tempo.horas}:{tempo.minutos}
             </div>
-            <p className="text-sm opacity-90">
-              {sessao.pausada ? '⏸️ Pausado' : '⏱️ Em andamento'}
+            <p className="text-sm opacity-90 flex items-center justify-center gap-2">
+              {sessao.pausada ? (
+                <><Pause className="w-4 h-4" /> Pausado</>
+              ) : (
+                <><Play className="w-4 h-4" /> Em andamento</>
+              )}
             </p>
           </div>
 
@@ -106,7 +110,7 @@ export default function ControlesSessaoModal({
               onClick={onRetomarSessao}
             >
               <Play className="w-5 h-5 mr-2" />
-              ▶ Retomar
+              Retomar
             </Button>
           ) : (
             <Button
@@ -116,7 +120,7 @@ export default function ControlesSessaoModal({
               onClick={onPausarSessao}
             >
               <Pause className="w-5 h-5 mr-2" />
-              ⏸️ Pausar
+              Pausar
             </Button>
           )}
 
@@ -128,7 +132,7 @@ export default function ControlesSessaoModal({
             onClick={onAdicionarVisita}
           >
             <FileEdit className="w-5 h-5 mr-2" />
-            📝 Adicionar Visita
+            Adicionar Visita
           </Button>
 
           {/* Botão Finalizar */}
@@ -138,7 +142,7 @@ export default function ControlesSessaoModal({
             onClick={onFinalizarSessao}
           >
             <Square className="w-5 h-5 mr-2" />
-            ⏹️ Finalizar Sessão
+            Finalizar Sessão
           </Button>
         </div>
       </div>

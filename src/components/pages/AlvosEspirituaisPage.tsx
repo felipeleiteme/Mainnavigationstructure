@@ -1,10 +1,12 @@
-import { ArrowLeft, Plus, Check, Target, Flame, BarChart3, CheckCircle, Pause, Play, CheckCheck } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Target, Flame, BarChart3, CheckCircle, Pause, Play, CheckCheck, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
+import { ThemeService } from '../../services/themeService';
 import { DataService, Alvo } from '../../services/dataService';
+import { useTranslations } from '../../utils/i18n/translations';
 
 interface AlvosEspirituaisPageProps {
   onVoltar: () => void;
@@ -13,6 +15,8 @@ interface AlvosEspirituaisPageProps {
 }
 
 export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEditarAlvo }: AlvosEspirituaisPageProps) {
+  const t = useTranslations();
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
   const [alvos, setAlvos] = useState<Alvo[]>([]);
   const [alvosPausados, setAlvosPausados] = useState<Set<string>>(new Set());
 
@@ -26,6 +30,16 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     carregarAlvos();
+  }, []);
+
+  // Escutar mudanças de tema
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
   }, []);
 
   // Adicionar listener para mudanças nos alvos
@@ -50,8 +64,9 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
     });
 
     import('sonner@2.0.3').then(({ toast }) => {
-      toast.success('Alvo concluído! 🎉', {
+      toast.success('Alvo concluído', {
         description: `Parabéns por alcançar: ${alvo.titulo}`,
+        icon: <CheckCircle2 className="w-5 h-5" />
       });
     });
   };
@@ -64,7 +79,9 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
     });
 
     import('sonner@2.0.3').then(({ toast }) => {
-      toast.success('Alvo pausado');
+      toast.success('Alvo pausado', {
+        icon: <Pause className="w-5 h-5" />
+      });
     });
   };
 
@@ -76,7 +93,9 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
     });
 
     import('sonner@2.0.3').then(({ toast }) => {
-      toast.success('Alvo retomado');
+      toast.success('Alvo retomado', {
+        icon: <Play className="w-5 h-5" />
+      });
     });
   };
 
@@ -90,7 +109,12 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
   return (
     <div className="min-h-screen pb-20 bg-neutral">
       {/* Header fixo */}
-      <div className="sticky top-0 z-10 bg-primary-500 text-white">
+      <div 
+        className="sticky top-0 z-10 text-white"
+        style={{
+          backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60'
+        }}
+      >
         <div className="flex items-center gap-4 px-6 pt-12 pb-4">
           <Button
             variant="ghost"
@@ -101,8 +125,8 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h2 className="text-xl">Alvos Espirituais</h2>
-            <p className="text-sm opacity-90">{alvosAtivosLista.length} {alvosAtivosLista.length === 1 ? 'alvo ativo' : 'alvos ativos'}</p>
+            <h2 className="text-xl">{t.spiritualGoals.headerTitle}</h2>
+            <p className="text-sm opacity-90">{t.spiritualGoals.headerSubtitle(alvosAtivosLista.length)}</p>
           </div>
         </div>
       </div>
@@ -111,19 +135,51 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
       <div className="px-6 py-6 space-y-6">
         {/* Card: Sobre Alvos - APENAS quando não há alvos */}
         {todosAlvos.length === 0 && (
-          <Card className="p-6 bg-primary-50 border-2 border-primary-200">
+          <Card 
+            className="p-6 border-2"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.08)' : 'rgba(74, 44, 96, 0.05)',
+              borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.2)' : 'rgba(74, 44, 96, 0.2)'
+            }}
+          >
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
-                <Target className="w-6 h-6 text-white" />
+              <div 
+                className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                }}
+              >
+                <Target 
+                  className="w-6 h-6" 
+                  style={{
+                    color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+                  }}
+                />
               </div>
               <div>
-                <h3 className="mb-2">Por que ter alvos espirituais?</h3>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Estabelecer alvos espirituais nos ajuda a crescer em nossa relação com Jeová e nos motiva a progredir espiritualmente. 
-                  São como mapas que guiam nossa jornada cristã.
+                <h3 
+                  className="mb-2"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#C8E046' : '#1F2937'
+                  }}
+                >
+                  {t.spiritualGoals.whyTitle}
+                </h3>
+                <p 
+                  className="text-sm leading-relaxed"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#D1D5DB' : '#374151'
+                  }}
+                >
+                  {t.spiritualGoals.whyDescription}
                 </p>
-                <p className="text-xs text-gray-600 mt-2 italic">
-                  "Certifique-se das coisas mais importantes." — Filipenses 1:10
+                <p 
+                  className="text-xs mt-2 italic"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.spiritualGoals.bibleVerse}
                 </p>
               </div>
             </div>
@@ -133,9 +189,14 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
         {/* Seção: Alvos Ativos */}
         {alvosAtivosLista.length > 0 && (
           <div>
-            <h3 className="mb-3 text-sm font-medium text-primary-500 flex items-center gap-2">
+            <h3 
+              className="mb-3 text-sm font-medium flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+              }}
+            >
               <Flame className="w-4 h-4" />
-              Em Andamento
+              {t.spiritualGoals.sectionInProgress}
             </h3>
             <div className="space-y-3">
               {alvosAtivosLista.map((alvo) => (
@@ -143,35 +204,88 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className="font-medium mb-1">{alvo.titulo}</h4>
+                        <h4 
+                          className="font-medium mb-1"
+                          style={{
+                            color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                          }}
+                        >
+                          {alvo.titulo}
+                        </h4>
                         {alvo.descricao && (
-                          <p className="text-sm text-gray-600">{alvo.descricao}</p>
+                          <p 
+                            className="text-sm"
+                            style={{
+                              color: temaAtual === 'escuro' ? '#D1D5DB' : '#4B5563'
+                            }}
+                          >
+                            {alvo.descricao}
+                          </p>
                         )}
                         {alvo.prazo && (
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p 
+                            className="text-xs mt-1"
+                            style={{
+                              color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                            }}
+                          >
                             Prazo: {new Date(alvo.prazo).toLocaleDateString('pt-BR')}
                           </p>
                         )}
                       </div>
-                      <Badge variant="estudo">
+                      <Badge 
+                        variant="estudo"
+                        style={{
+                          backgroundColor: temaAtual === 'escuro' ? '#C8E046' : undefined,
+                          color: temaAtual === 'escuro' ? '#1F2937' : undefined
+                        }}
+                      >
                         {alvo.progresso}%
                       </Badge>
                     </div>
                     <Progress value={alvo.progresso} className="h-2" />
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="flex-1" onClick={() => onEditarAlvo && onEditarAlvo(alvo)}>
-                        Editar
-                      </Button>
-                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handlePausarAlvo(alvo.id)}>
-                        Pausar
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1" 
+                        onClick={() => onEditarAlvo && onEditarAlvo(alvo)}
+                        style={{
+                          color: temaAtual === 'escuro' ? '#C8E046' : undefined,
+                          borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : undefined
+                        }}
+                      >
+                        {t.spiritualGoals.buttonEdit}
                       </Button>
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-50" 
-                        onClick={() => handleConcluirAlvo(alvo)}
+                        className="flex-1" 
+                        onClick={() => handlePausarAlvo(alvo.id)}
+                        style={{
+                          color: temaAtual === 'escuro' ? '#9CA3AF' : undefined,
+                          borderColor: temaAtual === 'escuro' ? 'rgba(156, 163, 175, 0.3)' : undefined
+                        }}
                       >
-                        Concluir
+                        {t.spiritualGoals.buttonPause}
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1" 
+                        onClick={() => handleConcluirAlvo(alvo)}
+                        style={{
+                          color: temaAtual === 'escuro' ? '#86EFAC' : '#16A34A',
+                          borderColor: temaAtual === 'escuro' ? 'rgba(134, 239, 172, 0.3)' : undefined
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = temaAtual === 'escuro' ? 'rgba(134, 239, 172, 0.1)' : 'rgba(22, 163, 74, 0.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        {t.spiritualGoals.buttonComplete}
                       </Button>
                     </div>
                   </div>
@@ -184,25 +298,68 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
         {/* Seção: Alvos Pausados */}
         {alvosListaPausados.length > 0 && (
           <div>
-            <h3 className="mb-3 text-sm font-medium text-gray-700">⏸️ Pausados</h3>
+            <h3 
+              className="mb-3 text-sm font-medium flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#9CA3AF' : '#374151'
+              }}
+            >
+              <Pause className="w-4 h-4" />
+              {t.spiritualGoals.sectionPaused}
+            </h3>
             <div className="space-y-3">
               {alvosListaPausados.map((alvo, idx) => (
-                <Card key={idx} className="p-5 bg-gray-50 opacity-75">
+                <Card 
+                  key={idx} 
+                  className="p-5 opacity-75"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' ? 'rgba(156, 163, 175, 0.1)' : '#F9FAFB'
+                  }}
+                >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className="font-medium mb-1">{alvo.titulo}</h4>
+                        <h4 
+                          className="font-medium mb-1"
+                          style={{
+                            color: temaAtual === 'escuro' ? '#D1D5DB' : '#1F2937'
+                          }}
+                        >
+                          {alvo.titulo}
+                        </h4>
                         {alvo.meta && (
-                          <p className="text-sm text-gray-600">Meta: {alvo.meta}</p>
+                          <p 
+                            className="text-sm"
+                            style={{
+                              color: temaAtual === 'escuro' ? '#9CA3AF' : '#4B5563'
+                            }}
+                          >
+                            Meta: {alvo.meta}
+                          </p>
                         )}
                       </div>
-                      <Badge variant="secondary">
+                      <Badge 
+                        variant="secondary"
+                        style={{
+                          backgroundColor: temaAtual === 'escuro' ? 'rgba(156, 163, 175, 0.2)' : undefined,
+                          color: temaAtual === 'escuro' ? '#D1D5DB' : undefined
+                        }}
+                      >
                         {alvo.progresso}%
                       </Badge>
                     </div>
                     <Progress value={alvo.progresso} className="h-2" />
-                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleRetomarAlvo(alvo.id)}>
-                      Retomar
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="w-full" 
+                      onClick={() => handleRetomarAlvo(alvo.id)}
+                      style={{
+                        color: temaAtual === 'escuro' ? '#C8E046' : undefined,
+                        borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : undefined
+                      }}
+                    >
+                      {t.spiritualGoals.buttonResume}
                     </Button>
                   </div>
                 </Card>
@@ -214,24 +371,68 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
         {/* Seção: Alvos Concluídos */}
         {alvosConcluidos.length > 0 && (
           <div>
-            <h3 className="mb-3 text-sm font-medium text-green-700 flex items-center gap-2">
+            <h3 
+              className="mb-3 text-sm font-medium flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#86EFAC' : '#15803D'
+              }}
+            >
               <CheckCircle className="w-4 h-4" />
-              Concluídos
+              {t.spiritualGoals.sectionCompleted}
             </h3>
             <div className="space-y-3">
               {alvosConcluidos.map((alvo, idx) => (
-                <Card key={idx} className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                <Card 
+                  key={idx} 
+                  className="p-5"
+                  style={{
+                    background: temaAtual === 'escuro' 
+                      ? 'linear-gradient(to bottom right, rgba(134, 239, 172, 0.08), rgba(134, 239, 172, 0.12))'
+                      : 'linear-gradient(to bottom right, #F0FDF4, #DCFCE7)',
+                    borderColor: temaAtual === 'escuro' ? 'rgba(134, 239, 172, 0.2)' : '#BBF7D0'
+                  }}
+                >
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                      <Check className="w-5 h-5 text-white" />
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{
+                        backgroundColor: temaAtual === 'escuro' ? '#86EFAC' : '#22C55E'
+                      }}
+                    >
+                      <Check 
+                        className="w-5 h-5" 
+                        style={{
+                          color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+                        }}
+                      />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium mb-1">{alvo.titulo}</h4>
+                      <h4 
+                        className="font-medium mb-1"
+                        style={{
+                          color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+                        }}
+                      >
+                        {alvo.titulo}
+                      </h4>
                       {alvo.descricao && (
-                        <p className="text-sm text-gray-600">{alvo.descricao}</p>
+                        <p 
+                          className="text-sm"
+                          style={{
+                            color: temaAtual === 'escuro' ? '#D1D5DB' : '#4B5563'
+                          }}
+                        >
+                          {alvo.descricao}
+                        </p>
                       )}
-                      <Badge className="mt-2 bg-green-600 text-white">
-                        Concluído! 🎉
+                      <Badge 
+                        className="mt-2"
+                        style={{
+                          backgroundColor: temaAtual === 'escuro' ? '#86EFAC' : '#16A34A',
+                          color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+                        }}
+                      >
+                        Concluído!
                       </Badge>
                     </div>
                   </div>
@@ -244,15 +445,42 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
         {/* Estado vazio */}
         {todosAlvos.length === 0 && (
           <Card className="p-12 text-center">
-            <div className="w-20 h-20 rounded-full bg-primary-100 mx-auto mb-4 flex items-center justify-center">
-              <Target className="w-10 h-10 text-primary-500" />
+            <div 
+              className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.12)' : 'rgba(74, 44, 96, 0.1)'
+              }}
+            >
+              <Target 
+                className="w-10 h-10" 
+                style={{
+                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                }}
+              />
             </div>
-            <h3 className="mb-2">Estabeleça seu primeiro alvo</h3>
-            <p className="text-sm text-gray-600 mb-6">
-              Comece criando um alvo espiritual para sua jornada
+            <h3 
+              className="mb-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#E5E7EB' : '#1F2937'
+              }}
+            >
+              {t.spiritualGoals.startTitle}
+            </h3>
+            <p 
+              className="text-sm mb-6"
+              style={{
+                color: temaAtual === 'escuro' ? '#D1D5DB' : '#4B5563'
+              }}
+            >
+              {t.spiritualGoals.startDescription}
             </p>
-            <p className="text-sm text-gray-500">
-              Clique no botão + abaixo para criar seu primeiro alvo
+            <p 
+              className="text-sm"
+              style={{
+                color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+              }}
+            >
+              {t.spiritualGoals.startTip}
             </p>
           </Card>
         )}
@@ -260,22 +488,84 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
         {/* Card: Estatísticas */}
         {todosAlvos.length > 0 && (
           <Card className="p-6">
-            <h3 className="mb-4 text-primary-500 flex items-center gap-2">
+            <h3 
+              className="mb-4 flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+              }}
+            >
               <BarChart3 className="w-5 h-5" />
-              Resumo
+              {t.spiritualGoals.summaryTitle}
             </h3>
             <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-4 bg-primary-50 rounded-lg">
-                <p className="text-2xl text-primary-500">{alvosAtivosLista.length}</p>
-                <p className="text-xs text-gray-600 mt-1">Em andamento</p>
+              <div 
+                className="text-center p-4 rounded-lg"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.05)'
+                }}
+              >
+                <p 
+                  className="text-2xl font-bold"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+                  }}
+                >
+                  {alvosAtivosLista.length}
+                </p>
+                <p 
+                  className="text-xs mt-1"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.spiritualGoals.summaryInProgress}
+                </p>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-2xl text-green-700">{alvosConcluidos.length}</p>
-                <p className="text-xs text-gray-600 mt-1">Concluídos</p>
+              <div 
+                className="text-center p-4 rounded-lg"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' ? 'rgba(134, 239, 172, 0.1)' : '#F0FDF4'
+                }}
+              >
+                <p 
+                  className="text-2xl font-bold"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#86EFAC' : '#15803D'
+                  }}
+                >
+                  {alvosConcluidos.length}
+                </p>
+                <p 
+                  className="text-xs mt-1"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.spiritualGoals.summaryCompleted}
+                </p>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <p className="text-2xl text-gray-700">{alvosListaPausados.length}</p>
-                <p className="text-xs text-gray-600 mt-1">Pausados</p>
+              <div 
+                className="text-center p-4 rounded-lg"
+                style={{
+                  backgroundColor: temaAtual === 'escuro' ? 'rgba(156, 163, 175, 0.1)' : '#F9FAFB'
+                }}
+              >
+                <p 
+                  className="text-2xl font-bold"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#D1D5DB' : '#374151'
+                  }}
+                >
+                  {alvosListaPausados.length}
+                </p>
+                <p 
+                  className="text-xs mt-1"
+                  style={{
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t.spiritualGoals.summaryPaused}
+                </p>
               </div>
             </div>
           </Card>
@@ -285,10 +575,14 @@ export default function AlvosEspirituaisPage({ onVoltar, onAbrirNovoAlvo, onEdit
       {/* FAB - Botão de Ação Flutuante */}
       <button
         onClick={onAbrirNovoAlvo}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-primary-500 hover:bg-primary-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-40"
+        className="fixed bottom-24 right-6 w-12 h-12 rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-40"
+        style={{ 
+          backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+          color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+        }}
         aria-label="Criar novo alvo"
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-5 h-5" />
       </button>
     </div>
   );

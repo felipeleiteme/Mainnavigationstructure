@@ -5,13 +5,16 @@ import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
 import { DataService, Alvo } from '../../services/dataService';
+import { ThemeService } from '@/services/themeService';
 import LeituraBibliaPage from '../pages/LeituraBibliaPage';
 import DiarioGratidaoPage from '../pages/DiarioGratidaoPage';
 import AlvosEspirituaisPage from '../pages/AlvosEspirituaisPage';
 import ConfiguracoesLeituraPage from '../pages/ConfiguracoesLeituraPage';
 import NovaGratidaoPage from '../pages/NovaGratidaoPage';
 import NovoAlvoPage from '../pages/NovoAlvoPage';
+import EditarAlvoPage from '../pages/EditarAlvoPage';
 import { carregarDados, calcularProgresso, obterProximaLeitura } from '../../utils/storage/leituraStorage';
+import { useTranslations } from '../../utils/i18n/translations';
 
 interface GratidaoEntry {
   id: string;
@@ -34,6 +37,20 @@ export default function EspiritualTab() {
   const [paginaAtual, setPaginaAtual] = useState<PaginaEspiritual>('home');
   const [alvoEditando, setAlvoEditando] = useState<Alvo | undefined>();
   const [gratidaoEditando, setGratidaoEditando] = useState<GratidaoEntry | undefined>();
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+  
+  // Hook de traduções
+  const t = useTranslations();
+
+  // Escutar mudanças de tema
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
+  }, []);
 
   // Buscar dados de leitura real
   const [dadosLeitura, setDadosLeitura] = useState(carregarDados());
@@ -185,11 +202,12 @@ export default function EspiritualTab() {
   }
 
   if (paginaAtual === 'editar-alvo') {
-    return <NovoAlvoPage 
-      onVoltar={() => setPaginaAtual('alvos-espirituais')} 
-      onSalvar={handleSalvarAlvo}
-      alvoEditando={alvoEditando}
-    />;
+    return alvoEditando ? (
+      <EditarAlvoPage 
+        alvo={alvoEditando}
+        onVoltar={() => setPaginaAtual('alvos-espirituais')} 
+      />
+    ) : null;
   }
 
   if (paginaAtual === 'editar-gratidao') {
@@ -201,47 +219,95 @@ export default function EspiritualTab() {
   }
 
   return (
-    <div className="min-h-full bg-neutral">
+    <div 
+      className="min-h-full" 
+      style={{ 
+        backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE' 
+      }}
+    >
       {/* Header fixo */}
-      <div className="sticky top-0 z-50 bg-primary-500 text-white">
-        <div className="px-6 pt-12 pb-4">
+      <div 
+        className="sticky top-0 z-50 text-white" 
+        style={{ 
+          backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' 
+        }}
+      >
+        <div className="px-6 pt-12 pb-6">
           <div className="flex items-center gap-3">
             <Heart className="w-7 h-7" />
             <div>
-              <h2 className="text-xl">Preparando o Solo</h2>
-              <p className="text-xs text-primary-100">Sua base espiritual para jogar sementes</p>
+              <h1 className="text-2xl font-bold">{t.spiritualTab.onboardingTitle}</h1>
+              <p className="text-sm text-primary-100">{t.spiritualTab.onboardingSubtitle}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-6 space-y-4 pb-24">
+      <div className="px-6 py-6 space-y-6 pb-24">
         {/* Card 1: Leitura da Bíblia - CLICÁVEL */}
         <Card 
-          className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] bg-white border-primary-100"
+          className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] border-0"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+          }}
           onClick={() => setPaginaAtual('leitura-biblia')}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2 text-primary-700">
-              <Book className="w-5 h-5 text-primary-600" />
-              Leitura da Bíblia
+            <h3 
+              className="flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+              }}
+            >
+              <Book 
+                className="w-5 h-5" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                }}
+              />
+              {t.spiritualTab.bibleReadingTitle}
             </h3>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
+            <ChevronRight 
+              className="w-5 h-5" 
+              style={{
+                color: temaAtual === 'escuro' ? '#6B7280' : '#9CA3AF'
+              }}
+            />
           </div>
           
           {!dadosLeitura.configurado ? (
             // Empty State: Não configurado
             <div className="text-center py-6">
               <div className="flex justify-center mb-3">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center bg-primary-50">
-                  <Book className="w-8 h-8 text-primary-600" />
+                <div 
+                  className="w-16 h-16 rounded-full flex items-center justify-center"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.15)' : 'rgba(74, 44, 96, 0.1)'
+                  }}
+                >
+                  <Book 
+                    className="w-8 h-8" 
+                    style={{ 
+                      color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                    }}
+                  />
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-2">
-                Configure seu plano de leitura
+              <p 
+                className="text-sm mb-2"
+                style={{
+                  color: temaAtual === 'escuro' ? '#D1D5DB' : '#4B5563'
+                }}
+              >
+                {t.spiritualTab.bibleReadingSetup}
               </p>
-              <p className="text-xs text-gray-500">
-                Acompanhe seu progresso espiritual
+              <p 
+                className="text-xs"
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.spiritualTab.bibleReadingTrack}
               </p>
             </div>
           ) : (
@@ -249,17 +315,49 @@ export default function EspiritualTab() {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Plano de Leitura 2025</span>
-                  <span className="text-sm text-primary-700">{calcularProgresso(dadosLeitura)}%</span>
+                  <span 
+                    className="text-sm" 
+                    style={{ 
+                      color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' 
+                    }}
+                  >
+                    Plano de Leitura 2025
+                  </span>
+                  <span 
+                    className="text-sm" 
+                    style={{ 
+                      color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                    }}
+                  >
+                    {calcularProgresso(dadosLeitura)}%
+                  </span>
                 </div>
                 <Progress value={calcularProgresso(dadosLeitura)} className="h-2 bg-primary-100" />
               </div>
               
               {dadosLeitura.configuracao && (
                 <>
-                  <div className="p-4 rounded-lg bg-primary-50 border-2 border-primary-200">
-                    <p className="text-sm text-gray-600 mb-2">Próxima leitura:</p>
-                    <p className="text-lg text-primary-700">
+                  <div 
+                    className="p-4 rounded-lg border-2"
+                    style={{
+                      backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.05)',
+                      borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : '#D8CEE8'
+                    }}
+                  >
+                    <p 
+                      className="text-sm mb-2" 
+                      style={{ 
+                        color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' 
+                      }}
+                    >
+                      Próxima leitura:
+                    </p>
+                    <p 
+                      className="text-lg" 
+                      style={{ 
+                        color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                      }}
+                    >
                       {(() => {
                         const proxima = obterProximaLeitura(dadosLeitura.configuracao.plano, dadosLeitura.capitulosLidos);
                         return `${proxima.livro} ${proxima.capitulo}`;
@@ -267,9 +365,17 @@ export default function EspiritualTab() {
                     </p>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Badge className="bg-primary-600 text-white border-0">{dadosLeitura.ofensiva.atual} dias</Badge>
-                    <span>de ofensiva</span>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge 
+                      className="border-0" 
+                      style={{ 
+                        backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+                        color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+                      }}
+                    >
+                      {dadosLeitura.ofensiva.atual} dias
+                    </Badge>
+                    <span style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}>de ofensiva</span>
                   </div>
                 </>
               )}
@@ -279,43 +385,105 @@ export default function EspiritualTab() {
 
         {/* Card 2: Diário de Gratidão - CLICÁVEL */}
         <Card 
-          className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] bg-white border-primary-100"
+          className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] border-0"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+          }}
           onClick={() => setPaginaAtual('diario-gratidao')}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2 text-primary-700">
-              <Heart className="w-5 h-5 text-primary-600" />
-              Diário de Gratidão
+            <h3 
+              className="flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+              }}
+            >
+              <Heart 
+                className="w-5 h-5" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                }}
+              />
+              {t.spiritualTab.gratitudeTitle}
             </h3>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
+            <ChevronRight 
+              className="w-5 h-5" 
+              style={{
+                color: temaAtual === 'escuro' ? '#6B7280' : '#9CA3AF'
+              }}
+            />
           </div>
           
           {gratidaoEntries.length === 0 ? (
             <div className="text-center py-6">
               <div className="flex justify-center mb-3">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center bg-primary-50">
-                  <Heart className="w-8 h-8 text-primary-600" />
+                <div 
+                  className="w-16 h-16 rounded-full flex items-center justify-center"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.15)' : 'rgba(74, 44, 96, 0.1)'
+                  }}
+                >
+                  <Heart 
+                    className="w-8 h-8" 
+                    style={{ 
+                      color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                    }}
+                  />
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-2">
-                Comece registrando pelo que você é grato hoje
+              <p 
+                className="text-sm mb-2"
+                style={{
+                  color: temaAtual === 'escuro' ? '#D1D5DB' : '#4B5563'
+                }}
+              >
+                {t.spiritualTab.gratitudeStart}
               </p>
-              <p className="text-xs text-gray-500">
-                Cultivar gratidão fortalece sua espiritualidade
+              <p 
+                className="text-xs"
+                style={{
+                  color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280'
+                }}
+              >
+                {t.spiritualTab.gratitudeStrength}
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               {gratidaoEntries.slice(0, 2).map((entry) => (
-                <div key={entry.id} className="p-3 rounded-lg bg-primary-50 border-2 border-primary-200">
-                  <p className="text-xs text-gray-600 mb-1">
+                <div 
+                  key={entry.id} 
+                  className="p-3 rounded-lg border-2"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.05)',
+                    borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : '#D8CEE8'
+                  }}
+                >
+                  <p 
+                    className="text-xs mb-1" 
+                    style={{ 
+                      color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' 
+                    }}
+                  >
                     {new Date(entry.data).toLocaleDateString('pt-BR')}
                   </p>
-                  <p className="text-sm text-gray-800 line-clamp-2">{entry.texto}</p>
+                  <p 
+                    className="text-sm line-clamp-2" 
+                    style={{ 
+                      color: temaAtual === 'escuro' ? '#D1D5DB' : '#1F2937' 
+                    }}
+                  >
+                    {entry.texto}
+                  </p>
                 </div>
               ))}
               {gratidaoEntries.length > 2 && (
-                <p className="text-xs text-gray-600 text-center pt-2">
+                <p 
+                  className="text-xs text-center pt-2" 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' 
+                  }}
+                >
                   +{gratidaoEntries.length - 2} {gratidaoEntries.length - 2 === 1 ? 'entrada' : 'entradas'}
                 </p>
               )}
@@ -325,41 +493,100 @@ export default function EspiritualTab() {
 
         {/* Card 3: Alvos Espirituais - CLICÁVEL */}
         <Card 
-          className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] bg-white border-primary-100"
+          className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] border-0"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF'
+          }}
           onClick={() => setPaginaAtual('alvos-espirituais')}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2 text-primary-700">
-              <Target className="w-5 h-5 text-primary-600" />
-              Alvos Espirituais
+            <h3 
+              className="flex items-center gap-2"
+              style={{
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+              }}
+            >
+              <Target 
+                className="w-5 h-5" 
+                style={{ 
+                  color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                }}
+              />
+              {t.spiritualTab.goalsTitle}
             </h3>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
+            <ChevronRight 
+              className="w-5 h-5" 
+              style={{
+                color: temaAtual === 'escuro' ? '#6B7280' : '#9CA3AF'
+              }}
+            />
           </div>
           
           {alvosAtivos.length === 0 ? (
             <div className="text-center py-6">
               <div className="flex justify-center mb-3">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center bg-primary-50">
-                  <Target className="w-8 h-8 text-primary-600" />
+                <div 
+                  className="w-16 h-16 rounded-full flex items-center justify-center"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.15)' : 'rgba(74, 44, 96, 0.1)'
+                  }}
+                >
+                  <Target 
+                    className="w-8 h-8" 
+                    style={{ 
+                      color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                    }}
+                  />
                 </div>
               </div>
-              <p className="text-sm text-gray-600">
-                Estabeleça seus alvos espirituais
+              <p 
+                className="text-sm"
+                style={{
+                  color: temaAtual === 'escuro' ? '#D1D5DB' : '#4B5563'
+                }}
+              >
+                {t.spiritualTab.goalsEstablish}
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               {alvosAtivos.slice(0, 2).map((alvo, idx) => (
-                <div key={idx} className="p-4 rounded-lg bg-primary-50 border-2 border-primary-200">
+                <div 
+                  key={idx} 
+                  className="p-4 rounded-lg border-2"
+                  style={{
+                    backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(74, 44, 96, 0.05)',
+                    borderColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.3)' : '#D8CEE8'
+                  }}
+                >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-primary-700">{alvo.titulo}</span>
-                    <span className="text-xs text-primary-600">{alvo.progresso}%</span>
+                    <span 
+                      className="text-sm" 
+                      style={{ 
+                        color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                      }}
+                    >
+                      {alvo.titulo}
+                    </span>
+                    <span 
+                      className="text-xs" 
+                      style={{ 
+                        color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+                      }}
+                    >
+                      {alvo.progresso}%
+                    </span>
                   </div>
                   <Progress value={alvo.progresso} className="h-2 bg-primary-100" />
                 </div>
               ))}
               {alvosAtivos.length > 2 && (
-                <p className="text-xs text-gray-600 text-center pt-2">
+                <p 
+                  className="text-xs text-center pt-2" 
+                  style={{ 
+                    color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' 
+                  }}
+                >
                   +{alvosAtivos.length - 2} {alvosAtivos.length - 2 === 1 ? 'alvo' : 'alvos'}
                 </p>
               )}
@@ -369,23 +596,48 @@ export default function EspiritualTab() {
 
         {/* Card 4: Ideias para Adoração - NÃO CLICÁVEL */}
         <Card className="p-6 bg-white border-primary-100">
-          <h3 className="flex items-center gap-2 mb-4 text-primary-700">
-            <Sparkles className="w-5 h-5 text-secondary-600" />
-            Sem ideias para a adoração?
+          <h3 
+            className="flex items-center gap-2 mb-4"
+            style={{
+              color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+            }}
+          >
+            <Sparkles 
+              className="w-5 h-5" 
+              style={{ 
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' 
+              }}
+            />
+            {t.spiritualTab.worshipIdeasTitle}
           </h3>
           
-          <div className="p-4 rounded-lg mb-3 bg-secondary-50 border-2 border-secondary-300">
-            <p className="text-sm text-center text-secondary-800">
+          <div 
+            className="p-4 rounded-lg mb-3 border-2"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(200, 224, 70, 0.2)',
+              borderColor: '#C8E046'
+            }}
+          >
+            <p 
+              className="text-sm text-center"
+              style={{
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+              }}
+            >
               "{ideiaAtual}"
             </p>
           </div>
           
           <Button 
-            className="w-full hover:opacity-90 bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center gap-2 border-0"
+            className="w-full hover:opacity-90 text-white flex items-center justify-center gap-2 border-0"
+            style={{
+              backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+              color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+            }}
             onClick={gerarNovaIdeia}
           >
             <Dice6 className="w-5 h-5" />
-            Sugerir uma Ideia
+            {t.spiritualTab.suggestIdea}
           </Button>
         </Card>
       </div>

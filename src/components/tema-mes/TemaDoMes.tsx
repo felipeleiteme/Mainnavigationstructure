@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Heart, Plus, Check, ChevronLeft, ChevronRight, Dumbbell, BookOpen, Sparkles, Sprout, Flame, BarChart3, MessageSquare, HelpCircle, PartyPopper } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
@@ -138,9 +138,9 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
   }
 
   const mensagensEncorajamento = [
-    `${qualidade.nome} é uma das qualidades mais fortes que você pode ter ✨`,
-    `Cultivar ${qualidade.nome.toLowerCase()} é plantar paz onde quer que você vá 🌱`,
-    'Cada dia é uma chance de responder com amor 💚',
+    `${qualidade.nome} é uma das qualidades mais fortes que você pode ter`,
+    `Cultivar ${qualidade.nome.toLowerCase()} é plantar paz onde quer que você vá`,
+    'Cada dia é uma chance de responder com amor',
     `Jeová valoriza sua ${qualidade.nome.toLowerCase()}. Continue praticando! ${qualidade.emoji}`,
   ];
 
@@ -210,8 +210,11 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
             <p className="text-xs opacity-90">Experiências</p>
           </div>
           <div className="flex-1 bg-white/20 backdrop-blur-sm rounded-xl p-3 text-white">
-            <p className="text-2xl mb-0">{diasConsecutivos}</p>
-            <p className="text-xs opacity-90">Dias seguidos 🔥</p>
+            <p className="text-2xl mb-0 flex items-center justify-center gap-1">
+              {diasConsecutivos}
+              <Flame className="w-5 h-5" />
+            </p>
+            <p className="text-xs opacity-90">Dias seguidos</p>
           </div>
           <div className="flex-1 bg-white/20 backdrop-blur-sm rounded-xl p-3 text-white">
             <p className="text-2xl mb-0">{contadorDesafio}/3</p>
@@ -275,7 +278,10 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
               {experiencias.length > 0 ? (
                 <div className="text-left space-y-4">
                   <div>
-                    <p className="text-sm mb-3">📊 Seu progresso neste mês:</p>
+                    <p className="text-sm mb-3 flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4" />
+                      Seu progresso neste mês:
+                    </p>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-white p-4 rounded-lg">
                         <p className="text-2xl">{experiencias.length}</p>
@@ -329,8 +335,9 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
           <>
         {/* 1. Significado */}
         <Card className="p-6">
-          <h2 className="text-lg mb-4" style={{ color: qualidade.cor.texto }}>
-            💭 O que é {qualidade.nome}?
+          <h2 className="text-lg mb-4 flex items-center gap-2" style={{ color: qualidade.cor.texto }}>
+            <MessageSquare className="w-5 h-5" />
+            O que é {qualidade.nome}?
           </h2>
           <p className="text-gray-700 mb-6 leading-relaxed">{qualidade.significado}</p>
 
@@ -352,8 +359,9 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
 
         {/* 2. Reflexões Semanais */}
         <Card className="p-6">
-          <h2 className="text-lg mb-4" style={{ color: qualidade.cor.texto }}>
-            📚 Reflexões Semanais
+          <h2 className="text-lg mb-4 flex items-center gap-2" style={{ color: qualidade.cor.texto }}>
+            <BookOpen className="w-5 h-5" />
+            Reflexões Semanais
           </h2>
 
           <div className="space-y-6">
@@ -365,8 +373,9 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
                 </Badge>
                 <h3 className="text-sm">Reflexão</h3>
               </div>
-              <p className="text-sm text-gray-700 mb-3">
-                🤔 {qualidade.reflexoesSemanais.semana1.titulo}
+              <p className="text-sm text-gray-700 mb-3 flex items-start gap-2">
+                <HelpCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{qualidade.reflexoesSemanais.semana1.titulo}</span>
               </p>
               
               <Button
@@ -382,7 +391,7 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
                 <ul className="space-y-2 ml-4">
                   {qualidade.reflexoesSemanais.semana1.exemplos.map((exemplo, idx) => (
                     <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
-                      <span className="text-green-600">✓</span>
+                      <Check className="w-3 h-3 text-green-600 mt-1" />
                       {exemplo}
                     </li>
                   ))}
@@ -398,8 +407,9 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
                 </Badge>
                 <h3 className="text-sm">Desafio</h3>
               </div>
-              <p className="text-sm text-gray-700 mb-3">
-                💪 {qualidade.reflexoesSemanais.semana2.titulo}
+              <p className="text-sm text-gray-700 mb-3 flex items-start gap-2">
+                <Dumbbell className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: qualidade.cor.primaria }} />
+                <span>{qualidade.reflexoesSemanais.semana2.titulo}</span>
               </p>
               
               <div className="flex items-center gap-4 p-4 bg-green-50 rounded-lg">
@@ -418,7 +428,8 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
               {contadorDesafio >= qualidade.reflexoesSemanais.semana2.meta && (
                 <p className="text-sm text-green-700 mt-3 flex items-center gap-2">
                   <Check className="w-4 h-4" />
-                  Parabéns! Desafio completo! 🎉
+                  <PartyPopper className="w-4 h-4" />
+                  Parabéns! Desafio completo!
                 </p>
               )}
             </div>
@@ -431,8 +442,9 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
                 </Badge>
                 <h3 className="text-sm">Meditação</h3>
               </div>
-              <p className="text-sm text-gray-700 mb-3">
-                📖 {qualidade.reflexoesSemanais.semana3.titulo}
+              <p className="text-sm text-gray-700 mb-3 flex items-start gap-2">
+                <BookOpen className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: qualidade.cor.primaria }} />
+                <span>{qualidade.reflexoesSemanais.semana3.titulo}</span>
               </p>
               
               <div className="space-y-2">
@@ -456,8 +468,9 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
                 </Badge>
                 <h3 className="text-sm">Revisão</h3>
               </div>
-              <p className="text-sm text-gray-700 mb-3">
-                ✨ {qualidade.reflexoesSemanais.semana4.titulo}
+              <p className="text-sm text-gray-700 mb-3 flex items-start gap-2">
+                <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{qualidade.reflexoesSemanais.semana4.titulo}</span>
               </p>
               
               <textarea
@@ -479,8 +492,9 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
 
         {/* 3. Meu Progresso */}
         <Card className="p-6">
-          <h2 className="text-lg mb-4" style={{ color: qualidade.cor.texto }}>
-            📊 Meu Progresso
+          <h2 className="text-lg mb-4 flex items-center gap-2" style={{ color: qualidade.cor.texto }}>
+            <BarChart3 className="w-5 h-5" />
+            Meu Progresso
           </h2>
 
           {/* Calendário */}
@@ -519,8 +533,11 @@ export default function TemaDoMes({ onClose }: TemaDoMesProps) {
               <p className="text-xs text-gray-600">Experiências</p>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <p className="text-2xl text-orange-900">{diasConsecutivos}</p>
-              <p className="text-xs text-gray-600">Dias seguidos 🔥</p>
+              <p className="text-2xl text-orange-900 flex items-center justify-center gap-1">
+                {diasConsecutivos}
+                <Flame className="w-5 h-5" />
+              </p>
+              <p className="text-xs text-gray-600">Dias seguidos</p>
             </div>
           </div>
 

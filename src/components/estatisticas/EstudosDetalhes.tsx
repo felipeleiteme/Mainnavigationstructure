@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, TrendingUp, Calendar, Target, Users, Clock, ChevronRight, Sprout, Star, AlertTriangle, CheckCircle2, BarChart3 } from 'lucide-react';
+import { ArrowLeft, BookOpen, TrendingUp, Clock, Users, Target, Calendar, CheckCircle, Award, Star, MapPin, Heart, BarChart3 } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -206,7 +206,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
         {/* Calendário de Estudos */}
         <Card className="p-6">
           <h3 className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5" style={{ color: '#4A2C60' }} />
+            <Calendar className="w-5 h-5 text-primary-500" />
             Calendário de Estudos
           </h3>
           
@@ -232,14 +232,13 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
                   key={dia}
                   className={`aspect-square flex items-center justify-center rounded-lg text-sm relative ${
                     estudosDia 
-                      ? 'font-medium' 
+                      ? 'bg-primary-100 text-primary-500 font-medium' 
                       : 'text-gray-600'
                   }`}
-                  style={estudosDia ? { backgroundColor: 'rgba(74, 44, 96, 0.1)', color: '#4A2C60' } : {}}
                 >
                   {dia}
                   {estudosDia && estudosDia.estudos > 1 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 text-white text-xs rounded-full flex items-center justify-center" style={{ backgroundColor: '#4A2C60' }}>
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary-500 text-white text-xs rounded-full flex items-center justify-center">
                       {estudosDia.estudos}
                     </span>
                   )}
@@ -249,7 +248,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
           </div>
           
           <p className="text-sm text-gray-600 mt-4 flex items-center gap-2">
-            <span className="w-4 h-4 rounded" style={{ backgroundColor: 'rgba(74, 44, 96, 0.1)' }}></span>
+            <span className="w-4 h-4 rounded bg-primary-100"></span>
             = Dia com estudo
           </p>
         </Card>
@@ -286,7 +285,7 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
             </div>
             
             <div className="flex items-start gap-2">
-              <Target className="w-4 h-4 flex-shrink-0" style={{ color: '#4A2C60' }} />
+              <Target className="w-4 h-4 flex-shrink-0 text-primary-500" />
               <div>
                 <p className="text-gray-900"><strong>Progresso:</strong> 2 estudantes avançaram de nível</p>
                 <p className="text-gray-600 text-xs mt-1">João passou de Iniciando para Progredindo</p>
@@ -315,11 +314,8 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
                 <div key={idx} className="flex flex-col items-center gap-1 flex-1">
                   <div className="w-full flex items-end justify-center" style={{ height: '100px' }}>
                     <div 
-                      className="w-8 rounded-t"
-                      style={{ 
-                        height: `${(item.valor / 12) * 100}%`,
-                        backgroundColor: idx === 5 ? '#4A2C60' : 'rgba(74, 44, 96, 0.3)'
-                      }}
+                      className={`w-8 rounded-t ${idx === 5 ? 'bg-primary-500' : 'bg-primary-200'}`}
+                      style={{ height: `${(item.valor / 12) * 100}%` }}
                     />
                   </div>
                   <span className="text-xs text-gray-600">{item.mes}</span>
@@ -341,21 +337,20 @@ export default function EstudosDetalhes({ onClose, onNavigateToEstudos }: Estudo
       {/* Botões de Ação Fixos */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 space-y-2 z-20">
         <Button 
-          className="w-full" 
-          style={{ backgroundColor: '#4A2C60', color: 'white' }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          className="w-full bg-primary-500 hover:bg-primary-600 text-white"
           onClick={onNavigateToEstudos}
         >
           <BookOpen className="w-4 h-4 mr-2" />
           Ver Todos os Estudos
         </Button>
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm">
-            📊 Exportar Relatório
+          <Button variant="outline" size="sm" className="flex items-center justify-center gap-1">
+            <BarChart3 className="w-3 h-3" />
+            Exportar Relatório
           </Button>
-          <Button variant="outline" size="sm">
-            📅 Histórico Completo
+          <Button variant="outline" size="sm" className="flex items-center justify-center gap-1">
+            <Calendar className="w-3 h-3" />
+            Histórico Completo
           </Button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Lightbulb, Check, AlertCircle, FileWarning } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { DataService } from '../../services/dataService';
@@ -35,8 +35,9 @@ export default function BackupCard({ onSyncComplete }: BackupCardProps) {
       
       DataService.baixarBackup();
       
-      toast.success('Backup criado com sucesso!', {
+      toast.success('Backup criado!', {
         description: 'Arquivo salvo na pasta de Downloads',
+        icon: <Check className="w-5 h-5" />
       });
       
       atualizarTextoSync();
@@ -45,6 +46,7 @@ export default function BackupCard({ onSyncComplete }: BackupCardProps) {
       console.error('Erro ao criar backup:', error);
       toast.error('Erro ao criar backup', {
         description: 'Não foi possível gerar o arquivo. Tente novamente.',
+        icon: <AlertCircle className="w-5 h-5" />
       });
     } finally {
       setIsProcessing(false);
@@ -63,6 +65,7 @@ export default function BackupCard({ onSyncComplete }: BackupCardProps) {
     if (!arquivo.name.endsWith('.json')) {
       toast.error('Arquivo inválido', {
         description: 'Por favor, selecione um arquivo JSON de backup do Mynis',
+        icon: <FileWarning className="w-5 h-5" />
       });
       return;
     }
@@ -74,6 +77,7 @@ export default function BackupCard({ onSyncComplete }: BackupCardProps) {
       
       toast.success('Backup restaurado com sucesso!', {
         description: 'Todos os seus dados foram restaurados',
+        icon: <Check className="w-5 h-5" />
       });
       
       atualizarTextoSync();
@@ -94,6 +98,7 @@ export default function BackupCard({ onSyncComplete }: BackupCardProps) {
       
       toast.error('Erro ao restaurar backup', {
         description: error.message || 'Não foi possível restaurar os dados. Verifique o arquivo.',
+        icon: <AlertCircle className="w-5 h-5" />
       });
     } finally {
       setIsProcessing(false);
@@ -115,7 +120,7 @@ export default function BackupCard({ onSyncComplete }: BackupCardProps) {
         Seus dados estão seguros na nuvem
       </p>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-3">
         <Button 
           variant="outline" 
           className="w-full"
@@ -147,8 +152,9 @@ export default function BackupCard({ onSyncComplete }: BackupCardProps) {
       />
 
       <div className="mt-4 p-3 rounded-lg border border-blue-200 bg-blue-50">
-        <p className="text-xs text-blue-900">
-          <strong>💡 Dica:</strong> Salve o backup no Google Drive ou outro serviço de nuvem para acessar em qualquer dispositivo!
+        <p className="text-xs text-blue-900 flex items-start gap-2">
+          <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span><strong>Dica:</strong> Salve o backup no Google Drive ou outro serviço de nuvem para acessar em qualquer dispositivo!</span>
         </p>
       </div>
     </div>

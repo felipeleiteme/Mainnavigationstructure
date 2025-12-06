@@ -67,6 +67,7 @@ export interface Sessao {
   atividades: {
     tipo: 'revisita' | 'casa-em-casa' | 'testemunho-publico' | 'estudo' | 'outro';
     detalhes?: string;
+    duracaoMinutos?: number;
   }[];
   publicacoes?: {
     tipo: 'revista' | 'brochura' | 'livro' | 'tratado';
@@ -138,8 +139,7 @@ export interface AtividadeDiaria {
 
 export type TipoPublicador = 
   | 'publicador-regular'
-  | 'pioneiro-auxiliar-30'
-  | 'pioneiro-auxiliar-50'
+  | 'pioneiro-auxiliar'
   | 'pioneiro-regular';
 
 export interface Perfil {
@@ -148,6 +148,7 @@ export interface Perfil {
   email?: string;
   telefone?: string;
   tipoPublicador: TipoPublicador;
+  metaHoras?: number; // Meta personalizada para pioneiros auxiliares
   avatar?: string;
   textoAno?: {
     texto: string;
@@ -816,12 +817,10 @@ class DataServiceClass {
     switch (perfil.tipoPublicador) {
       case 'publicador-regular':
         return 10; // Meta sugerida para publicadores
-      case 'pioneiro-auxiliar-30':
-        return 30;
-      case 'pioneiro-auxiliar-50':
-        return 50;
+      case 'pioneiro-auxiliar':
+        return perfil.metaHoras || 15;
       case 'pioneiro-regular':
-        return 70;
+        return 50;
       default:
         return 10;
     }
@@ -832,16 +831,15 @@ class DataServiceClass {
     return this.getMetaMensal() * 12;
   }
 
-  getTipoPublicadorLabel(tipo: TipoPublicador): string {
+  getTipoPublicadorLabel(tipo: TipoPublicador, metaHoras?: number): string {
     switch (tipo) {
       case 'publicador-regular':
         return 'Publicador Regular';
-      case 'pioneiro-auxiliar-30':
-        return 'Pioneiro Auxiliar (30h)';
-      case 'pioneiro-auxiliar-50':
-        return 'Pioneiro Auxiliar (50h)';
+      case 'pioneiro-auxiliar':
+        const meta = metaHoras || 15;
+        return `Pioneiro Auxiliar (${meta}h)`;
       case 'pioneiro-regular':
-        return 'Pioneiro Regular';
+        return 'Pioneiro Regular (50h)';
       default:
         return 'Publicador Regular';
     }

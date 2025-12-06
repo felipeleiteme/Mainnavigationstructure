@@ -5,6 +5,7 @@ import { Badge } from '../ui/badge';
 import { Checkbox } from '../ui/checkbox';
 import { useState, useEffect } from 'react';
 import { DataService } from '../../services/dataService';
+import { ThemeService } from '../../services/themeService';
 
 interface DiaDetalhesProps {
   dia: {
@@ -19,6 +20,16 @@ interface DiaDetalhesProps {
 }
 
 export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavigateToEstudos }: DiaDetalhesProps) {
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleThemeChange);
+    return () => ThemeService.off('mynis-theme-change', handleThemeChange);
+  }, []);
+
   // Buscar atividades do dia do DataService
   const hoje = new Date();
   const diaAtual = hoje.getDate();
@@ -136,7 +147,10 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 text-white px-6 pt-6 pb-4 border-b z-10" style={{ backgroundColor: '#4A2C60' }}>
+        <div 
+          className="sticky top-0 text-white px-6 pt-6 pb-4 border-b z-10" 
+          style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
+        >
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <h2 className="text-2xl">
@@ -167,19 +181,18 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
             <div className="grid grid-cols-3 gap-3">
               {/* Manhã */}
               <div 
-                className="p-3 rounded-lg text-center border-2"
-                style={
+                className={`p-3 rounded-lg text-center border-2 ${
                   cronograma.manha
-                    ? { backgroundColor: '#F5F2F7', borderColor: '#D1C4E0' }
-                    : { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }
-                }
+                    ? 'bg-primary-50 border-primary-200'
+                    : 'bg-gray-50 border-gray-200'
+                }`}
               >
                 <Sun className="w-8 h-8 mx-auto mb-1 text-amber-500" />
                 <p className="text-xs font-medium">
                   {cronograma.manha ? 'Manhã planejada' : 'Manhã livre'}
                 </p>
                 {cronograma.manha && tipoDia === 'passado' && (
-                  <Badge variant="secondary" className="text-xs mt-2" style={{ backgroundColor: '#E6DFF0', color: '#4A2C60' }}>
+                  <Badge variant="iniciando" className="text-xs mt-2">
                     <CheckCircle2 className="w-3 h-3 mr-1" /> Concluído - 2h30min
                   </Badge>
                 )}
@@ -187,19 +200,18 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
 
               {/* Tarde */}
               <div 
-                className="p-3 rounded-lg text-center border-2"
-                style={
+                className={`p-3 rounded-lg text-center border-2 ${
                   cronograma.tarde
-                    ? { backgroundColor: '#F5F2F7', borderColor: '#D1C4E0' }
-                    : { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }
-                }
+                    ? 'bg-primary-50 border-primary-200'
+                    : 'bg-gray-50 border-gray-200'
+                }`}
               >
                 <CloudSun className="w-8 h-8 mx-auto mb-1 text-orange-500" />
                 <p className="text-xs font-medium">
                   {cronograma.tarde ? 'Tarde planejada' : 'Tarde livre'}
                 </p>
                 {cronograma.tarde && tipoDia === 'passado' && (
-                  <Badge variant="secondary" className="text-xs mt-2" style={{ backgroundColor: '#E6DFF0', color: '#4A2C60' }}>
+                  <Badge variant="iniciando" className="text-xs mt-2">
                     <CheckCircle2 className="w-3 h-3 mr-1" /> Concluído - 1h45min
                   </Badge>
                 )}
@@ -207,12 +219,11 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
 
               {/* Noite */}
               <div 
-                className="p-3 rounded-lg text-center border-2"
-                style={
+                className={`p-3 rounded-lg text-center border-2 ${
                   cronograma.noite
-                    ? { backgroundColor: '#F5F2F7', borderColor: '#D1C4E0' }
-                    : { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }
-                }
+                    ? 'bg-primary-50 border-primary-200'
+                    : 'bg-gray-50 border-gray-200'
+                }`}
               >
                 <Moon className="w-8 h-8 mx-auto mb-1 text-indigo-500" />
                 <p className="text-xs font-medium">
@@ -223,8 +234,7 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
 
             {tipoDia !== 'passado' && (cronograma.manha || cronograma.tarde || cronograma.noite) && (
               <Button 
-                className="w-full mt-3 hover:opacity-90"
-                style={{ backgroundColor: '#4A2C60' }}
+                className="w-full mt-3 bg-primary-500 hover:bg-primary-600 text-white"
                 onClick={onIniciarMinisterio}
               >
                 <Play className="w-4 h-4 mr-2" />
@@ -236,7 +246,7 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
           {/* Seção: Estudos Agendados */}
           <div>
             <h3 className="mb-3 flex items-center gap-2">
-              <BookOpen className="w-5 h-5" style={{ color: '#4A2C60' }} />
+              <BookOpen className="w-5 h-5 text-primary-500" />
               {tipoDia === 'atual' ? 'Estudos de Hoje' : tipoDia === 'passado' ? 'Estudos Realizados' : 'Estudos Agendados'}
             </h3>
             
@@ -245,14 +255,14 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
                 {estudos.map((estudo: any, idx) => (
                   <Card key={idx} className="p-4 bg-white">
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6DFF0' }}>
-                        <span className="font-medium" style={{ color: '#4A2C60' }}>{estudo.avatar}</span>
+                      <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                        <span className="font-medium text-primary-500">{estudo.avatar}</span>
                       </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <h4 className="font-medium">{estudo.nome}</h4>
-                          <Badge className="text-white text-xs" style={{ backgroundColor: '#4A2C60' }}>
+                          <Badge variant="default" className="text-xs">
                             Estudo Bíblico
                           </Badge>
                         </div>
@@ -322,7 +332,7 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
           {tipoDia === 'atual' && (
             <div>
               <h3 className="mb-3 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                <CheckCircle2 className="w-5 h-5 text-primary-500" />
                 Suas Atividades
               </h3>
               
@@ -346,7 +356,7 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
                         </span>
                       </div>
                       {item.checked && (
-                        <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
+                        <CheckCircle2 className="w-4 h-4 text-primary-500" />
                       )}
                     </div>
                   ))}
@@ -359,26 +369,26 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
           {tipoDia === 'passado' && (
             <div>
               <h3 className="mb-3 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" style={{ color: '#4A2C60' }} />
+                <CheckCircle2 className="w-5 h-5 text-primary-500" />
                 Atividades Realizadas
               </h3>
               
               <Card className="p-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
+                    <CheckCircle2 className="w-4 h-4 text-primary-500" />
                     <span className="text-gray-700">Sessão de ministério: <strong>2h30min (Manhã)</strong></span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
+                    <CheckCircle2 className="w-4 h-4 text-primary-500" />
                     <span className="text-gray-700">Estudos realizados: <strong>2 estudos</strong></span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
+                    <CheckCircle2 className="w-4 h-4 text-primary-500" />
                     <span className="text-gray-700">Leitura bíblica: <strong>Lucas 10</strong></span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4" style={{ color: '#4A2C60' }} />
+                    <CheckCircle2 className="w-4 h-4 text-primary-500" />
                     <span className="text-gray-700">Texto diário: <strong>Concluído</strong></span>
                   </div>
                 </div>
@@ -439,8 +449,7 @@ export default function DiaDetalhes({ dia, onClose, onIniciarMinisterio, onNavig
             <>
               {(cronograma.manha || cronograma.tarde || cronograma.noite) && (
                 <Button 
-                  className="w-full hover:opacity-90"
-                  style={{ backgroundColor: '#4A2C60' }}
+                  className="w-full bg-primary-500 hover:bg-primary-600 text-white"
                   onClick={onIniciarMinisterio}
                 >
                   <Play className="w-4 h-4 mr-2" />

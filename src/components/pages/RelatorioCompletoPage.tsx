@@ -1,18 +1,29 @@
-import { ArrowLeft, Clock, BookOpen, Users, FileText, Video, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Clock, BookOpen, Users, FileText, Video, TrendingUp, MessageSquare, BarChart3, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { DataService } from '../../services/dataService';
+import { ThemeService } from '../../services/themeService';
 
 interface RelatorioCompletoPageProps {
   onVoltar: () => void;
 }
 
 export default function RelatorioCompletoPage({ onVoltar }: RelatorioCompletoPageProps) {
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+
   // Scroll para o topo quando o componente montar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleThemeChange);
+    return () => ThemeService.off('mynis-theme-change', handleThemeChange);
   }, []);
 
   // Calcular estatísticas reais do DataService (igual ao PerfilTab)
@@ -41,7 +52,10 @@ export default function RelatorioCompletoPage({ onVoltar }: RelatorioCompletoPag
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto pb-20">
       {/* Header fixo */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+      <div 
+        className="sticky top-0 z-10 text-white" 
+        style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
+      >
         <div className="flex items-center gap-4 px-6 pt-12 pb-4">
           <Button
             variant="ghost"
@@ -118,7 +132,10 @@ export default function RelatorioCompletoPage({ onVoltar }: RelatorioCompletoPag
 
         {/* Progresso Semanal */}
         <div>
-          <h3 className="text-sm mb-3">📅 Progresso Semanal</h3>
+          <h3 className="text-sm mb-3 flex items-center gap-2">
+            <Calendar className="w-4 h-4" style={{ color: '#4A2C60' }} />
+            Progresso Semanal
+          </h3>
           <div className="space-y-2">
             <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)' }}>
               <div className="flex justify-between mb-2">
@@ -153,7 +170,10 @@ export default function RelatorioCompletoPage({ onVoltar }: RelatorioCompletoPag
 
         {/* Observações */}
         <div>
-          <h3 className="text-sm mb-3">💭 Observações</h3>
+          <h3 className="text-sm mb-3 flex items-center gap-2">
+            <MessageSquare className="w-4 h-4" style={{ color: '#4A2C60' }} />
+            Observações
+          </h3>
           <Card className="p-4 border-2" style={{ backgroundColor: '#FDF8EE', borderColor: 'rgba(200, 224, 70, 0.4)' }}>
             <p className="text-sm text-gray-700 leading-relaxed">
               Mês produtivo! Consegui iniciar 2 novos estudos e fazer 5 revisitas novas. 
@@ -164,7 +184,10 @@ export default function RelatorioCompletoPage({ onVoltar }: RelatorioCompletoPag
 
         {/* Estatísticas Adicionais */}
         <Card className="p-5 border-2" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)', borderColor: 'rgba(74, 44, 96, 0.2)' }}>
-          <h3 className="text-sm mb-4">📊 Estatísticas do Mês</h3>
+          <h3 className="text-sm mb-4 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" style={{ color: '#4A2C60' }} />
+            Estatísticas do Mês
+          </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Média semanal</span>

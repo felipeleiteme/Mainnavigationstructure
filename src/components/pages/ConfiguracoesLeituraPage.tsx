@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Bell, Calendar, Target, ClipboardList, Save, CheckCircle2, AlertTriangle, Flame, Trophy, FileText, Lightbulb } from 'lucide-react';
+import { ArrowLeft, BookOpen, Bell, Calendar, Target, ClipboardList, Save, CheckCircle2, AlertTriangle, Flame, Trophy, FileText, Lightbulb, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -17,12 +17,16 @@ import {
   AlertDialogTitle,
 } from '../ui/alert-dialog';
 import { carregarDados, salvarConfiguracao, ConfiguracaoLeitura } from '../../utils/storage/leituraStorage';
+import { ThemeService } from '../../services/themeService';
+import { useTranslations } from '../../utils/i18n/translations';
 
 interface ConfiguracoesLeituraPageProps {
   onVoltar: () => void;
 }
 
 export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeituraPageProps) {
+  const t = useTranslations();
+
   // Scroll para o topo quando o componente montar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -39,6 +43,17 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
   
   // Estado para controlar o dialog de confirmação
   const [mostrarAlertaReset, setMostrarAlertaReset] = useState(false);
+  
+  // Hook para monitorar tema
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
+  }, []);
 
   // Carregar configurações salvas
   useEffect(() => {
@@ -110,8 +125,9 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
     };
     salvarConfiguracao(configuracao);
 
-    toast.success('Configurações salvas! ✅', {
-      description: 'Suas preferências foram atualizadas',
+    toast.success(t.bibleSettingsPage.toastSaveSuccess, {
+      description: t.bibleSettingsPage.toastSaveSuccessDesc,
+      icon: <Check className="w-5 h-5" />
     });
 
     // Voltar para a página anterior após salvar
@@ -137,8 +153,9 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
     // Fechar o dialog
     setMostrarAlertaReset(false);
 
-    toast.success('Progresso resetado! 🔄', {
-      description: 'Suas novas configurações foram salvas. Você começará do zero!',
+    toast.success(t.bibleSettingsPage.toastReset, {
+      description: t.bibleSettingsPage.toastResetDesc,
+      icon: <Check className="w-5 h-5" />
     });
 
     // Voltar para a página anterior
@@ -150,35 +167,39 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
   const getNomePlano = (plano: string) => {
     switch (plano) {
       case 'cronologico':
-        return 'Cronológico';
+        return t.bibleSettingsPage.chronological;
       case 'tematico':
-        return 'Temático';
+        return t.bibleSettingsPage.thematic;
       case 'sequencial':
-        return 'Sequencial';
+        return t.bibleSettingsPage.sequential;
       default:
-        return 'Cronológico';
+        return t.bibleSettingsPage.chronological;
     }
   };
 
   const getNomeMeta = (meta: string) => {
     switch (meta) {
       case '1capitulo':
-        return '1 capítulo';
+        return t.bibleSettingsPage.oneChapter;
       case '3capitulos':
-        return '3 capítulos';
+        return t.bibleSettingsPage.threeChapters;
       case '5capitulos':
-        return '5 capítulos';
-      case 'personalizado':
-        return 'Personalizado';
+        return t.bibleSettingsPage.fiveChapters;
       default:
-        return '1 capítulo';
+        return t.bibleSettingsPage.oneChapter;
     }
   };
 
   return (
-    <div className="min-h-screen bg-neutral pb-20">
+    <div 
+      className="min-h-screen pb-20"
+      style={{ backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE' }}
+    >
       {/* Header fixo */}
-      <div className="sticky top-0 z-10 bg-primary-500 text-white">
+      <div 
+        className="sticky top-0 z-10 text-white"
+        style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
+      >
         <div className="flex items-center gap-4 px-6 pt-12 pb-4">
           <Button
             variant="ghost"
@@ -189,8 +210,8 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h2 className="text-xl">Configurações</h2>
-            <p className="text-sm text-primary-100">Personalize sua experiência</p>
+            <h2 className="text-xl">{t.bibleSettingsPage.headerTitle}</h2>
+            <p className="text-sm opacity-90">{t.bibleSettingsPage.headerSubtitle}</p>
           </div>
         </div>
       </div>
@@ -198,54 +219,119 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
       {/* Conteúdo */}
       <div className="px-6 py-6 space-y-6">
         {/* Card: Tipo de Plano */}
-        <Card className="p-6 bg-white border-primary-100">
+        <Card 
+          className="p-6"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+            borderColor: temaAtual === 'escuro' ? '#3A3A3A' : 'rgba(74, 44, 96, 0.1)'
+          }}
+        >
           <div className="flex items-center gap-2 mb-4">
-            <BookOpen className="w-5 h-5 text-primary-600" />
-            <h3 className="text-primary-700">Tipo de Plano</h3>
+            <BookOpen 
+              className="w-5 h-5" 
+              style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+            />
+            <h3 style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}>
+              {t.bibleSettingsPage.planTypeTitle}
+            </h3>
           </div>
-          <p className="text-sm text-gray-600 mb-4">
-            Escolha como deseja ler a Bíblia
+          <p 
+            className="text-sm mb-4"
+            style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+          >
+            {t.bibleSettingsPage.planTypeSubtitle}
           </p>
           <RadioGroup
             value={planoSelecionado}
             onValueChange={setPlanoSelecionado}
             className="space-y-3"
           >
-            <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-colors">
+            <div 
+              className="flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF',
+                borderColor: planoSelecionado === 'cronologico' 
+                  ? '#C8E046' 
+                  : (temaAtual === 'escuro' ? '#3A3A3A' : '#E5E7EB')
+              }}
+            >
               <RadioGroupItem value="cronologico" id="cronologico" />
               <Label htmlFor="cronologico" className="flex-1 cursor-pointer">
-                <div className="font-medium text-primary-700 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-primary-600" />
-                  Cronológico
+                <div 
+                  className="flex items-center gap-2"
+                  style={{ color: temaAtual === 'escuro' ? '#FFFFFF' : '#4A2C60' }}
+                >
+                  <Calendar 
+                    className="w-4 h-4" 
+                    style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+                  />
+                  {t.bibleSettingsPage.chronological}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Leia a Bíblia na ordem histórica dos eventos
+                <div 
+                  className="text-xs mt-1"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.bibleSettingsPage.chronologicalShort}
                 </div>
               </Label>
             </div>
             
-            <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-colors">
+            <div 
+              className="flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF',
+                borderColor: planoSelecionado === 'tematico' 
+                  ? '#C8E046' 
+                  : (temaAtual === 'escuro' ? '#3A3A3A' : '#E5E7EB')
+              }}
+            >
               <RadioGroupItem value="tematico" id="tematico" />
               <Label htmlFor="tematico" className="flex-1 cursor-pointer">
-                <div className="font-medium text-primary-700 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-primary-600" />
-                  Temático
+                <div 
+                  className="flex items-center gap-2"
+                  style={{ color: temaAtual === 'escuro' ? '#FFFFFF' : '#4A2C60' }}
+                >
+                  <Target 
+                    className="w-4 h-4" 
+                    style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+                  />
+                  {t.bibleSettingsPage.thematic}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Explore temas e assuntos bíblicos específicos
+                <div 
+                  className="text-xs mt-1"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.bibleSettingsPage.thematicShort}
                 </div>
               </Label>
             </div>
             
-            <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-colors">
+            <div 
+              className="flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF',
+                borderColor: planoSelecionado === 'sequencial' 
+                  ? '#C8E046' 
+                  : (temaAtual === 'escuro' ? '#3A3A3A' : '#E5E7EB')
+              }}
+            >
               <RadioGroupItem value="sequencial" id="sequencial" />
               <Label htmlFor="sequencial" className="flex-1 cursor-pointer">
-                <div className="font-medium text-primary-700 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-primary-600" />
-                  Sequencial
+                <div 
+                  className="flex items-center gap-2"
+                  style={{ color: temaAtual === 'escuro' ? '#FFFFFF' : '#4A2C60' }}
+                >
+                  <BookOpen 
+                    className="w-4 h-4" 
+                    style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+                  />
+                  {t.bibleSettingsPage.sequential}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Leia do Gênesis ao Apocalipse em ordem
+                <div 
+                  className="text-xs mt-1"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.bibleSettingsPage.sequentialShort}
                 </div>
               </Label>
             </div>
@@ -253,92 +339,166 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
         </Card>
 
         {/* Card: Meta Diária */}
-        <Card className="p-6 bg-white border-2 border-secondary-200">
+        <Card 
+          className="p-6 border-2"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+            borderColor: '#C8E046'
+          }}
+        >
           <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-secondary-100 rounded-lg">
-              <Target className="w-5 h-5 text-secondary-700" />
+            <div 
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.2)' : 'rgba(200, 224, 70, 0.2)' }}
+            >
+              <Target className="w-5 h-5" style={{ color: '#C8E046' }} />
             </div>
-            <h3 className="text-primary-700">Meta Diária</h3>
+            <h3 style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}>
+              {t.bibleSettingsPage.dailyGoalTitle}
+            </h3>
           </div>
-          <p className="text-sm text-gray-600 mb-4">
-            Quantos capítulos deseja ler por dia?
+          <p 
+            className="text-sm mb-4"
+            style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+          >
+            {t.bibleSettingsPage.dailyGoalSubtitle}
           </p>
           <RadioGroup
             value={metaDiaria}
             onValueChange={setMetaDiaria}
             className="space-y-3"
           >
-            <div className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors ${
-              metaDiaria === '1capitulo' 
-                ? 'border-secondary-400 bg-secondary-50' 
-                : 'border-gray-200 hover:border-secondary-300'
-            }`}>
+            <div 
+              className="flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors"
+              style={{
+                backgroundColor: metaDiaria === '1capitulo' 
+                  ? (temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(200, 224, 70, 0.1)')
+                  : (temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF'),
+                borderColor: metaDiaria === '1capitulo' 
+                  ? '#C8E046' 
+                  : (temaAtual === 'escuro' ? '#3A3A3A' : '#E5E7EB')
+              }}
+            >
               <RadioGroupItem value="1capitulo" id="1capitulo" />
               <Label htmlFor="1capitulo" className="flex-1 cursor-pointer">
-                <div className="font-medium text-primary-700">1 capítulo por dia</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Ritmo tranquilo e reflexivo
+                <div style={{ color: temaAtual === 'escuro' ? '#FFFFFF' : '#4A2C60' }}>
+                  {t.bibleSettingsPage.oneChapterShort}
+                </div>
+                <div 
+                  className="text-xs mt-1"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.bibleSettingsPage.oneChapterPace}
                 </div>
               </Label>
               {metaDiaria === '1capitulo' && (
-                <CheckCircle2 className="w-5 h-5 text-secondary-600 flex-shrink-0" />
+                <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: '#C8E046' }} />
               )}
             </div>
             
-            <div className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors ${
-              metaDiaria === '3capitulos' 
-                ? 'border-secondary-400 bg-secondary-50' 
-                : 'border-gray-200 hover:border-secondary-300'
-            }`}>
+            <div 
+              className="flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors"
+              style={{
+                backgroundColor: metaDiaria === '3capitulos' 
+                  ? (temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(200, 224, 70, 0.1)')
+                  : (temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF'),
+                borderColor: metaDiaria === '3capitulos' 
+                  ? '#C8E046' 
+                  : (temaAtual === 'escuro' ? '#3A3A3A' : '#E5E7EB')
+              }}
+            >
               <RadioGroupItem value="3capitulos" id="3capitulos" />
               <Label htmlFor="3capitulos" className="flex-1 cursor-pointer">
-                <div className="font-medium text-primary-700">3 capítulos por dia</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Ritmo moderado e equilibrado
+                <div style={{ color: temaAtual === 'escuro' ? '#FFFFFF' : '#4A2C60' }}>
+                  {t.bibleSettingsPage.threeChaptersShort}
+                </div>
+                <div 
+                  className="text-xs mt-1"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.bibleSettingsPage.threeChaptersPace}
                 </div>
               </Label>
               {metaDiaria === '3capitulos' && (
-                <CheckCircle2 className="w-5 h-5 text-secondary-600 flex-shrink-0" />
+                <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: '#C8E046' }} />
               )}
             </div>
             
-            <div className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors ${
-              metaDiaria === '5capitulos' 
-                ? 'border-secondary-400 bg-secondary-50' 
-                : 'border-gray-200 hover:border-secondary-300'
-            }`}>
+            <div 
+              className="flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors"
+              style={{
+                backgroundColor: metaDiaria === '5capitulos' 
+                  ? (temaAtual === 'escuro' ? 'rgba(200, 224, 70, 0.1)' : 'rgba(200, 224, 70, 0.1)')
+                  : (temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF'),
+                borderColor: metaDiaria === '5capitulos' 
+                  ? '#C8E046' 
+                  : (temaAtual === 'escuro' ? '#3A3A3A' : '#E5E7EB')
+              }}
+            >
               <RadioGroupItem value="5capitulos" id="5capitulos" />
               <Label htmlFor="5capitulos" className="flex-1 cursor-pointer">
-                <div className="font-medium text-primary-700">5 capítulos por dia</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Ritmo intenso e dedicado
+                <div style={{ color: temaAtual === 'escuro' ? '#FFFFFF' : '#4A2C60' }}>
+                  {t.bibleSettingsPage.fiveChaptersShort}
+                </div>
+                <div 
+                  className="text-xs mt-1"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.bibleSettingsPage.fiveChaptersPace}
                 </div>
               </Label>
               {metaDiaria === '5capitulos' && (
-                <CheckCircle2 className="w-5 h-5 text-secondary-600 flex-shrink-0" />
+                <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: '#C8E046' }} />
               )}
             </div>
           </RadioGroup>
         </Card>
 
         {/* Card: Notificações */}
-        <Card className="p-6 bg-white border-primary-100">
+        <Card 
+          className="p-6"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+            borderColor: temaAtual === 'escuro' ? '#3A3A3A' : 'rgba(74, 44, 96, 0.1)'
+          }}
+        >
           <div className="flex items-center gap-2 mb-4">
-            <Bell className="w-5 h-5 text-primary-600" />
-            <h3 className="text-primary-700">Notificações</h3>
+            <Bell 
+              className="w-5 h-5" 
+              style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+            />
+            <h3 style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}>
+              {t.bibleSettingsPage.notificationsTitle}
+            </h3>
           </div>
-          <p className="text-sm text-gray-600 mb-4">
-            Configure lembretes para sua rotina de leitura
+          <p 
+            className="text-sm mb-4"
+            style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+          >
+            {t.bibleSettingsPage.notificationsSubtitle}
           </p>
           
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg border-2" style={{ backgroundColor: 'rgba(74, 44, 96, 0.04)', borderColor: 'rgba(74, 44, 96, 0.15)' }}>
+            <div 
+              className="flex items-center justify-between p-4 rounded-lg border-2" 
+              style={{ 
+                backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : 'rgba(74, 44, 96, 0.04)', 
+                borderColor: temaAtual === 'escuro' ? '#3A3A3A' : 'rgba(74, 44, 96, 0.15)' 
+              }}
+            >
               <div className="flex-1">
-                <Label htmlFor="notif-diarias" className="font-medium cursor-pointer text-primary-700">
-                  Lembrete diário
+                <Label 
+                  htmlFor="notif-diarias" 
+                  className="cursor-pointer"
+                  style={{ color: temaAtual === 'escuro' ? '#FFFFFF' : '#4A2C60' }}
+                >
+                  {t.bibleSettingsPage.dailyReminderShort}
                 </Label>
-                <p className="text-xs text-gray-600 mt-1">
-                  Receba um lembrete para ler todos os dias às 9h
+                <p 
+                  className="text-xs mt-1"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.bibleSettingsPage.dailyReminderShortDesc}
                 </p>
               </div>
               <Switch
@@ -348,13 +508,26 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
               />
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-lg border-2" style={{ backgroundColor: 'rgba(74, 44, 96, 0.04)', borderColor: 'rgba(74, 44, 96, 0.15)' }}>
+            <div 
+              className="flex items-center justify-between p-4 rounded-lg border-2" 
+              style={{ 
+                backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : 'rgba(74, 44, 96, 0.04)', 
+                borderColor: temaAtual === 'escuro' ? '#3A3A3A' : 'rgba(74, 44, 96, 0.15)' 
+              }}
+            >
               <div className="flex-1">
-                <Label htmlFor="lembrete-reflexao" className="font-medium cursor-pointer text-primary-700">
-                  Lembrete de reflexão
+                <Label 
+                  htmlFor="lembrete-reflexao" 
+                  className="cursor-pointer"
+                  style={{ color: temaAtual === 'escuro' ? '#FFFFFF' : '#4A2C60' }}
+                >
+                  {t.bibleSettingsPage.reflectionReminderShort}
                 </Label>
-                <p className="text-xs text-gray-600 mt-1">
-                  Sugestão para refletir após completar a leitura
+                <p 
+                  className="text-xs mt-1"
+                  style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+                >
+                  {t.bibleSettingsPage.reflectionReminderShortDesc}
                 </p>
               </div>
               <Switch
@@ -367,84 +540,183 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
         </Card>
 
         {/* Card: Resumo das Configurações */}
-        <Card className="p-6 bg-secondary-50 border-2 border-secondary-500">
-          <h3 className="mb-4 flex items-center gap-2 text-primary-700">
-            <ClipboardList className="w-5 h-5 text-secondary-500" />
-            Resumo das Configurações
+        <Card 
+          className="p-6 border-2" 
+          style={{ 
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FAF8FF', 
+            borderColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+          }}
+        >
+          <h3 
+            className="mb-4 flex items-center gap-2" 
+            style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+          >
+            <ClipboardList 
+              className="w-5 h-5" 
+              style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }} 
+            />
+            {t.bibleSettingsPage.summaryTitle}
           </h3>
           <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
-              <span className="text-sm text-gray-700">Plano de leitura:</span>
-              <span className="font-medium text-primary-500">{getNomePlano(planoSelecionado)}</span>
+            <div 
+              className="flex justify-between items-center p-3 rounded-lg border" 
+              style={{ 
+                backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF',
+                borderColor: temaAtual === 'escuro' ? '#3A3A3A' : '#E8DFFF' 
+              }}
+            >
+              <span 
+                className="text-sm"
+                style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#4B5563' }}
+              >
+                {t.bibleSettingsPage.summaryPlan}
+              </span>
+              <span 
+                style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+              >
+                {getNomePlano(planoSelecionado)}
+              </span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
-              <span className="text-sm text-gray-700">Meta diária:</span>
-              <span className="font-medium text-secondary-700">{getNomeMeta(metaDiaria)}</span>
+            <div 
+              className="flex justify-between items-center p-3 rounded-lg border" 
+              style={{ 
+                backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF',
+                borderColor: temaAtual === 'escuro' ? '#3A3A3A' : '#E8DFFF' 
+              }}
+            >
+              <span 
+                className="text-sm"
+                style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#4B5563' }}
+              >
+                {t.bibleSettingsPage.summaryGoal}
+              </span>
+              <span 
+                style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+              >
+                {getNomeMeta(metaDiaria)}
+              </span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
-              <span className="text-sm text-gray-700">Lembretes:</span>
-              <span className="font-medium text-secondary-700">
-                {notificacoesDiarias && lembreteReflexao ? 'Todos ativos' : 
-                 notificacoesDiarias || lembreteReflexao ? 'Parcialmente ativos' : 
-                 'Desativados'}
+            <div 
+              className="flex justify-between items-center p-3 rounded-lg border" 
+              style={{ 
+                backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF',
+                borderColor: temaAtual === 'escuro' ? '#3A3A3A' : '#E8DFFF' 
+              }}
+            >
+              <span 
+                className="text-sm"
+                style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#4B5563' }}
+              >
+                {t.bibleSettingsPage.summaryReminders}
+              </span>
+              <span 
+                style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+              >
+                {notificacoesDiarias && lembreteReflexao ? t.bibleSettingsPage.remindersAll : 
+                 notificacoesDiarias || lembreteReflexao ? t.bibleSettingsPage.remindersPartial : 
+                 t.bibleSettingsPage.remindersNone}
               </span>
             </div>
           </div>
         </Card>
 
         {/* Botão de Salvar */}
-        <div className="sticky bottom-6">
-          <Button
-            className="w-full bg-primary-500 hover:bg-primary-600 text-white shadow-lg border-0"
-            size="lg"
-            onClick={handleSalvarConfiguracoes}
-          >
-            <Save className="w-5 h-5 mr-2" />
-            Salvar Configurações
-          </Button>
-        </div>
+        <button
+          className="w-full shadow-lg h-14 text-lg rounded-md transition-all flex items-center justify-center cursor-pointer border-0"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+            color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF',
+            border: 'none',
+            outline: 'none'
+          }}
+          onMouseEnter={(e) => {
+            if (temaAtual === 'escuro') {
+              e.currentTarget.style.backgroundColor = '#B5CC3D';
+            } else {
+              e.currentTarget.style.backgroundColor = '#5A3C70';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (temaAtual === 'escuro') {
+              e.currentTarget.style.backgroundColor = '#C8E046';
+            } else {
+              e.currentTarget.style.backgroundColor = '#4A2C60';
+            }
+          }}
+          onClick={handleSalvarConfiguracoes}
+        >
+          <Save className="w-5 h-5 mr-2" />
+          {t.bibleSettingsPage.saveButton}
+        </button>
       </div>
 
       {/* Dialog de confirmação para resetar progresso */}
       <AlertDialog open={mostrarAlertaReset} onOpenChange={setMostrarAlertaReset}>
-        <AlertDialogContent className="max-w-[calc(100%-3rem)] sm:max-w-lg">
+        <AlertDialogContent 
+          className="max-w-[calc(100%-3rem)] sm:max-w-lg"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#2A2A2A' : '#FFFFFF',
+            borderColor: temaAtual === 'escuro' ? '#3A3A3A' : '#E5E7EB'
+          }}
+        >
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-3 bg-orange-100 rounded-full">
                 <AlertTriangle className="w-6 h-6 text-orange-600" />
               </div>
-              <AlertDialogTitle className="text-xl">Resetar Progresso?</AlertDialogTitle>
+              <AlertDialogTitle 
+                className="text-xl"
+                style={{ color: temaAtual === 'escuro' ? '#FFFFFF' : '#1F2937' }}
+              >
+                {t.bibleSettingsPage.resetDialogTitle}
+              </AlertDialogTitle>
             </div>
-            <AlertDialogDescription>
-              Alterar o plano de leitura ou meta diária irá resetar seu progresso atual incluindo leituras, ofensiva, conquistas e reflexões.
+            <AlertDialogDescription style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}>
+              {t.bibleSettingsPage.resetDialogDescription}
             </AlertDialogDescription>
           </AlertDialogHeader>
           
           <div className="text-left space-y-3 pt-2 px-1">
-            <p className="text-sm text-gray-700">
-              Esta ação irá <strong>resetar</strong> os seguintes dados:
+            <p 
+              className="text-sm"
+              style={{ color: temaAtual === 'escuro' ? '#D1D5DB' : '#374151' }}
+            >
+              {t.bibleSettingsPage.resetDialogText} <strong>{t.bibleSettingsPage.resetDialogTextBold}</strong> {t.bibleSettingsPage.resetDialogTextContinue}
             </p>
-            <ul className="text-sm text-gray-600 space-y-2.5">
+            <ul 
+              className="text-sm space-y-2.5"
+              style={{ color: temaAtual === 'escuro' ? '#9CA3AF' : '#6B7280' }}
+            >
               <li className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-primary-600 flex-shrink-0" />
-                <span>Leituras concluídas</span>
+                <BookOpen 
+                  className="w-4 h-4 flex-shrink-0" 
+                  style={{ color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60' }}
+                />
+                <span>{t.bibleSettingsPage.resetItem1}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                <span>Dias de ofensiva</span>
+                <span>{t.bibleSettingsPage.resetItem2}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-yellow-600 flex-shrink-0" />
-                <span>Conquistas desbloqueadas</span>
+                <span>{t.bibleSettingsPage.resetItem3}</span>
               </li>
               <li className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                <span>Reflexões registradas</span>
+                <span>{t.bibleSettingsPage.resetItem4}</span>
               </li>
             </ul>
-            <div className="text-sm text-primary-700 mt-4 p-3 bg-primary-50 rounded-lg border-2 border-primary-200 flex items-start gap-2">
-              <Lightbulb className="w-4 h-4 text-secondary-600 flex-shrink-0 mt-0.5" />
-              <span>Você começará uma nova jornada de leitura com as novas configurações.</span>
+            <div 
+              className="text-sm mt-4 p-3 rounded-lg border-2 flex items-start gap-2"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? 'rgba(74, 44, 96, 0.2)' : 'rgba(74, 44, 96, 0.05)',
+                borderColor: temaAtual === 'escuro' ? '#C8E046' : 'rgba(74, 44, 96, 0.2)',
+                color: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60'
+              }}
+            >
+              <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#C8E046' }} />
+              <span>{t.bibleSettingsPage.resetDialogTip}</span>
             </div>
           </div>
           
@@ -452,15 +724,21 @@ export default function ConfiguracoesLeituraPage({ onVoltar }: ConfiguracoesLeit
             <AlertDialogCancel 
               onClick={() => setMostrarAlertaReset(false)}
               className="flex-1"
+              style={{
+                backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FFFFFF',
+                color: temaAtual === 'escuro' ? '#FFFFFF' : '#1F2937',
+                borderColor: temaAtual === 'escuro' ? '#3A3A3A' : '#E5E7EB'
+              }}
             >
-              Cancelar
+              {t.bibleSettingsPage.resetDialogCancel}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmarResetESalvar}
-              className="flex-1 bg-primary-500 hover:bg-primary-600 text-white"
+              className="flex-1 text-white hover:opacity-90"
+              style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
             >
               <AlertTriangle className="w-4 h-4 mr-2" />
-              Confirmar Reset
+              {t.bibleSettingsPage.resetDialogConfirm}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

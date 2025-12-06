@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Smile, Heart, Zap, Sparkles, Bird } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
@@ -25,11 +25,11 @@ export default function RegistrarExperienciaModal({
   const [sentimento, setSentimento] = useState<string | undefined>();
 
   const sentimentos = [
-    { emoji: '😊', label: 'Alegre' },
-    { emoji: '🙏', label: 'Grato' },
-    { emoji: '💪', label: 'Forte' },
-    { emoji: '✨', label: 'Inspirado' },
-    { emoji: '😌', label: 'Em paz' },
+    { icon: Smile, label: 'Alegre', color: '#F59E0B' },
+    { icon: Heart, label: 'Grato', color: '#EC4899' },
+    { icon: Zap, label: 'Forte', color: '#8B5CF6' },
+    { icon: Sparkles, label: 'Inspirado', color: '#10B981' },
+    { icon: Bird, label: 'Em paz', color: '#3B82F6' },
   ];
 
   const handleSalvar = () => {
@@ -44,7 +44,7 @@ export default function RegistrarExperienciaModal({
       sentimento,
     });
 
-    toast.success('Experiência registrada! ✨', {
+    toast.success('Experiência registrada!', {
       description: `Mais um passo cultivando ${qualidade.nome.toLowerCase()}`,
     });
 
@@ -119,20 +119,26 @@ export default function RegistrarExperienciaModal({
           <div>
             <Label>Como você se sentiu? (opcional)</Label>
             <div className="flex gap-3 mt-2">
-              {sentimentos.map((s) => (
-                <button
-                  key={s.emoji}
-                  onClick={() => setSentimento(sentimento === s.emoji ? undefined : s.emoji)}
-                  className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${
-                    sentimento === s.emoji
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <span className="text-2xl">{s.emoji}</span>
-                  <span className="text-xs text-gray-600">{s.label}</span>
-                </button>
-              ))}
+              {sentimentos.map((s) => {
+                const IconComponent = s.icon;
+                return (
+                  <button
+                    key={s.label}
+                    onClick={() => setSentimento(sentimento === s.label ? undefined : s.label)}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${
+                      sentimento === s.label
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <IconComponent 
+                      className="w-6 h-6" 
+                      style={{ color: sentimento === s.label ? s.color : '#9CA3AF' }}
+                    />
+                    <span className="text-xs text-gray-600">{s.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

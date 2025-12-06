@@ -3,12 +3,24 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { DataService } from '../../services/dataService';
+import { ThemeService } from '../../services/themeService';
+import { useState, useEffect } from 'react';
 
 interface VideosDetalhesProps {
   onClose: () => void;
 }
 
 export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleThemeChange);
+    return () => ThemeService.off('mynis-theme-change', handleThemeChange);
+  }, []);
+
   // Buscar dados reais do DataService
   const totalVideos = DataService.getTotalVideosMes();
   const videosPorCategoria = DataService.getVideosPorCategoria();
@@ -100,7 +112,10 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Header */}
-      <div className="text-white px-6 pt-12 pb-6 sticky top-0 z-10" style={{ backgroundColor: '#4A2C60' }}>
+      <div 
+        className="text-white px-6 pt-12 pb-6 sticky top-0 z-10" 
+        style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
+      >
         <button onClick={onClose} className="flex items-center gap-2 mb-4 hover:opacity-80">
           <ArrowLeft className="w-5 h-5" />
           <span>Início</span>
@@ -120,7 +135,8 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
         <Card className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200">
           <div className="space-y-3">
             <h3 className="flex items-center gap-2 text-indigo-900">
-              🎬 Excelente uso de recursos!
+              <Sparkles className="w-5 h-5 text-indigo-600" />
+              Excelente uso de recursos!
             </h3>
             <p className="text-gray-700">
               Você mostrou <strong>8 vídeos</strong> este mês, usando ferramentas visuais para ensinar verdades bíblicas.
@@ -229,8 +245,9 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
             ))}
           </div>
           
-          <p className="text-sm text-gray-700 p-3 rounded" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)' }}>
-            💡 Você usa principalmente vídeos motivacionais. Boa estratégia para interessados!
+          <p className="text-sm text-gray-700 p-3 rounded flex items-start gap-2" style={{ backgroundColor: 'rgba(74, 44, 96, 0.05)' }}>
+            <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#4A2C60' }} />
+            <span>Você usa principalmente vídeos motivacionais. Boa estratégia para interessados!</span>
           </p>
         </Card>
 
@@ -259,17 +276,17 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
           
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="text-center p-3 bg-white rounded-lg">
-              <p className="text-2xl">😊</p>
+              <ThumbsUp className="w-8 h-8 mx-auto mb-2 text-green-600" />
               <p className="text-xl text-green-600">7</p>
               <p className="text-xs text-gray-600">Positivas<br />88%</p>
             </div>
             <div className="text-center p-3 bg-white rounded-lg">
-              <p className="text-2xl">😐</p>
+              <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-400" />
               <p className="text-xl text-gray-400">1</p>
               <p className="text-xs text-gray-600">Neutras<br />12%</p>
             </div>
             <div className="text-center p-3 bg-white rounded-lg">
-              <p className="text-2xl">😞</p>
+              <ThumbsUp className="w-8 h-8 mx-auto mb-2 text-gray-300 rotate-180" />
               <p className="text-xl text-gray-300">0</p>
               <p className="text-xs text-gray-600">Negativas<br />0%</p>
             </div>
@@ -281,11 +298,11 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
               <span><strong>2 pessoas</strong> iniciaram estudo após assistir</span>
             </div>
             <div className="flex items-center gap-2 p-3 bg-white rounded">
-              <span className="text-xl">🎥</span>
+              <Play className="w-5 h-5" style={{ color: '#4A2C60' }} />
               <span><strong>3 pessoas</strong> pediram mais vídeos</span>
             </div>
             <div className="flex items-center gap-2 p-3 bg-white rounded">
-              <span className="text-xl">📖</span>
+              <BookOpen className="w-5 h-5" style={{ color: '#4A2C60' }} />
               <span><strong>2 pessoas</strong> aceitaram publicação relacionada</span>
             </div>
           </div>
@@ -304,8 +321,9 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
 
         {/* Sugestões de Vídeos */}
         <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
-          <h3 className="mb-4 text-orange-900">
-            💡 Vídeos Populares que Você Ainda Não Usou
+          <h3 className="mb-4 text-orange-900 flex items-center gap-2">
+            <Lightbulb className="w-5 h-5 text-orange-600" />
+            Vídeos Populares que Você Ainda Não Usou
           </h3>
           
           <div className="space-y-3">
@@ -320,8 +338,9 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
                     <p className="text-xs text-gray-600 mt-1">
                       {video.categoria} • {video.duracao}
                     </p>
-                    <p className="text-xs text-orange-700 mt-1">
-                      ⭐ {video.destaque}
+                    <p className="text-xs text-orange-700 mt-1 flex items-center gap-1">
+                      <Star className="w-3 h-3" />
+                      {video.destaque}
                     </p>
                   </div>
                 </div>
@@ -364,7 +383,7 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
           
           <p className="text-sm text-gray-700 text-center pt-2">
             <TrendingUp className="w-4 h-4 inline text-green-600" />
-            {' '}Aumento constante no uso de vídeos: <strong className="text-green-600">+100%</strong> em 6 meses 📈
+            {' '}Aumento constante no uso de vídeos: <strong className="text-green-600">+100%</strong> em 6 meses
           </p>
         </Card>
       </div>
@@ -376,14 +395,17 @@ export default function VideosDetalhes({ onClose }: VideosDetalhesProps) {
           Registrar Novo Vídeo
         </Button>
         <div className="grid grid-cols-3 gap-2">
-          <Button variant="outline" size="sm" className="text-xs">
-            📚 Catálogo
+          <Button variant="outline" size="sm" className="text-xs flex items-center justify-center gap-1">
+            <BookOpen className="w-3 h-3" />
+            Catálogo
           </Button>
-          <Button variant="outline" size="sm" className="text-xs">
-            📊 Histórico
+          <Button variant="outline" size="sm" className="text-xs flex items-center justify-center gap-1">
+            <BarChart3 className="w-3 h-3" />
+            Histórico
           </Button>
-          <Button variant="outline" size="sm" className="text-xs">
-            💾 Baixar
+          <Button variant="outline" size="sm" className="text-xs flex items-center justify-center gap-1">
+            <Download className="w-3 h-3" />
+            Baixar
           </Button>
         </div>
       </div>

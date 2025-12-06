@@ -19,7 +19,6 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
     {
       id: 'casa-em-casa',
       nome: 'Casa em Casa',
-      emoji: '🚶',
       icon: MapPin,
       descricao: 'Visitação porta a porta',
       cor: 'bg-green-50 border-green-200 hover:bg-green-100',
@@ -28,7 +27,6 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
     {
       id: 'testemunho-publico',
       nome: 'Testemunho Público',
-      emoji: '🏢',
       icon: Building2,
       descricao: 'Carrinho ou banca pública',
       cor: 'border-gray-200 hover:bg-gray-50',
@@ -38,7 +36,6 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
     {
       id: 'telefone',
       nome: 'Testemunho por Telefone',
-      emoji: '📞',
       icon: Phone,
       descricao: 'Chamadas e mensagens',
       cor: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
@@ -47,7 +44,6 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
     {
       id: 'carta',
       nome: 'Testemunho por Carta',
-      emoji: '✉️',
       icon: Mail,
       descricao: 'Cartas e mensagens escritas',
       cor: 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
@@ -56,7 +52,6 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
     {
       id: 'informal',
       nome: 'Testemunho Informal',
-      emoji: '💼',
       icon: Briefcase,
       descricao: 'Conversas casuais no dia a dia',
       cor: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
@@ -65,7 +60,6 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
     {
       id: 'revisita',
       nome: 'Revisita',
-      emoji: '🌱',
       icon: Users,
       descricao: 'Visitar interesse manifestado',
       cor: 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100',
@@ -74,7 +68,6 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
     {
       id: 'estudo-biblico',
       nome: 'Estudo Bíblico',
-      emoji: '📚',
       icon: BookOpen,
       descricao: 'Conduzir estudo regular',
       cor: 'bg-amber-50 border-amber-200 hover:bg-amber-100',
@@ -149,7 +142,7 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-                        <span className="text-2xl">{tipo.emoji}</span>
+                        <Icon className="w-6 h-6" />
                       </div>
                       <div className="flex-1">
                         <h3 className="text-base mb-1">
@@ -173,7 +166,7 @@ export default function IniciarSessaoModal({ onClose, onCadastroManual }: Inicia
               <Card className={`p-4 ${tipoAtual.cor.replace('hover:bg', 'bg')}`}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
-                    <span className="text-xl">{tipoAtual.emoji}</span>
+                    <Icon className="w-6 h-6" />
                   </div>
                   <div>
                     <p className="text-sm">{tipoAtual.nome}</p>

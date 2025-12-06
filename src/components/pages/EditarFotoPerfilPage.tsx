@@ -1,9 +1,10 @@
-import { ArrowLeft, Camera, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Upload, AlertCircle, Check } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { toast } from 'sonner';
 import { DataService } from '../../services/dataService';
+import { ThemeService } from '../../services/themeService';
 
 interface EditarFotoPerfilPageProps {
   onVoltar: () => void;
@@ -13,10 +14,19 @@ export default function EditarFotoPerfilPage({ onVoltar }: EditarFotoPerfilPageP
   const perfil = DataService.getPerfil();
   const [fotoPreview, setFotoPreview] = useState<string | null>(perfil.avatar || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
 
   // Scroll para o topo quando o componente montar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+    ThemeService.on('mynis-theme-change', handleThemeChange);
+    return () => ThemeService.off('mynis-theme-change', handleThemeChange);
   }, []);
 
   // Sincronizar com o perfil sempre que o componente montar
@@ -31,13 +41,17 @@ export default function EditarFotoPerfilPage({ onVoltar }: EditarFotoPerfilPageP
 
     // Validar tipo de arquivo
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor, selecione uma imagem válida');
+      toast.error('Por favor, selecione uma imagem válida', {
+        icon: <AlertCircle className="w-5 h-5" />
+      });
       return;
     }
 
     // Validar tamanho (máximo 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('A imagem deve ter no máximo 5MB');
+      toast.error('A imagem deve ter no máximo 5MB', {
+        icon: <AlertCircle className="w-5 h-5" />
+      });
       return;
     }
 
@@ -61,19 +75,26 @@ export default function EditarFotoPerfilPage({ onVoltar }: EditarFotoPerfilPageP
       avatar: fotoPreview || undefined
     });
 
-    toast.success(fotoPreview ? 'Foto atualizada! 📸' : 'Foto removida! ✅', {
+    toast.success(fotoPreview ? 'Foto atualizada!' : 'Foto removida!', {
       description: fotoPreview 
         ? 'Sua nova foto de perfil está visível no app' 
         : 'Você voltou a usar o avatar padrão',
+      icon: fotoPreview ? <Check className="w-5 h-5" /> : <Trash2 className="w-5 h-5" />
     });
 
     onVoltar();
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto pb-20" style={{ backgroundColor: '#FDF8EE' }}>
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto pb-20" 
+      style={{ backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE' }}
+    >
       {/* Header fixo */}
-      <div className="sticky top-0 z-10 text-white" style={{ backgroundColor: '#4A2C60' }}>
+      <div 
+        className="sticky top-0 z-10 text-white" 
+        style={{ backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' }}
+      >
         <div className="flex items-center gap-4 px-6 pt-12 pb-4">
           <Button
             variant="ghost"
@@ -160,7 +181,34 @@ export default function EditarFotoPerfilPage({ onVoltar }: EditarFotoPerfilPageP
               {fotoPreview && (
                 <Button
                   variant="outline"
-                  className="text-red-600 border-red-300 hover:bg-red-50"
+                  className="border-2"
+                  style={temaAtual === 'escuro' ? {
+                    borderColor: 'rgba(239, 68, 68, 0.5)',
+                    color: '#FCA5A5',
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)'
+                  } : {
+                    borderColor: '#FCA5A5',
+                    color: '#B91C1C',
+                    backgroundColor: '#FFFFFF'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (temaAtual === 'escuro') {
+                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.25)';
+                      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.7)';
+                    } else {
+                      e.currentTarget.style.backgroundColor = '#FEE2E2';
+                      e.currentTarget.style.borderColor = '#F87171';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (temaAtual === 'escuro') {
+                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+                    } else {
+                      e.currentTarget.style.backgroundColor = '#FFFFFF';
+                      e.currentTarget.style.borderColor = '#FCA5A5';
+                    }
+                  }}
                   onClick={handleRemoverFoto}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -230,8 +278,25 @@ export default function EditarFotoPerfilPage({ onVoltar }: EditarFotoPerfilPageP
 
         {/* Botão Salvar */}
         <Button 
-          className="w-full hover:opacity-90 text-white py-6"
-          style={{ backgroundColor: '#4A2C60' }}
+          className="w-full py-6 border-0"
+          style={{
+            backgroundColor: temaAtual === 'escuro' ? '#C8E046' : '#4A2C60',
+            color: temaAtual === 'escuro' ? '#1F2937' : '#FFFFFF'
+          }}
+          onMouseEnter={(e) => {
+            if (temaAtual === 'escuro') {
+              e.currentTarget.style.backgroundColor = '#B5CC3D';
+            } else {
+              e.currentTarget.style.opacity = '0.9';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (temaAtual === 'escuro') {
+              e.currentTarget.style.backgroundColor = '#C8E046';
+            } else {
+              e.currentTarget.style.opacity = '1';
+            }
+          }}
           onClick={handleSalvar}
         >
           Salvar Foto de Perfil

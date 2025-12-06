@@ -424,6 +424,25 @@ export class SmartNotificationManager {
   // ===== INICIALIZAÇÃO =====
 
   /**
+   * Inicia verificação periódica de notificações
+   */
+  static startPeriodicCheck(): void {
+    console.log('🔔 Iniciando verificação periódica de notificações...');
+    this.initialize();
+  }
+
+  /**
+   * Para verificação periódica de notificações
+   */
+  static stopPeriodicCheck(): void {
+    console.log('🔕 Parando verificação periódica de notificações...');
+    if (this.checkIntervalId) {
+      clearInterval(this.checkIntervalId);
+      this.checkIntervalId = null;
+    }
+  }
+
+  /**
    * Inicializa o sistema de notificações
    */
   static initialize(): void {
@@ -446,17 +465,6 @@ export class SmartNotificationManager {
     }, this.CHECK_INTERVAL);
 
     console.log(`✅ Sistema de notificações ativo (verificação a cada 5 minutos)`);
-  }
-
-  /**
-   * Para o sistema de notificações
-   */
-  static stop(): void {
-    if (this.checkIntervalId) {
-      clearInterval(this.checkIntervalId);
-      this.checkIntervalId = null;
-      console.log('🔕 Sistema de notificações pausado');
-    }
   }
 
   /**

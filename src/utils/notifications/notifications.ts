@@ -240,7 +240,10 @@ export class NotificationScheduler {
 
     const now = new Date();
     const hour = now.getHours();
-    const day = now.getDay();
+    const jsDay = now.getDay(); // 0=Dom, 1=Seg, 2=Ter, ..., 6=Sáb
+    
+    // Ajustar para o mapeamento do cronograma: 0=Seg, 1=Ter, ..., 6=Dom
+    const cronogramaDay = jsDay === 0 ? 6 : jsDay - 1;
     
     let periodo = '';
     let periodoIndex = -1;
@@ -256,7 +259,7 @@ export class NotificationScheduler {
       periodoIndex = 2;
     }
 
-    if (periodoIndex >= 0 && cronograma[periodoIndex] && cronograma[periodoIndex][day]) {
+    if (periodoIndex >= 0 && cronograma[periodoIndex] && cronograma[periodoIndex][cronogramaDay]) {
       MynisNotifications.lembreteMinisterio(periodo);
     }
   }

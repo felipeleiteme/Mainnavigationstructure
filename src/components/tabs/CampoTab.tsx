@@ -24,14 +24,18 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { DataService, Revisita as RevisitaType } from '../../services/dataService';
+import { ThemeService } from '@/services/themeService';
+import { LanguageService } from '@/services/languageService';
+import { useTranslations } from '@/utils/i18n/translations';
 import FormularioEstudo from '../estudos/FormularioEstudo';
 import DetalhesRevisitaPage from '../pages/DetalhesRevisitaPage';
 import NovaRevisitaPage from '../pages/NovaRevisitaPage';
 import NovoEstudoPage from '../pages/NovoEstudoPage';
 import RegistrarVisitaPage from '../pages/RegistrarVisitaPage';
 import FAB from '../shared/FAB';
+import EmptyState from '../shared/EmptyState';
 
 interface CampoTabProps {
   filtro?: string;
@@ -51,6 +55,29 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
   const [showFormularioEstudo, setShowFormularioEstudo] = useState(false);
   const [revisitaParaEstudo, setRevisitaParaEstudo] = useState<RevisitaType | undefined>();
   const [revisitas, setRevisitas] = useState<RevisitaType[]>([]);
+  const [temaAtual, setTemaAtual] = useState(ThemeService.getEffectiveTheme());
+  const [idiomaAtual, setIdiomaAtual] = useState(LanguageService.getLanguage());
+  const t = useTranslations(idiomaAtual);
+
+  // Escutar mudanças de tema
+  useEffect(() => {
+    const handleTemaChange = () => {
+      setTemaAtual(ThemeService.getEffectiveTheme());
+    };
+
+    ThemeService.on('mynis-theme-change', handleTemaChange);
+    return () => ThemeService.off('mynis-theme-change', handleTemaChange);
+  }, []);
+
+  // Escutar mudanças de idioma
+  useEffect(() => {
+    const handleIdiomaChange = () => {
+      setIdiomaAtual(LanguageService.getLanguage());
+    };
+
+    LanguageService.on('mynis-language-change', handleIdiomaChange);
+    return () => LanguageService.off('mynis-language-change', handleIdiomaChange);
+  }, []);
 
   // Aplicar filtro passado como prop
   useEffect(() => {
@@ -86,7 +113,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
 
   // Processar revisitas para exibição
   const revisitasProcessadas = revisitas.map(r => {
-    const ultimaVisita = r.ultimaVisita ? calcularTempoAtras(r.ultimaVisita) : 'Primeira visita';
+    const ultimaVisita = r.ultimaVisita ? calcularTempoAtras(r.ultimaVisita) : t.fieldTab.firstVisit;
     const diasDesdeVisita = r.ultimaVisita ? calcularDias(r.ultimaVisita) : 0;
     
     return {
@@ -133,9 +160,9 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
     const dataVisita = new Date(data);
     const diff = Math.floor((agora.getTime() - dataVisita.getTime()) / (1000 * 60 * 60 * 24));
     
-    if (diff === 0) return 'Hoje';
-    if (diff === 1) return 'Há 1 dia';
-    return `Há ${diff} dias`;
+    if (diff === 0) return t.fieldTab.today;
+    if (diff === 1) return t.fieldTab.oneDayAgo;
+    return t.fieldTab.daysAgo(diff);
   }
 
   function calcularDias(data: string) {
@@ -182,7 +209,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
     
     // Mostrar mensagem de sucesso
     import('sonner@2.0.3').then(({ toast }) => {
-      toast.success('Estudo Bíblico Iniciado! 📖', {
+      toast.success('Estudo Bíblico Iniciado!', {
         description: `${revisita.nome} agora está na lista de Estudos Bíblicos`,
       });
     });
@@ -225,25 +252,25 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
       case 'nova': return (
         <span className="flex items-center gap-1">
           <Sparkles className="w-3 h-3" />
-          Nova
+          {t.fieldTab.statusNew}
         </span>
       );
       case 'quente': return (
         <span className="flex items-center gap-1">
           <Zap className="w-3 h-3" />
-          Quente
+          {t.fieldTab.statusHot}
         </span>
       );
       case 'comercio': return (
         <span className="flex items-center gap-1">
           <ShoppingBag className="w-3 h-3" />
-          Comércio
+          {t.fieldTab.statusBusiness}
         </span>
       );
       case 'descanso': return (
         <span className="flex items-center gap-1">
           <Moon className="w-3 h-3" />
-          Descanso
+          {t.fieldTab.statusRest}
         </span>
       );
       default: return status;
@@ -308,16 +335,26 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
 
   // Página Home (Lista)
   return (
-    <div className="min-h-full bg-neutral">
+    <div 
+      className="min-h-full" 
+      style={{ 
+        backgroundColor: temaAtual === 'escuro' ? '#1C1C1C' : '#FDF8EE' 
+      }}
+    >
       {/* Header Padrão Consistente */}
-      <div className="sticky top-0 z-50 bg-primary-500 text-white">
+      <div 
+        className="sticky top-0 z-50 text-white" 
+        style={{ 
+          backgroundColor: temaAtual === 'escuro' ? '#2A2040' : '#4A2C60' 
+        }}
+      >
         <div className="px-6 pt-12 pb-6">
           <div className="flex items-center gap-3">
             <Sprout className="w-7 h-7" />
             <div>
-              <h1 className="text-2xl">Campo</h1>
+              <h1 className="text-2xl font-bold">{t.fieldTab.title}</h1>
               <p className="text-sm text-primary-100">
-                {revisitas.length} {revisitas.length === 1 ? 'revisita' : 'revisitas'}
+                {t.fieldTab.subtitle(revisitas.length)}
               </p>
             </div>
           </div>
@@ -329,7 +366,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <Input 
-            placeholder="Buscar por nome, endereço..." 
+            placeholder={t.fieldTab.searchPlaceholder}
             className="h-14 pl-12 pr-16 bg-white border-2 border-primary-200 focus:border-primary-500"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
@@ -339,7 +376,6 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
             variant="ghost"
             className="absolute right-1 top-1/2 -translate-y-1/2"
           >
-            <Filter className="w-5 h-5" />
           </Button>
         </div>
 
@@ -355,7 +391,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
                 : 'bg-white border-gray-200'
             }`}
           >
-            Todas
+            {t.fieldTab.filterAll}
           </Button>
           <Button
             size="sm"
@@ -367,7 +403,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
                 : 'bg-white border-gray-200'
             }`}
           >
-            Disponíveis Agora
+            {t.fieldTab.filterAvailable}
           </Button>
           <Button
             size="sm"
@@ -379,7 +415,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
                 : 'bg-white border-gray-200'
             }`}
           >
-            Quentes
+            {t.fieldTab.filterHot}
           </Button>
           <Button
             size="sm"
@@ -391,19 +427,18 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
                 : 'bg-white border-gray-200'
             }`}
           >
-            Para Revisitar
+            {t.fieldTab.filterRevisit}
           </Button>
         </div>
 
         {/* Banner contextual quando filtro "disponiveis" está ativo */}
-        {filtroAtivo === 'disponiveis' && (
+        {filtroAtivo === 'disponiveis' && revisitasFiltradas.length > 0 && (
           <Card className="p-4 bg-green-50 border-green-200">
             <div className="flex items-start gap-3">
-              <Lightbulb className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <Lightbulb className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm text-gray-700">
-                  Estas pessoas estão <strong>disponíveis agora</strong> segundo a disponibilidade cadastrada. 
-                  Aproveite para visitá-las!
+                  {t.fieldTab.availableBannerText}
                 </p>
               </div>
             </div>
@@ -414,22 +449,13 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
       {/* Lista de Revisitas */}
       <div className="px-6 pb-24 space-y-4">
         {revisitasFiltradas.length === 0 ? (
-          <Card className="p-8 text-center bg-white border-0 shadow-sm">
-            <div className="flex justify-center mb-4">
-              <Sprout className="w-16 h-16 text-primary-500" />
-            </div>
-            <h3 className="text-lg mb-2">Vamos começar sua jornada!</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              {busca 
-                ? 'Nenhuma revisita encontrada com esses critérios.'
-                : 'Ainda não há revisitas aqui. Que tal adicionar as primeiras pessoas que você conheceu no ministério?'}
-            </p>
-            {!busca && (
-              <p className="text-sm text-gray-500 mb-4">
-                Clique no botão + abaixo para adicionar sua primeira revisita
-              </p>
-            )}
-          </Card>
+          <EmptyState
+            icon={<Sprout className="w-12 h-12" />}
+            title={t.fieldTab.emptyTitle}
+            description={busca 
+              ? t.fieldTab.emptySearch
+              : t.fieldTab.emptyDescription}
+          />
         ) : (
           <>
             {revisitasFiltradas.map((revisita) => (
@@ -476,7 +502,7 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
                     <Clock className="w-4 h-4 text-gray-500" />
                     <span className={revisita.precisaRevisitar ? 'text-orange-600' : 'text-gray-600'}>
                       {revisita.ultimaVisitaTexto}
-                      {revisita.precisaRevisitar && ' • Revisitar urgente'}
+                      {revisita.precisaRevisitar && ` • ${t.fieldTab.urgentRevisit}`}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -491,14 +517,10 @@ export default function CampoTab({ filtro, onNavigateToTab, revisitaId, abrirDet
       </div>
 
       {/* FAB - Botão de Ação Flutuante */}
-      <Button
-        size="lg"
-        onClick={handleAbrirNovaRevisita}
-        className="fixed bottom-20 right-4 bg-primary-500 hover:bg-primary-600 text-white rounded-full h-14 px-6 shadow-lg z-40 transition-all duration-300 hover:scale-110 border-0"
-      >
-        <Plus className="w-5 h-5 mr-2" />
-        Nova Revisita
-      </Button>
+      <FAB 
+        variant="nova-revisita"
+        onNovaRevisita={handleAbrirNovaRevisita}
+      />
 
       {/* Formulário de Estudo (Modal) */}
       {showFormularioEstudo && (
